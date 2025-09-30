@@ -26,7 +26,7 @@ function love.update(dt)
 
   if next_scene then
     -- build the scene
-    local scene = next_scene();
+    local scene = next_scene()
     if current_scene then
       current_scene:exit()
     end

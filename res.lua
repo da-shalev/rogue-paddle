@@ -1,4 +1,4 @@
--- WARN: Do not load State, as it is not initialized yet.
+-- WARN: Do not load Meta, as it is not initialized yet.
 -- If you need access to a form of state and resource here,
 -- it must go through here first, though that being a requirement is very uncommon.
 
