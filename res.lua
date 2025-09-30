@@ -6,8 +6,11 @@ local Res = {
   sprites = {
     player = love.graphics.newImage("res/sprites/player.png")
   },
+
   -- ai generated gruvbox color scheme lol
   colors = {
+    RESET = { 1.0, 1.0, 1.0, 1.0 },
+
     -- Dark mode backgrounds
     BG0_HARD = { 0.11, 0.11, 0.11 }, -- #1d2021
     BG0 = { 0.16, 0.15, 0.14 },      -- #282828

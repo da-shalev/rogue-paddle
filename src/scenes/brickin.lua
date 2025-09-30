@@ -1,12 +1,12 @@
 return Scene.build(function()
-  return {
-    name = "Brickin",
-    player = {
-      box = Box.fromImage(Res.sprites.player, 0, Canvas.vh - 20, 0, Origin.BOTTOM_CENTER),
-      sprite = Res.sprites.player,
-    },
+  local player = {
+    box = Box.fromImage(Res.sprites.player, 0, Canvas.vh - 20, 0, Origin.BOTTOM_CENTER),
+    sprite = Res.sprites.player,
+  };
 
-    update = function(self, dt)
+  ---@type Scene
+  return {
+    update = function(dt)
       local mX = 0
 
       if love.keyboard.isDown("d") then
@@ -17,16 +17,14 @@ return Scene.build(function()
         mX = mX - 1
       end
 
-      self.player.box.x = self.player.box.x + (mX * dt * 100)
+      player.box.x = player.box.x + (mX * dt * 100)
     end,
 
-    draw = function(self)
-      love.graphics.setColor(Res.colors.GREEN_LIGHT)
-
-      self.player.box:drawImage(self.player.sprite)
+    draw = function()
+      player.box:drawImage(player.sprite)
     end,
 
-    exit = function(self)
-    end
+    exit = function()
+    end,
   }
 end)

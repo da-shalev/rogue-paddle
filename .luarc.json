@@ -1,5 +1,6 @@
 {
   "Lua.runtime.version": "LuaJIT",
+  "hint.enable": true,
   "Lua.workspace.library": [
     "library",
     "${3rd}/love2d/library"

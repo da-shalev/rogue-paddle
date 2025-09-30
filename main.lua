@@ -1,6 +1,6 @@
 -- game management related code is written here
 local tlfres = require("lib.tlfres")
-local canvas, w, h
+local canvas, canvas_w, canvas_h
 
 --- @type Scene?
 local current_scene
@@ -18,18 +18,21 @@ end
 
 ---@param dt number
 function love.update(dt)
-  -- update current scene
   if current_scene then
-    current_scene:update(dt)
+    current_scene.update(dt)
   end
 
+  -- if a new scene has been set to load next
+  -- this will acquire it
   local next_scene = Scene.takeNext()
 
   if next_scene then
-    -- build the scene
+    -- invokes the scene and generates its data
     local scene = next_scene()
+
+    -- runs any logic required when the scene unloads like saving data
     if current_scene then
-      current_scene:exit()
+      current_scene.exit()
     end
 
     current_scene = scene
@@ -40,10 +43,8 @@ function love.draw()
   love.graphics.setCanvas(canvas)
   love.graphics.push()
 
-  --[]--
-
   -- define virtual scaling
-  love.graphics.scale(w / Canvas.vw, h / Canvas.vh)
+  love.graphics.scale(canvas_w / Canvas.vw, canvas_h / Canvas.vh)
   -- center camera on the x axis
   love.graphics.translate(Canvas.vw / 2, 0)
   -- clear the screen
@@ -54,15 +55,13 @@ function love.draw()
     current_scene:draw()
   end
 
-  --[]--
-
   love.graphics.pop()
   love.graphics.setCanvas()
 
   -- render the canvas as a letterbox
-  tlfres.beginRendering(w, h)
+  tlfres.beginRendering(canvas_w, canvas_h)
 
-  love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.setColor(Res.colors.RESET)
   love.graphics.draw(canvas, 0, 0)
 
   tlfres.endRendering()
@@ -73,12 +72,12 @@ function love.resize()
   local width, height = love.graphics.getDimensions()
 
   if width / height > Canvas.aspect_ratio then
-    w = height * Canvas.aspect_ratio
-    h = height
+    canvas_w = height * Canvas.aspect_ratio
+    canvas_h = height
   else
-    w = width
-    h = width / Canvas.aspect_ratio
+    canvas_w = width
+    canvas_h = width / Canvas.aspect_ratio
   end
 
-  canvas = love.graphics.newCanvas(w, h)
+  canvas = love.graphics.newCanvas(canvas_w, canvas_h)
 end
