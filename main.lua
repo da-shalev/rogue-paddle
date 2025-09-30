@@ -1,8 +1,8 @@
-local tlfres = require("lib/tlfres")
+local tlfres = require("lib.tlfres")
 local canvas, w, h
 
-local player
-
+--- @type Scene?
+local current_scene
 
 function love.load()
   -- creates global Res from file `./res.lua`
@@ -10,29 +10,29 @@ function love.load()
   -- in fashion, you will not be able to accces any global
   -- defined here before `love.load' executes or it'll explode
   Res = require("res")
-
-
-  player = {
-    box = Box.fromImage(Res.sprites.player, 0, Canvas.vh - 20, Origin.bottom_center),
-    sprite = Res.sprites.player,
-  }
+  Meta = require("meta")
 
   love.resize()
 end
 
 ---@param dt number
 function love.update(dt)
-  local mX = 0
-
-  if love.keyboard.isDown("d") then
-    mX = mX + 1
+  -- update current scene
+  if current_scene then
+    current_scene:update(dt)
   end
 
-  if love.keyboard.isDown("a") then
-    mX = mX - 1
-  end
+  local next_scene = Scene.takeNext()
 
-  player.box.x = player.box.x + (mX * dt * 100)
+  if next_scene then
+    -- build the scene
+    local scene = next_scene();
+    if current_scene then
+      current_scene:exit()
+    end
+
+    current_scene = scene
+  end
 end
 
 function love.draw()
@@ -48,10 +48,10 @@ function love.draw()
   -- clear the screen
   love.graphics.clear(Canvas.viewport_color.r, Canvas.viewport_color.g, Canvas.viewport_color.b, 1)
 
-  -- game finally
-
-  love.graphics.setColor(1, 1, 1, 1)
-  player.box:drawImage(player.sprite)
+  -- render scene
+  if current_scene then
+    current_scene:draw()
+  end
 
   --[]--
 

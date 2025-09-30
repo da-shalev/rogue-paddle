@@ -1,10 +1,14 @@
-local Res = {}
+-- WARN: Do not load State, as it is not initialized yet.
+-- If you need access to a form of state and resource here,
+-- it must go through here first, though that being a requirement is very uncommon.
 
--- load sprites from `./res/sprites` dir here
-Res.sprites = {
-  player = love.graphics.newImage("res/sprites/player.png")
+local Res = {
+  sprites = {
+    player = love.graphics.newImage("res/sprites/player.png")
+  }
 }
 
+-- defines nearest filter for all loaded sprites
 for _, sprite in pairs(Res.sprites) do
   sprite:setFilter("nearest", "nearest")
 end

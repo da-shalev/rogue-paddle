@@ -6,21 +6,30 @@ Box.__index = Box
 --- @field y number The y-coordinate
 --- @field w number The width
 --- @field h number The height
+--- @field r number The rotation
 
 --- Creates a box
 --- @param x number The x-coordinate
 --- @param y number The y-coordinate
 --- @param w number The width
 --- @param h number The height
---- @param starting_offset Origin|nil Offset origin. Defaults to Origin.top_left
+--- @param r number The rotation, in degrees
+--- @param starting_offset? Origin Offset origin. Defaults to Origin.top_left
 --- @return Box
-function Box.new(x, y, w, h, starting_offset)
+function Box.new(x, y, w, h, r, starting_offset)
+  assert(type(x) == "number", "Box.new: x must be a number, got " .. type(x))
+  assert(type(y) == "number", "Box.new: y must be a number, got " .. type(y))
+  assert(type(w) == "number", "Box.new: width must be a number, got " .. type(w))
+  assert(type(h) == "number", "Box.new: height must be a number, got " .. type(h))
+  assert(type(r) == "number", "Box.new: rotation must be a number, got " .. type(r))
+
   starting_offset = starting_offset or Origin.top_left
   return setmetatable({
     x = x - starting_offset[1] * w,
     y = y - starting_offset[2] * h,
     w = w,
     h = h,
+    r = r,
   }, Box)
 end
 
@@ -28,9 +37,9 @@ end
 --- @param image love.Image The texture to get dimensions from.
 --- @param x number The x-coordinate of the box's reference poin
 --- @param y number The y-coordinate of the box's reference point
---- @param origin Origin|nil Origin offset. Defaults to Origin.top_left
-function Box.fromImage(image, x, y, origin)
-  return Box.new(x, y, image:getWidth(), image:getHeight(), origin)
+--- @param starting_offset? Origin Origin offset. Defaults to Origin.top_left
+function Box.fromImage(image, x, y, r, starting_offset)
+  return Box.new(x, y, image:getWidth(), image:getHeight(), r, starting_offset)
 end
 
 --- Draws the box dimensions as a rect.
@@ -39,10 +48,10 @@ function Box:drawRectangle(mode)
   love.graphics.rectangle(mode, self.x, self.y, self.w, self.h)
 end
 
---- Draws the box as a image
+--- Draws the box dimensions as a image
 --- @param image love.Image The texture to get dimensions from.
 function Box:drawImage(image)
-  love.graphics.draw(image, self.x, self.y, 0, self.w / image:getWidth(), self.h / image:getHeight())
+  love.graphics.draw(image, self.x, self.y, math.rad(self.r), self.w / image:getWidth(), self.h / image:getHeight())
 end
 
 return Box

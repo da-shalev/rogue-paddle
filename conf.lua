@@ -1,6 +1,12 @@
 -- define globals
-Box = require("lib/box")
-Origin = require("lib/origin")
+Box = require("lib.box")
+Origin = require("lib.origin")
+Scene = require("lib.scene")
+
+-- define current scene
+Scene.setNext(require("src.scenes.brickin"))
+
+-- define viewport settings
 Canvas = {
   -- preferred aspect ratio
   aspect_ratio = 1 / 1,
@@ -16,7 +22,7 @@ Canvas = {
   },
 }
 
--- define love2D configuration
+-- define love2d configuration
 function love.conf(t)
   t.identity = nil                    -- The name of the save directory (string)
   t.appendidentity = false            -- Search files in source directory before save directory (boolean)
