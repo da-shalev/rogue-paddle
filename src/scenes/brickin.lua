@@ -21,7 +21,7 @@ return Scene.build(function()
     end,
 
     draw = function(self)
-      love.graphics.setColor(1, 1, 1, 1)
+      love.graphics.setColor(Res.colors.GREEN_LIGHT)
 
       self.player.box:drawImage(self.player.sprite)
     end,

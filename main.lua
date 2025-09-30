@@ -1,3 +1,4 @@
+-- game management related code is written here
 local tlfres = require("lib.tlfres")
 local canvas, w, h
 

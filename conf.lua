@@ -6,14 +6,17 @@ Scene = require("lib.scene")
 -- define current scene
 Scene.setNext(require("src.scenes.brickin"))
 
+local aspect_ratio = 16 / 12;
+
 -- define viewport settings
 Canvas = {
-  -- preferred aspect ratio
-  aspect_ratio = 1 / 1,
-  -- virtual width of the games units used to render the screen
+  -- desired aspect ratio for the display
+  aspect_ratio = aspect_ratio,
+  -- how wide virtual screen is in virtual units
   vw = 240,
-  -- virtual height of the games units used to render the screen
-  vh = 240,
+  -- how tall the virtual screen is in virtual units
+  -- divide width by the aspect ratio so a 16:9 screen gets a height of 135 (240/1.78) instead of 240, making it proportional
+  vh = 240 / aspect_ratio,
   -- the background color of the game
   viewport_color = {
     r = 0,
