@@ -36,7 +36,7 @@ end
 --- @param x number The x-coordinate of the box's reference poin
 --- @param y number The y-coordinate of the box's reference point
 --- @param r? number The rotation, in degrees
---- @param starting_offset? Origin Origin offset. Defaults to Origin.top_left
+--- @param starting_offset? Origin offset. Defaults to Origin.TOP_LEFT
 --- @return Box
 function Box.fromImage(image, x, y, r, starting_offset)
   return Box.new(x, y, image:getWidth(), image:getHeight(), r, starting_offset)
@@ -109,6 +109,16 @@ function Box:interpolateTo(prev, current, alpha)
   self.w = math.lerp(prev.w, current.w, alpha)
   self.h = math.lerp(prev.h, current.h, alpha)
   return self
+end
+
+--- Copies position and transform values from another box
+--- @param source Box The box to copy values from
+function Box:copy(source)
+  self.x = source.x
+  self.y = source.y
+  self.w = source.w
+  self.h = source.h
+  self.r = source.r
 end
 
 return Box

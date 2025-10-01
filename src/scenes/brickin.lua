@@ -18,6 +18,9 @@ return game_state.scene.build(function()
     speed = 100,
   };
 
+  player.prev_box = Help.shallow_copy(player.box)
+  player.render_box = Help.shallow_copy(player.box)
+
   local ball = {
     box = Box.fromImage(Res.sprites.ball, player.box.x + player.box.w / 2, player.box.y, 0, Origin.BOTTOM_CENTER),
     sprite = Res.sprites.ball,
@@ -56,8 +59,8 @@ return game_state.scene.build(function()
   local on_fixed_update = {
     -- physics of the ball are updated on a fixed timer to ensure consistancy across devices
     [states.PLAYING] = function(dt)
-      ball.prev_box.x = ball.box.x
-      ball.prev_box.y = ball.box.y
+      ball.prev_box:copy(ball.box)
+      player.prev_box:copy(player.box)
 
       local move_x = player.box.x + player.move_x * dt * player.speed
       player.box.x = math.clamp(move_x, 0, camera.vp.w - player.box.w)
@@ -103,8 +106,7 @@ return game_state.scene.build(function()
     end,
 
     draw = function()
-      player.box:drawImage(player.sprite)
-
+      player.render_box:interpolateTo(player.prev_box, player.box, game_state.alpha):drawImage(player.sprite)
       ball.render_box:interpolateTo(ball.prev_box, ball.box, game_state.alpha):drawImage(ball.sprite)
     end,
 
