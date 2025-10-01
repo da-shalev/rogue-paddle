@@ -19,7 +19,7 @@ end
 ---
 --- @param t table The table to create a shallow copy of
 --- @return table A new table containing a shallow copy of the input table, with the same metatable as the original (if any)
-function Help.shallow_copy(t)
+function Help.shallowCopy(t)
   local copy = {}
   for k, v in pairs(t) do
     copy[k] = v

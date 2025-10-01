@@ -19,8 +19,6 @@ function Scene.exit() end
 local next = nil
 
 return {
-  Scene = Scene,
-
   ---@param scene fun(): Scene
   build = function(scene)
     return function()
@@ -37,5 +35,5 @@ return {
   --- @param scene fun(): Scene
   setNext = function(scene)
     next = scene
-  end
+  end,
 }

@@ -10,7 +10,7 @@ end
 
 --- Linear interpolation between two values
 --- @param a number Start value
---- @param b number End value  
+--- @param b number End value
 --- @param t number Interpolation factor (0=return a, 1=return b)
 --- @return number Interpolated value
 function math.lerp(a, b, t)

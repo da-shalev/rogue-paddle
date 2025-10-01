@@ -16,10 +16,10 @@ Box.__index = Box
 --- @param starting_offset? Origin Offset origin. Defaults to `Origin.TOP_LEFT`
 --- @return Box
 function Box.new(x, y, w, h, r, starting_offset)
-  assert(type(x) == "number", "Box.new: x must be a number, got " .. type(x))
-  assert(type(y) == "number", "Box.new: y must be a number, got " .. type(y))
-  assert(type(w) == "number", "Box.new: width must be a number, got " .. type(w))
-  assert(type(h) == "number", "Box.new: height must be a number, got " .. type(h))
+  assert(type(x) == 'number', 'Box.new: x must be a number, got ' .. type(x))
+  assert(type(y) == 'number', 'Box.new: y must be a number, got ' .. type(y))
+  assert(type(w) == 'number', 'Box.new: width must be a number, got ' .. type(w))
+  assert(type(h) == 'number', 'Box.new: height must be a number, got ' .. type(h))
 
   starting_offset = starting_offset or Origin.TOP_LEFT
   return setmetatable({
@@ -47,8 +47,8 @@ end
 --- @param color? Color # The color of the rectangle
 function Box:drawRectangle(mode, color)
   assert(
-    mode == "fill" or mode == "line",
-    ("Did not specifiy valid mode to drawRectangle, got %s"):format(mode)
+    mode == 'fill' or mode == 'line',
+    ('Did not specifiy valid mode to drawRectangle, got %s'):format(mode)
   )
 
   -- ensure color is reset to white, inheriting previous color state is confusing
@@ -62,7 +62,14 @@ end
 function Box:drawImage(image, color)
   -- ensure color is reset to white, inheriting previous color state is confusing
   love.graphics.setColor(color or Res.colors.RESET)
-  love.graphics.draw(image, self.x, self.y, math.rad(self.r), self.w / image:getWidth(), self.h / image:getHeight())
+  love.graphics.draw(
+    image,
+    self.x,
+    self.y,
+    math.rad(self.r),
+    self.w / image:getWidth(),
+    self.h / image:getHeight()
+  )
 end
 
 --- Checks this box against another and returns collision state for both axes
@@ -74,7 +81,7 @@ function Box:collides(other)
   Box:_validate(other)
 
   return not (other.x >= self.x + self.w or other.x + other.w <= self.x),
-      not (other.y >= self.y + self.h or other.y + other.h <= self.y)
+    not (other.y >= self.y + self.h or other.y + other.h <= self.y)
 end
 
 --- Checks if this box is within another and returns containment state for both axes
@@ -86,7 +93,7 @@ function Box:within(other)
   Box:_validate(other)
 
   return self.x >= other.x and self.x + self.w <= other.x + other.w,
-      self.y >= other.y and self.y + self.h <= other.y + other.h
+    self.y >= other.y and self.y + self.h <= other.y + other.h
 end
 
 --- Determines which axis had the primary collision with another box
@@ -98,10 +105,8 @@ function Box:overlaps(other)
   Box:_validate(self)
   Box:_validate(other)
 
-  local overlapX = math.min(self.x + self.w - other.x,
-    other.x + other.w - self.x)
-  local overlapY = math.min(self.y + self.h - other.y,
-    other.y + other.h - self.y)
+  local overlapX = math.min(self.x + self.w - other.x, other.x + other.w - self.x)
+  local overlapY = math.min(self.y + self.h - other.y, other.y + other.h - self.y)
 
   return overlapX, overlapY
 end
@@ -110,18 +115,14 @@ end
 --- @param other Box The box to clamp outside of
 function Box:clampOutsideX(other)
   Box:_validate(other)
-  self.x = self.x < other.x
-      and other.x - self.w
-      or other.x + other.w
+  self.x = self.x < other.x and other.x - self.w or other.x + other.w
 end
 
 --- Clamps this box outside another box on Y axis
 --- @param other Box The box to clamp outside of
 function Box:clampOutsideY(other)
   Box:_validate(other)
-  self.y = self.y < other.y
-      and other.y - self.h
-      or other.y + other.h
+  self.y = self.y < other.y and other.y - self.h or other.y + other.h
 end
 
 --- Clamps this box outside another box on both axes
@@ -184,10 +185,16 @@ end
 --- Asserts that this box is valid
 --- @param box Box Box to validate
 function Box:_validate(box)
-  assert(box.w > 0 and box.h > 0, string.format(
-    "Box invalid: x=%.2f, y=%.2f, w=%.2f, h=%.2f (w and h must be > 0)",
-    box.x, box.y, box.w, box.h
-  ))
+  assert(
+    box.w > 0 and box.h > 0,
+    string.format(
+      'Box invalid: x=%.2f, y=%.2f, w=%.2f, h=%.2f (w and h must be > 0)',
+      box.x,
+      box.y,
+      box.w,
+      box.h
+    )
+  )
 end
 
 return Box

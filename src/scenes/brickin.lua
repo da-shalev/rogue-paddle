@@ -1,5 +1,5 @@
 local game_state = require('state')
-local camera = game_state.camera;
+local camera = game_state.camera
 
 return game_state.scene.build(function()
   ---@enum State
@@ -8,53 +8,64 @@ return game_state.scene.build(function()
     PLAYING = 2,
   }
 
-  local state = states.ATTACHED;
+  local state = states.ATTACHED
 
   local player = {
-    box = Box.fromImage(Res.sprites.player, camera.vbox.w / 2, camera.vbox.h - 20, 0,
-      Origin.BOTTOM_CENTER),
+    box = Box.fromImage(
+      Res.sprites.player,
+      camera.vbox.w / 2,
+      camera.vbox.h - 20,
+      0,
+      Origin.BOTTOM_CENTER
+    ),
     sprite = Res.sprites.player,
     input_x = 0,
     speed = 100,
-  };
+  }
 
-  player.prev_box = Help.shallow_copy(player.box)
-  player.render_box = Help.shallow_copy(player.box)
+  player.prev_box = Help.shallowCopy(player.box)
+  player.render_box = Help.shallowCopy(player.box)
 
   local ball = {
-    box = Box.fromImage(Res.sprites.ball, player.box.x + player.box.w / 2, player.box.y, 0, Origin.BOTTOM_CENTER),
+    box = Box.fromImage(
+      Res.sprites.ball,
+      player.box.x + player.box.w / 2,
+      player.box.y,
+      0,
+      Origin.BOTTOM_CENTER
+    ),
     sprite = Res.sprites.ball,
     velocity = { x = 0, y = 0 },
     speed = 100,
-  };
+  }
 
-  ball.prev_box = Help.shallow_copy(ball.box)
-  ball.render_box = Help.shallow_copy(ball.box)
+  ball.prev_box = Help.shallowCopy(ball.box)
+  ball.render_box = Help.shallowCopy(ball.box)
 
   local on_update = {
     [states.ATTACHED] = function(_)
-      if love.keyboard.isDown("space") or love.keyboard.isDown("up") then
-        state = states.PLAYING;
+      if love.keyboard.isDown('space') or love.keyboard.isDown('up') then
+        state = states.PLAYING
       end
 
-      local dir = math.random() < 0.5;
-      ball.velocity.x = (dir and 0.5 or -0.5);
-      ball.velocity.y = -1;
+      local dir = math.random() < 0.5
+      ball.velocity.x = (dir and 0.5 or -0.5)
+      ball.velocity.y = -1
     end,
 
     [states.PLAYING] = function(_dt)
       -- detects player movement
       player.input_x = 0
 
-      if love.keyboard.isDown("d") then
+      if love.keyboard.isDown('d') then
         player.input_x = player.input_x + 1
       end
 
-      if love.keyboard.isDown("a") then
+      if love.keyboard.isDown('a') then
         player.input_x = player.input_x - 1
       end
     end,
-  };
+  }
 
   local on_fixed_update = {
     -- physics of the ball are updated on a fixed timer to ensure consistancy across devices
@@ -106,11 +117,12 @@ return game_state.scene.build(function()
     end,
 
     draw = function()
-      player.render_box:interpolate(player.prev_box, player.box, game_state.alpha):drawImage(player.sprite)
+      player.render_box
+        :interpolate(player.prev_box, player.box, game_state.alpha)
+        :drawImage(player.sprite)
       ball.render_box:interpolate(ball.prev_box, ball.box, game_state.alpha):drawImage(ball.sprite)
     end,
 
-    exit = function()
-    end,
+    exit = function() end,
   }
 end)

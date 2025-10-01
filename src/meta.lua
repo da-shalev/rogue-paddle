@@ -1,5 +1,4 @@
 -- used to store common metadata for different variants of state
-Meta = {
-}
+Meta = {}
 
 return Meta

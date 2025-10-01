@@ -1,5 +1,5 @@
 -- game management related code is written here
-local tlfres = require("lib.tlfres")
+local tlfres = require('lib.tlfres')
 local state = require('state')
 local canvas, canvas_w, canvas_h
 
@@ -20,8 +20,8 @@ function love.load()
   -- all resources are loaded and accessed from the global 'Res'
   -- in fashion, you will not be able to accces any global
   -- defined here before `love.load' executes or it'll explode
-  Res = require("res")
-  Meta = require("meta")
+  Res = require('res')
+  Meta = require('meta')
 
   love.resize()
 end
@@ -48,7 +48,7 @@ function love.update(dt)
       accumulator = accumulator - FIXED_DT
     end
 
-    state.alpha = accumulator / FIXED_DT;
+    state.alpha = accumulator / FIXED_DT
 
     current_scene.update(dt)
   end

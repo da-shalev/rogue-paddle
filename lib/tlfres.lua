@@ -1,17 +1,17 @@
 -- external library from:
 -- https://love2d.org/wiki/TLfres
 
-local lwGetMode              = _G.love.window.getMode
-local lgPush                 = _G.love.graphics.push
-local lgPop                  = _G.love.graphics.pop
-local lgTranslate            = _G.love.graphics.translate
-local lgScale                = _G.love.graphics.scale
-local lgRectangle            = _G.love.graphics.rectangle
-local lgSetColor             = _G.love.graphics.setColor
-local lmGetPosition          = _G.love.mouse.getPosition
-local min                    = math.min
+local lwGetMode = _G.love.window.getMode
+local lgPush = _G.love.graphics.push
+local lgPop = _G.love.graphics.pop
+local lgTranslate = _G.love.graphics.translate
+local lgScale = _G.love.graphics.scale
+local lgRectangle = _G.love.graphics.rectangle
+local lgSetColor = _G.love.graphics.setColor
+local lmGetPosition = _G.love.mouse.getPosition
+local min = math.min
 
-local TLfres                 = {}
+local TLfres = {}
 
 local lastMouseX, lastMouseY = 0, 0
 local currentlyRendering
@@ -38,7 +38,7 @@ end
 -- If called within a rendering block, width and height are optional.
 function TLfres.getScale(width, height)
   if currentlyRendering then
-    width  = width or currentlyRendering[1]
+    width = width or currentlyRendering[1]
     height = height or currentlyRendering[2]
   end
   local w, h = lwGetMode()
@@ -50,7 +50,7 @@ end
 -- Use love.graphics.push before this and love.graphics.pop after done rendering
 function TLfres.beginRendering(width, height, centered)
   if currentlyRendering then
-    error("Must call tlfres.endRendering before calling beginRendering.")
+    error('Must call tlfres.endRendering before calling beginRendering.')
     return
   end
   currentlyRendering = { width, height }
@@ -72,7 +72,7 @@ local _black = { 0, 0, 0, 255 }
 -- bars. letterboxColor can also be any {r, g, b, a} table.
 function TLfres.endRendering(letterboxColor)
   if not currentlyRendering then
-    error("Must call tlfres.beginRendering before calling endRendering.")
+    error('Must call tlfres.beginRendering before calling endRendering.')
     return
   end
   local width, height = currentlyRendering[1], currentlyRendering[2]
@@ -84,10 +84,10 @@ function TLfres.endRendering(letterboxColor)
   width, height = width * scale, height * scale
 
   lgSetColor(letterboxColor or _black)
-  lgRectangle("fill", 0, 0, w, 0.5 * (h - height))    -- top
-  lgRectangle("fill", 0, h, w, -0.5 * (h - height))   -- bottom
-  lgRectangle("fill", 0, 0, 0.5 * (w - width), h)     -- left
-  lgRectangle("fill", w, 0, -0.5 * (w - width), h)    -- right
+  lgRectangle('fill', 0, 0, w, 0.5 * (h - height)) -- top
+  lgRectangle('fill', 0, h, w, -0.5 * (h - height)) -- bottom
+  lgRectangle('fill', 0, 0, 0.5 * (w - width), h) -- left
+  lgRectangle('fill', w, 0, -0.5 * (w - width), h) -- right
 end
 
 return TLfres
