@@ -4,7 +4,8 @@
 
 local Res = {
   sprites = {
-    player = love.graphics.newImage("res/sprites/player.png")
+    player = love.graphics.newImage("res/sprites/player.png"),
+    ball = love.graphics.newImage("res/sprites/ball.png"),
   },
 
   -- ai generated gruvbox color scheme lol

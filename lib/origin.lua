@@ -1,4 +1,4 @@
---- @alias Origin [number, number]
+---@class Origin
 local Origin = {
   TOP_LEFT = { 0, 0 },
   TOP_CENTER = { 0.5, 0 },
