@@ -13,7 +13,7 @@ Box.__index = Box
 --- @param w number The width
 --- @param h number The height
 --- @param r? number The rotation, in degrees
---- @param starting_offset? Origin Offset origin. Defaults to Origin.TOP_LEFT
+--- @param starting_offset? Origin Offset origin. Defaults to `Origin.TOP_LEFT`
 --- @return Box
 function Box.new(x, y, w, h, r, starting_offset)
   assert(type(x) == "number", "Box.new: x must be a number, got " .. type(x))
@@ -65,32 +65,50 @@ function Box:drawImage(image, color)
   love.graphics.draw(image, self.x, self.y, math.rad(self.r), self.w / image:getWidth(), self.h / image:getHeight())
 end
 
---- Checks if this box collides with another box on the X axis
---- @param other Box The other box to check collision with
---- @return boolean
-function Box:collidesX(other)
-  return not (
-    other.x >= self.x + self.w or
-    other.x + other.w <= self.x
-  )
-end
-
 --- Checks this box against another and returns collision state for both axes
---- @param other Box the other box to check against
---- @return boolean xCollide collision on X axis
---- @return boolean yCollide collision on Y axis
-function Box:collidesAxes(other)
+--- @param other Box The other box to check against
+--- @return boolean xCollide Collision on X axis
+--- @return boolean yCollide Collision on Y axis
+function Box:collides(other)
   return not (other.x >= self.x + self.w or other.x + other.w <= self.x),
       not (other.y >= self.y + self.h or other.y + other.h <= self.y)
 end
 
 --- Checks if this box is within another and returns containment state for both axes
---- @param other Box the other box to check containment in
---- @return boolean xWithin within on X axis
---- @return boolean yWithin within on Y axis
-function Box:withinAxes(other)
+--- @param other Box The other box to check containment in
+--- @return boolean xWithin Within on X axis
+--- @return boolean yWithin Within on Y axis
+function Box:within(other)
   return self.x >= other.x and self.x + self.w <= other.x + other.w,
       self.y >= other.y and self.y + self.h <= other.y + other.h
+end
+
+--- Determines which axis had the primary collision with another box
+--- based on penetration depth (less overlap = collision axis)
+--- @param other Box The other box
+--- @return number xWithin Percentage within on X axis
+--- @return number yWithin Percentage within on Y axis
+function Box:collisionOverlap(other)
+  local overlapX = math.min(self.x + self.w - other.x,
+    other.x + other.w - self.x)
+  local overlapY = math.min(self.y + self.h - other.y,
+    other.y + other.h - self.y)
+
+  return overlapX, overlapY
+end
+
+--- Updates this box with interpolated values (chainable)
+--- @param prev Box Previous frame's box
+--- @param current Box Current frame's box
+--- @param alpha number Interpolation factor (0=prev, 1=current)
+--- @return Box self This box (for chaining)
+function Box:interpolateTo(prev, current, alpha)
+  self.x = math.lerp(prev.x, current.x, alpha)
+  self.y = math.lerp(prev.y, current.y, alpha)
+  self.r = math.lerp(prev.r, current.r, alpha)
+  self.w = math.lerp(prev.w, current.w, alpha)
+  self.h = math.lerp(prev.h, current.h, alpha)
+  return self
 end
 
 return Box

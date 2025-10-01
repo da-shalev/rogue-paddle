@@ -1,9 +1,16 @@
 -- game management related code is written here
 local tlfres = require("lib.tlfres")
+local state = require('state')
 local canvas, canvas_w, canvas_h
 
 local keys_pressed = {}
 local keys_released = {}
+
+local t = 0.0
+-- original breakout was at 60hz
+local FIXED_DT = 1. / 60.
+local accumulator = 0.0
+local current_time = love.timer.getTime()
 
 --- @type Scene?
 local current_scene
@@ -22,12 +29,33 @@ end
 ---@param dt number
 function love.update(dt)
   if current_scene then
+    -- https://gafferongames.com/post/fix_your_timestep/
+    -- we have 'freed the physics'
+    local new_time = love.timer.getTime()
+    local frame_time = new_time - current_time
+
+    if frame_time > 0.25 then
+      frame_time = 0.25
+    end
+    current_time = new_time
+
+    accumulator = accumulator + frame_time
+
+    -- fixed timestep integration loop
+    while accumulator >= FIXED_DT do
+      current_scene.fixedUpdate(FIXED_DT)
+      t = t + FIXED_DT
+      accumulator = accumulator - FIXED_DT
+    end
+
+    state.alpha = accumulator / FIXED_DT;
+
     current_scene.update(dt)
   end
 
   -- if a new scene has been set to load next
   -- this will acquire it
-  local next_scene = State.scene.takeNext()
+  local next_scene = state.scene.takeNext()
 
   if next_scene then
     -- invokes the scene and generates its data
@@ -50,11 +78,11 @@ function love.draw()
   love.graphics.push()
 
   -- define virtual scaling
-  love.graphics.scale(canvas_w / State.canvas.vp.w, canvas_h / State.canvas.vp.h)
-  love.graphics.translate(State.canvas.vp.x, State.canvas.vp.y)
+  love.graphics.scale(canvas_w / state.camera.vp.w, canvas_h / state.camera.vp.h)
+  love.graphics.translate(state.camera.vp.x, state.camera.vp.y)
 
   -- clear the screen
-  love.graphics.clear(State.canvas.color.r, State.canvas.color.g, State.canvas.color.b, 1)
+  love.graphics.clear(state.camera.color, 1)
 
   -- render scene
   if current_scene then
@@ -77,12 +105,12 @@ function love.resize()
   -- resize the canvas to fit on the display within the aspect_ratio
   local width, height = love.graphics.getDimensions()
 
-  if width / height > State.canvas.aspect_ratio then
-    canvas_w = height * State.canvas.aspect_ratio
+  if width / height > state.camera.aspect_ratio then
+    canvas_w = height * state.camera.aspect_ratio
     canvas_h = height
   else
     canvas_w = width
-    canvas_h = width / State.canvas.aspect_ratio
+    canvas_h = width / state.camera.aspect_ratio
   end
 
   canvas = love.graphics.newCanvas(canvas_w, canvas_h)

@@ -4,11 +4,8 @@ Box = require("lib.box")
 Origin = require("lib.origin")
 Help = require("lib.help")
 
--- final global, this is the only global that isn't a util
-State = require("state")
-
 -- define current scene
-State.scene.setNext(require("src.scenes.brickin"))
+require('state').scene.setNext(require("src.scenes.brickin"))
 
 -- define love2d configuration
 function love.conf(t)

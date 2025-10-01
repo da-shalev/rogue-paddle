@@ -1,4 +1,4 @@
--- extention of math module to include good stuff
+-- extention of the math module to include good stuff
 
 --- @param value number
 --- @param min number
@@ -6,4 +6,13 @@
 --- @return number
 function math.clamp(value, min, max)
   return math.max(min, math.min(max, value))
+end
+
+--- Linear interpolation between two values
+--- @param a number Start value
+--- @param b number End value  
+--- @param t number Interpolation factor (0=return a, 1=return b)
+--- @return number Interpolated value
+function math.lerp(a, b, t)
+  return a + (b - a) * t
 end

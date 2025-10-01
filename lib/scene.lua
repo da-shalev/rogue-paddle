@@ -8,6 +8,9 @@ Scene.__index = Scene
 ---@param dt number
 function Scene.update(dt) end
 
+---@param dt number
+function Scene.fixedUpdate(dt) end
+
 function Scene.draw() end
 
 function Scene.exit() end
