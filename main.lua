@@ -78,8 +78,8 @@ function love.draw()
   love.graphics.push()
 
   -- define virtual scaling
-  love.graphics.scale(canvas_w / state.camera.vp.w, canvas_h / state.camera.vp.h)
-  love.graphics.translate(state.camera.vp.x, state.camera.vp.y)
+  love.graphics.scale(canvas_w / state.camera.vbox.w, canvas_h / state.camera.vbox.h)
+  love.graphics.translate(state.camera.vbox.x, state.camera.vbox.y)
 
   -- clear the screen
   love.graphics.clear(state.camera.color, 1)

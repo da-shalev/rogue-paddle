@@ -70,6 +70,9 @@ end
 --- @return boolean xCollide Collision on X axis
 --- @return boolean yCollide Collision on Y axis
 function Box:collides(other)
+  Box:_validate(self)
+  Box:_validate(other)
+
   return not (other.x >= self.x + self.w or other.x + other.w <= self.x),
       not (other.y >= self.y + self.h or other.y + other.h <= self.y)
 end
@@ -79,6 +82,9 @@ end
 --- @return boolean xWithin Within on X axis
 --- @return boolean yWithin Within on Y axis
 function Box:within(other)
+  Box:_validate(self)
+  Box:_validate(other)
+
   return self.x >= other.x and self.x + self.w <= other.x + other.w,
       self.y >= other.y and self.y + self.h <= other.y + other.h
 end
@@ -88,7 +94,10 @@ end
 --- @param other Box The other box
 --- @return number xWithin Percentage within on X axis
 --- @return number yWithin Percentage within on Y axis
-function Box:collisionOverlap(other)
+function Box:overlaps(other)
+  Box:_validate(self)
+  Box:_validate(other)
+
   local overlapX = math.min(self.x + self.w - other.x,
     other.x + other.w - self.x)
   local overlapY = math.min(self.y + self.h - other.y,
@@ -97,12 +106,62 @@ function Box:collisionOverlap(other)
   return overlapX, overlapY
 end
 
+--- Clamps this box outside another box on X axis
+--- @param other Box The box to clamp outside of
+function Box:clampOutsideX(other)
+  Box:_validate(other)
+  self.x = self.x < other.x
+      and other.x - self.w
+      or other.x + other.w
+end
+
+--- Clamps this box outside another box on Y axis
+--- @param other Box The box to clamp outside of
+function Box:clampOutsideY(other)
+  Box:_validate(other)
+  self.y = self.y < other.y
+      and other.y - self.h
+      or other.y + other.h
+end
+
+--- Clamps this box outside another box on both axes
+--- @param other Box The box to clamp inside of
+function Box:clampOutside(other)
+  Box:_validate(other)
+  self:clampOutsideX(other)
+  self:clampOutsideY(other)
+end
+
+--- Clamps this box inside another box on X axis
+--- @param other Box The box to clamp inside of
+function Box:clampWithinX(other)
+  Box:_validate(other)
+  self.x = math.clamp(self.x, other.x, other.x + other.w - self.w)
+end
+
+--- Clamps this box inside another box on Y axis
+--- @param other Box The box to clamp inside of
+function Box:clampWithinY(other)
+  Box:_validate(other)
+  self.y = math.clamp(self.y, other.y, other.y + other.h - self.h)
+end
+
+--- Clamps this box inside another box on both axes
+--- @param other Box The box to clamp inside of
+function Box:clampWithin(other)
+  Box:_validate(other)
+  self:clampWithinX(other)
+  self:clampWithinY(other)
+end
+
 --- Updates this box with interpolated values (chainable)
 --- @param prev Box Previous frame's box
 --- @param current Box Current frame's box
 --- @param alpha number Interpolation factor (0=prev, 1=current)
 --- @return Box self This box (for chaining)
-function Box:interpolateTo(prev, current, alpha)
+function Box:interpolate(prev, current, alpha)
+  Box:_validate(prev)
+  Box:_validate(current)
   self.x = math.lerp(prev.x, current.x, alpha)
   self.y = math.lerp(prev.y, current.y, alpha)
   self.r = math.lerp(prev.r, current.r, alpha)
@@ -114,11 +173,21 @@ end
 --- Copies position and transform values from another box
 --- @param source Box The box to copy values from
 function Box:copy(source)
+  Box:_validate(source)
   self.x = source.x
   self.y = source.y
   self.w = source.w
   self.h = source.h
   self.r = source.r
+end
+
+--- Asserts that this box is valid
+--- @param box Box Box to validate
+function Box:_validate(box)
+  assert(box.w > 0 and box.h > 0, string.format(
+    "Box invalid: x=%.2f, y=%.2f, w=%.2f, h=%.2f (w and h must be > 0)",
+    box.x, box.y, box.w, box.h
+  ))
 end
 
 return Box

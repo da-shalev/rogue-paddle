@@ -11,10 +11,10 @@ return game_state.scene.build(function()
   local state = states.ATTACHED;
 
   local player = {
-    box = Box.fromImage(Res.sprites.player, camera.vp.w / 2, camera.vp.h - 20, 0,
+    box = Box.fromImage(Res.sprites.player, camera.vbox.w / 2, camera.vbox.h - 20, 0,
       Origin.BOTTOM_CENTER),
     sprite = Res.sprites.player,
-    move_x = 0,
+    input_x = 0,
     speed = 100,
   };
 
@@ -44,14 +44,14 @@ return game_state.scene.build(function()
 
     [states.PLAYING] = function(_dt)
       -- detects player movement
-      player.move_x = 0
+      player.input_x = 0
 
       if love.keyboard.isDown("d") then
-        player.move_x = player.move_x + 1
+        player.input_x = player.input_x + 1
       end
 
       if love.keyboard.isDown("a") then
-        player.move_x = player.move_x - 1
+        player.input_x = player.input_x - 1
       end
     end,
   };
@@ -59,37 +59,37 @@ return game_state.scene.build(function()
   local on_fixed_update = {
     -- physics of the ball are updated on a fixed timer to ensure consistancy across devices
     [states.PLAYING] = function(dt)
-      ball.prev_box:copy(ball.box)
       player.prev_box:copy(player.box)
+      player.box.x = player.box.x + player.input_x * dt * player.speed
+      player.box:clampWithin(camera.vbox)
 
-      local move_x = player.box.x + player.move_x * dt * player.speed
-      player.box.x = math.clamp(move_x, 0, camera.vp.w - player.box.w)
-
-      -- yes everything below this is just for a ball
-      -- not to mention the other things I do
-
+      ball.prev_box:copy(ball.box)
       ball.box.x = ball.box.x + ball.velocity.x * dt * ball.speed
       ball.box.y = ball.box.y + ball.velocity.y * dt * ball.speed
 
-      -- overlap check not needed because of clamping
-      local x_within, y_within = ball.box:within(camera.vp)
-      if not x_within then ball.velocity.x = -ball.velocity.x end
-      if not y_within then ball.velocity.y = -ball.velocity.y end
-      ball.box.x = math.clamp(ball.box.x, 0, camera.vp.w - ball.box.w)
-      ball.box.y = math.clamp(ball.box.y, 0, camera.vp.h - ball.box.h)
+      local x_within, y_within = ball.box:within(camera.vbox)
 
-      local x_overlap, y_overlap = ball.box:collisionOverlap(player.box)
+      if not x_within then
+        ball.velocity.x = -ball.velocity.x
+      end
 
-      -- checks for a collision
+      if not y_within then
+        ball.velocity.y = -ball.velocity.y
+      end
+
+      ball.box:clampWithin(camera.vbox)
+
+      -- previous approach won't work here because x is resolved before y
+      -- this is more precise
+      local x_overlap, y_overlap = ball.box:overlaps(player.box)
+
       if x_overlap > 0 and y_overlap > 0 then
         if x_overlap < y_overlap then
-          if (ball.box.x - player.box.x) * ball.velocity.x < 0 then
-            ball.velocity.x = -ball.velocity.x
-          end
+          ball.velocity.x = -ball.velocity.x
+          ball.box:clampOutsideX(player.box)
         else
-          if (ball.box.y - player.box.y) * ball.velocity.y < 0 then
-            ball.velocity.y = -ball.velocity.y
-          end
+          ball.velocity.y = -ball.velocity.y
+          ball.box:clampOutsideY(player.box)
         end
       end
     end,
@@ -106,8 +106,8 @@ return game_state.scene.build(function()
     end,
 
     draw = function()
-      player.render_box:interpolateTo(player.prev_box, player.box, game_state.alpha):drawImage(player.sprite)
-      ball.render_box:interpolateTo(ball.prev_box, ball.box, game_state.alpha):drawImage(ball.sprite)
+      player.render_box:interpolate(player.prev_box, player.box, game_state.alpha):drawImage(player.sprite)
+      ball.render_box:interpolate(ball.prev_box, ball.box, game_state.alpha):drawImage(ball.sprite)
     end,
 
     exit = function()

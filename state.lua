@@ -9,7 +9,7 @@ local State = {
     -- desired aspect ratio for the display
     aspect_ratio = aspect_ratio,
     -- the games viewport/camera
-    vp = Box.new(0, 0,
+    vbox = Box.new(0, 0,
       -- how wide virtual screen is in virtual units
       240,
       -- how tall the virtual screen is in virtual units
