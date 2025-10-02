@@ -6,7 +6,7 @@ Help = require('lib.help')
 local state = require('state')
 
 -- define current scene
-state.scene.setNext(require('src.scenes.brickin'))
+state.scene.setNext(require('scenes.brickin'))
 
 -- define love2d configuration
 function love.conf(t)
