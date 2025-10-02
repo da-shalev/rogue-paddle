@@ -37,8 +37,8 @@ function love.update(dt)
     if frame_time > 0.25 then
       frame_time = 0.25
     end
-    current_time = new_time
 
+    current_time = new_time
     accumulator = accumulator + frame_time
 
     -- fixed timestep integration loop

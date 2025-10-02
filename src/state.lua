@@ -1,4 +1,4 @@
-local aspect_ratio = 16 / 12
+local aspect_ratio = 16 / 11
 local State = {
   scene = require('lib.scene'),
   seed = 0,

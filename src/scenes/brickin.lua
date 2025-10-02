@@ -20,7 +20,7 @@ return game_state.scene.build(function()
     ),
     sprite = Res.sprites.player,
     input_x = 0,
-    speed = 100,
+    speed = 0.55 * game_state.camera.vbox.w,
   }
 
   player.prev_box = Help.shallowCopy(player.box)
@@ -35,8 +35,8 @@ return game_state.scene.build(function()
       Origin.BOTTOM_CENTER
     ),
     sprite = Res.sprites.ball,
-    velocity = { x = 0, y = 0 },
-    speed = 100,
+    velocity = math.Vec2.new(0, 0),
+    speed = 0.5 * game_state.camera.vbox.w,
   }
 
   ball.prev_box = Help.shallowCopy(ball.box)
@@ -49,8 +49,8 @@ return game_state.scene.build(function()
       end
 
       local dir = math.random() < 0.5
-      ball.velocity.x = (dir and 0.5 or -0.5)
-      ball.velocity.y = -1
+      ball.velocity:set((dir and 1.0 or -1.0), -1.0)
+      ball.velocity:normalize()
     end,
 
     [states.PLAYING] = function(_dt)
@@ -82,25 +82,62 @@ return game_state.scene.build(function()
 
       if not x_within then
         ball.velocity.x = -ball.velocity.x
+        ball.box:clampWithinX(camera.vbox)
       end
 
       if not y_within then
         ball.velocity.y = -ball.velocity.y
+        ball.box:clampWithinY(camera.vbox)
       end
 
-      ball.box:clampWithin(camera.vbox)
-
-      -- previous approach won't work here because x is resolved before y
-      -- this is more precise
+      -- Paddle collision
       local x_overlap, y_overlap = ball.box:overlaps(player.box)
 
       if x_overlap > 0 and y_overlap > 0 then
-        if x_overlap < y_overlap then
-          ball.velocity.x = -ball.velocity.x
-          ball.box:clampOutsideX(player.box)
-        else
-          ball.velocity.y = -ball.velocity.y
+        -- Smaller overlap = collision axis (less penetration)
+        if y_overlap < x_overlap then
+          -- Y-axis collision
+          if ball.box.y < player.box.y then
+            -- Top of paddle hit - classic brick breaker behavior
+            -- Calculate hit position: -1 (left edge) to +1 (right edge)
+
+            -- stylua: ignore start
+
+            local hit_pos = (
+              -- ball center x
+              ball.box.x + ball.box.w * 0.5
+              -- paddle center x
+              - player.box.x + player.box.w * 0.5
+            ) / (player.box.w * 0.5)
+
+            -- stylua: ignore end
+
+            hit_pos = math.clamp(hit_pos, -1, 1)
+
+            -- local segments = 8
+            -- local segment_index = math.floor((hit_pos + 1) * 0.5 * segments)
+            -- segment_index = math.clamp(segment_index, 0, segments - 1)
+            -- local hit_pos = (segment_index / (segments - 1)) * 2 - 1
+
+            -- Map hit position to angle
+            -- Center hit (0): steep/vertical bounce
+            -- Edge hit (±1): shallow/horizontal bounce
+            local angle_influence = 0.75
+            ball.velocity:set(hit_pos * angle_influence, -1)
+            ball.velocity:normalize()
+          else
+            -- Bottom of paddle - bounce downward
+            ball.velocity.y = math.abs(ball.velocity.y)
+          end
           ball.box:clampOutsideY(player.box)
+        else
+          -- X-axis collision
+          if ball.box.x < player.box.x then
+            ball.velocity.x = -math.abs(ball.velocity.x)
+          else
+            ball.velocity.x = math.abs(ball.velocity.x)
+          end
+          ball.box:clampOutsideX(player.box)
         end
       end
     end,
