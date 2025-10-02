@@ -68,7 +68,6 @@ return game_state.scene.build(function()
   }
 
   local on_fixed_update = {
-    -- physics of the ball are updated on a fixed timer to ensure consistancy across devices
     [states.PLAYING] = function(dt)
       player.prev_box:copy(player.box)
       player.box.x = player.box.x + player.input_x * dt * player.speed
@@ -99,7 +98,7 @@ return game_state.scene.build(function()
           -- Y-axis collision
           if ball.box.y < player.box.y then
             -- stylua: ignore start
-            -- Top of paddle hit - classic brick breaker behavior
+
             -- Calculate hit position: -1 (left edge) to +1 (right edge)
             local hit_pos = (
               -- ball center x
@@ -111,7 +110,7 @@ return game_state.scene.build(function()
             -- stylua: ignore end
 
             -- hit_pos = math.clamp(hit_pos, -1, 1)
-            -- feels closest to my memory of the original game with unmodified hit_pos
+            -- Feels closest to my memory of the original game with unmodified hit_pos
             ball.velocity:set(hit_pos, -1)
             ball.velocity:normalize()
           else
@@ -119,7 +118,6 @@ return game_state.scene.build(function()
             ball.velocity.y = math.abs(ball.velocity.y)
           end
 
-          -- ensure the ball doesn't overlap by clamping it outside the player
           ball.box:clampOutsideY(player.box)
         else
           -- X-axis collision
@@ -129,7 +127,6 @@ return game_state.scene.build(function()
             ball.velocity.x = math.abs(ball.velocity.x)
           end
 
-          -- ensure the ball doesn't overlap by clamping it outside the player
           ball.box:clampOutsideX(player.box)
         end
       end

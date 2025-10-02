@@ -1,4 +1,3 @@
--- game management related code is written here
 local tlfres = require('lib.tlfres')
 local state = require('state')
 local canvas, canvas_w, canvas_h
@@ -7,7 +6,6 @@ local keys_pressed = {}
 local keys_released = {}
 
 local t = 0.0
--- original breakout was at 60hz
 local FIXED_DT = 1. / 60.
 local accumulator = 0.0
 local current_time = love.timer.getTime()
@@ -16,10 +14,8 @@ local current_time = love.timer.getTime()
 local current_scene
 
 function love.load()
-  -- creates global Res from file `./res.lua`
-  -- all resources are loaded and accessed from the global 'Res'
-  -- in fashion, you will not be able to accces any global
-  -- defined here before `love.load' executes or it'll explode
+  -- All resources are loaded and accessed from the global 'Res'
+  -- In fashion, you will not be able to accces anything loaded here before love.load executes
   Res = require('res')
   Meta = require('meta')
 
@@ -29,8 +25,8 @@ end
 ---@param dt number
 function love.update(dt)
   -- https://gafferongames.com/post/fix_your_timestep/
-  -- we have 'freed the physics'
-  -- fixed timestep integration loop
+  -- We have 'freed the physics'
+
   local new_time = love.timer.getTime()
   local frame_time = new_time - current_time
 
@@ -49,21 +45,18 @@ function love.update(dt)
     if current_scene then
       current_scene.fixedUpdate(FIXED_DT)
     end
+
     t = t + FIXED_DT
     accumulator = accumulator - FIXED_DT
   end
 
   state.alpha = accumulator / FIXED_DT
 
-  -- if a new scene has been set to load next
-  -- this will acquire it
-  local next_scene = state.scene.takeNext()
+  local next_scene = state.scene.queueNext()
 
   if next_scene then
-    -- invokes the scene and generates its data
     local scene = next_scene()
 
-    -- runs any logic required when the scene unloads like saving data
     if current_scene then
       current_scene.exit()
     end
@@ -79,14 +72,10 @@ function love.draw()
   love.graphics.setCanvas(canvas)
   love.graphics.push()
 
-  -- define virtual scaling
   love.graphics.scale(canvas_w / state.camera.vbox.w, canvas_h / state.camera.vbox.h)
   love.graphics.translate(state.camera.vbox.x, state.camera.vbox.y)
-
-  -- clear the screen
   love.graphics.clear(state.camera.color, 1)
 
-  -- render scene
   if current_scene then
     current_scene.draw()
   end
@@ -94,7 +83,6 @@ function love.draw()
   love.graphics.pop()
   love.graphics.setCanvas()
 
-  -- render the canvas as a letterbox
   tlfres.beginRendering(canvas_w, canvas_h)
 
   love.graphics.setColor(Res.colors.RESET)
@@ -104,7 +92,6 @@ function love.draw()
 end
 
 function love.resize()
-  -- resize the canvas to fit on the display within the aspect_ratio
   local width, height = love.graphics.getDimensions()
 
   if width / height > state.camera.aspect_ratio then

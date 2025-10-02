@@ -51,7 +51,6 @@ function Box:drawRectangle(mode, color)
     ('Did not specifiy valid mode to drawRectangle, got %s'):format(mode)
   )
 
-  -- ensure color is reset to white, inheriting previous color state is confusing
   love.graphics.setColor(color or Res.colors.RESET)
   love.graphics.rectangle(mode, self.x, self.y, self.w, self.h, math.rad(self.r))
 end
@@ -60,7 +59,6 @@ end
 --- @param image love.Image The texture to get dimensions from.
 --- @param color? Color # The color of the rectangle
 function Box:drawImage(image, color)
-  -- ensure color is reset to white, inheriting previous color state is confusing
   love.graphics.setColor(color or Res.colors.RESET)
   love.graphics.draw(
     image,
