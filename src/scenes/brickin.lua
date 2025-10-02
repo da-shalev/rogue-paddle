@@ -98,37 +98,28 @@ return game_state.scene.build(function()
         if y_overlap < x_overlap then
           -- Y-axis collision
           if ball.box.y < player.box.y then
+            -- stylua: ignore start
             -- Top of paddle hit - classic brick breaker behavior
             -- Calculate hit position: -1 (left edge) to +1 (right edge)
-
-            -- stylua: ignore start
-
             local hit_pos = (
               -- ball center x
               ball.box.x + ball.box.w * 0.5
               -- paddle center x
-              - player.box.x + player.box.w * 0.5
+              - (player.box.x + player.box.w * 0.5)
             ) / (player.box.w * 0.5)
 
             -- stylua: ignore end
 
-            hit_pos = math.clamp(hit_pos, -1, 1)
-
-            -- local segments = 8
-            -- local segment_index = math.floor((hit_pos + 1) * 0.5 * segments)
-            -- segment_index = math.clamp(segment_index, 0, segments - 1)
-            -- local hit_pos = (segment_index / (segments - 1)) * 2 - 1
-
-            -- Map hit position to angle
-            -- Center hit (0): steep/vertical bounce
-            -- Edge hit (±1): shallow/horizontal bounce
-            local angle_influence = 0.75
-            ball.velocity:set(hit_pos * angle_influence, -1)
+            -- hit_pos = math.clamp(hit_pos, -1, 1)
+            -- feels closest to my memory of the original game with unmodified hit_pos
+            ball.velocity:set(hit_pos, -1)
             ball.velocity:normalize()
           else
             -- Bottom of paddle - bounce downward
             ball.velocity.y = math.abs(ball.velocity.y)
           end
+
+          -- ensure the ball doesn't overlap by clamping it outside the player
           ball.box:clampOutsideY(player.box)
         else
           -- X-axis collision
@@ -137,6 +128,8 @@ return game_state.scene.build(function()
           else
             ball.velocity.x = math.abs(ball.velocity.x)
           end
+
+          -- ensure the ball doesn't overlap by clamping it outside the player
           ball.box:clampOutsideX(player.box)
         end
       end

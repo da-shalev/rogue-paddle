@@ -28,30 +28,32 @@ end
 
 ---@param dt number
 function love.update(dt)
+  -- https://gafferongames.com/post/fix_your_timestep/
+  -- we have 'freed the physics'
+  -- fixed timestep integration loop
+  local new_time = love.timer.getTime()
+  local frame_time = new_time - current_time
+
+  if frame_time > 0.25 then
+    frame_time = 0.25
+  end
+
+  current_time = new_time
+  accumulator = accumulator + frame_time
+
   if current_scene then
-    -- https://gafferongames.com/post/fix_your_timestep/
-    -- we have 'freed the physics'
-    local new_time = love.timer.getTime()
-    local frame_time = new_time - current_time
-
-    if frame_time > 0.25 then
-      frame_time = 0.25
-    end
-
-    current_time = new_time
-    accumulator = accumulator + frame_time
-
-    -- fixed timestep integration loop
-    while accumulator >= FIXED_DT do
-      current_scene.fixedUpdate(FIXED_DT)
-      t = t + FIXED_DT
-      accumulator = accumulator - FIXED_DT
-    end
-
-    state.alpha = accumulator / FIXED_DT
-
     current_scene.update(dt)
   end
+
+  while accumulator >= FIXED_DT do
+    if current_scene then
+      current_scene.fixedUpdate(FIXED_DT)
+    end
+    t = t + FIXED_DT
+    accumulator = accumulator - FIXED_DT
+  end
+
+  state.alpha = accumulator / FIXED_DT
 
   -- if a new scene has been set to load next
   -- this will acquire it

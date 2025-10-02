@@ -29,8 +29,8 @@
         default = {
           type = "app";
           program = "${pkgs.writeShellScriptBin "run-game" ''
-            cd ${./.}
-            exec ${pkgs.lib.getExe pkgs.love} ./src
+            cd ${./src}
+            exec ${pkgs.lib.getExe pkgs.love} .
           ''}/bin/run-game";
         };
       });

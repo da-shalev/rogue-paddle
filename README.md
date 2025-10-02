@@ -8,7 +8,7 @@ A [LÖVE](https://love2d.org/) game developed for a college’s capstone project
 
 ### Launch the game
 
-From the project root directory, you can run the game directly with LÖVE:
+In this repositories root directory, you can run the game directly with LÖVE:
 
 ```sh
 love ./src
@@ -20,8 +20,15 @@ love ./src
 
 ### Running with Nix
 
-If you are using **Nix flakes**, this project defines an app target so you can
-launch the game without installing LÖVE manually.
+If you are using **Nix flakes**, this project defines an app target so you can launch the game without installing LÖVE manually.
+
+##### In this repository:
+
+```sh
+nix run
+```
+
+##### From the current git commit (remote):
 
 ```sh
 nix run "git+ssh://git@github.com/da-shalev/unnamed_game_1.git"
