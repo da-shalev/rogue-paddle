@@ -30,6 +30,7 @@ function Vec2:normalize()
   else
     self.x, self.y = self.x / len, self.y / len
   end
+
   return self
 end
 
@@ -79,7 +80,7 @@ end
 --- Returns a string representation of the vector.
 --- @return string
 function Vec2:__tostring()
-  return string.format("Vec2(%.3f, %.3f)", self.x, self.y)
+  return string.format('Vec2(%.3f, %.3f)', self.x, self.y)
 end
 
 return Vec2

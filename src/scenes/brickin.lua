@@ -49,8 +49,7 @@ return game_state.scene.build(function()
       end
 
       local dir = math.random() < 0.5
-      ball.velocity:set((dir and 1.0 or -1.0), -1.0)
-      ball.velocity:normalize()
+      ball.velocity:set((dir and 1.0 or -1.0), -1.0):normalize()
     end,
 
     [states.PLAYING] = function(_dt)
@@ -111,8 +110,7 @@ return game_state.scene.build(function()
 
             -- hit_pos = math.clamp(hit_pos, -1, 1)
             -- Feels closest to my memory of the original game with unmodified hit_pos
-            ball.velocity:set(hit_pos, -1)
-            ball.velocity:normalize()
+            ball.velocity:set(hit_pos, -1):normalize()
           else
             -- Bottom of paddle - bounce downward
             ball.velocity.y = math.abs(ball.velocity.y)

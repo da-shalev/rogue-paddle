@@ -12,13 +12,14 @@ function Help.switch(value, cases, ...)
   end
 end
 
+--- @generic T: table
 --- Creates a shallow copy of the given table.
 ---
 --- A shallow copy duplicates the table structure but does not recursively copy nested tables or other references.
 --- Only the top-level key-value pairs are copied, preserving references to any nested tables or user data.
 ---
---- @param t table The table to create a shallow copy of
---- @return table A new table containing a shallow copy of the input table, with the same metatable as the original (if any)
+--- @param t T The table to create a shallow copy of
+--- @return T A new table containing a shallow copy of the input table, with the same metatable as the original (if any)
 function Help.shallowCopy(t)
   local copy = {}
   for k, v in pairs(t) do
