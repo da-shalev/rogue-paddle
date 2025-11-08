@@ -1,5 +1,6 @@
 --- @class Scene
 --- @field update fun(dt: number)
+--- @field fixed fun(dt: number)
 --- @field draw fun()
 --- @field exit fun()
 local Scene = {}
@@ -11,7 +12,7 @@ function Scene.update(dt) end
 
 --- Used for computing physics ensuring behaviour is consistent across devices
 --- @param dt number
-function Scene.fixedUpdate(dt) end
+function Scene.fixed(dt) end
 
 function Scene.draw() end
 

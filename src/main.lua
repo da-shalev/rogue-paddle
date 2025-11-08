@@ -17,7 +17,6 @@ function love.load()
   -- All resources are loaded and accessed from the global 'Res'
   -- In fashion, you will not be able to accces anything loaded here before love.load executes
   Res = require('res')
-  Meta = require('meta')
 
   love.resize()
 end
@@ -43,7 +42,7 @@ function love.update(dt)
 
   while accumulator >= FIXED_DT do
     if current_scene then
-      current_scene.fixedUpdate(FIXED_DT)
+      current_scene.fixed(FIXED_DT)
     end
 
     t = t + FIXED_DT

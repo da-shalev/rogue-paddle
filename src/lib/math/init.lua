@@ -17,4 +17,4 @@ function math.lerp(a, b, t)
   return a + (b - a) * t
 end
 
-math.Vec2 = require("lib.math.vec2")
+math.Vec2 = require('lib.math.vec2')

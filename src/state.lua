@@ -1,5 +1,5 @@
 local aspect_ratio = 16 / 11
-local State = {
+local S = {
   scene = require('lib.scene'),
   seed = 0,
 
@@ -10,20 +10,17 @@ local State = {
     aspect_ratio = aspect_ratio,
     -- the games viewport/camera
     vbox = Box.new(
-      0,
-      0,
-      -- how wide virtual screen is in virtual units
-      240,
+      math.Vec2.zero(),
       -- how tall the virtual screen is in virtual units
       -- divide width by the aspect ratio so a 16:9 screen gets a height of 135
       -- (240/1.78) instead of 240, making it proportional
-      240 / aspect_ratio
+      math.Vec2.new(240, 240 / aspect_ratio)
     ),
     -- the background color of the game
     color = { 0, 0, 0 },
   },
 }
 
-math.randomseed(State.seed)
+math.randomseed(S.seed)
 
-return State
+return S
