@@ -63,7 +63,7 @@ function Sprite:state(opts)
 
   return setmetatable({
     data = self,
-    box = Box.new(
+    box = math.Box.new(
       opts.pos or math.Vec2.zero(),
       self.cell_size,
       opts.rot or 0,
@@ -91,7 +91,7 @@ function SpriteState:drawRectangle(box, mode, color)
     box.pos.y,
     self.data.cell_size.x,
     self.data.cell_size.y,
-    math.rad(box.r)
+    math.rad(box.rot)
   )
 end
 
@@ -110,7 +110,7 @@ function SpriteState:draw(box, color)
     quad,
     box.pos.x + (self.flip_x and w or 0),
     box.pos.y + (self.flip_y and h or 0),
-    math.rad(box.r),
+    math.rad(box.rot),
     scale_x,
     scale_y
   )

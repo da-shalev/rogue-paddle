@@ -1,6 +1,5 @@
 -- define util globals
 require('lib.math')
-Box = require('lib.box')
 Origin = require('lib.origin')
 Help = require('lib.help')
 Sprite = require('lib.sprite')
@@ -8,7 +7,7 @@ Scene = require('lib.scene')
 S = require('state')
 
 -- define current scene
-S.scene.setNext(require('scenes.brickin'))
+S.scene.setNext(require('game.scenes.brickin'))
 
 -- define love2d configuration
 function love.conf(t)

@@ -40,14 +40,15 @@ local alias = {
 --- @field h number -- alias to size.y
 --- @field pos Vec2
 --- @field size Vec2
---- @field r number
+--- @field rot number
 local Box = {}
 Box.__index = function(t, k)
   local a = alias[k]
   if a then
     return a.get(t)
+  else
+    return Box[k]
   end
-  return Box[k]
 end
 
 Box.__newindex = function(t, k, v)
@@ -72,7 +73,7 @@ function Box.new(pos, size, rot, starting_offset)
   return setmetatable({
     pos = pos,
     size = size,
-    r = rot or 0,
+    rot = rot or 0,
   }, Box)
 end
 
@@ -143,7 +144,7 @@ end
 function Box:lerp(prev, current, alpha)
   self.pos = prev.pos:lerp(current.pos, alpha)
   self.size = prev.size:lerp(current.pos, alpha)
-  self.r = math.lerp(prev.r, current.r, alpha)
+  self.rot = math.lerp(prev.rot, current.rot, alpha)
   return self
 end
 
@@ -152,12 +153,48 @@ end
 function Box:copy(source)
   self.pos:copy(source.pos)
   self.size:copy(source.size)
-  self.r = source.r
+  self.rot = source.rot
 end
 
 --- @return string
 function Box:__tostring()
   return string.format('Box(%.3f, %.3f, %.3f, %.3f)', self.x, self.y, self.w, self.h)
+end
+
+--- @param other Box
+--- @param velocity Vec2
+function Box:paddle(other, velocity)
+  local x_overlap, y_overlap = self:overlaps(other)
+
+  if x_overlap > 0 and y_overlap > 0 then
+    -- Smaller overlap = collision axis (less penetration)
+    if y_overlap < x_overlap then
+      -- Y-axis collision
+      if other.y < self.y then
+        -- Calculate hit position: -1 (left edge) to +1 (right edge)
+        local hit_pos = (
+          (other.x + other.w * 0.5) -- ball center x
+          - (self.x + self.w * 0.5) -- self center x
+        ) / (self.w * 0.5)
+
+        velocity:set(hit_pos, -1):normalize()
+      else
+        -- Bottom of self - bounce downward
+        velocity.y = math.abs(velocity.y)
+      end
+
+      other:clampOutsideY(self)
+    else
+      -- X-axis collision
+      if other.x < self.x then
+        velocity.x = -math.abs(velocity.x)
+      else
+        velocity.x = math.abs(velocity.x)
+      end
+
+      other:clampOutsideX(self)
+    end
+  end
 end
 
 return Box

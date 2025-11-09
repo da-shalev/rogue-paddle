@@ -4,7 +4,7 @@ return Scene.build(function()
       pos = math.Vec2.new(S.camera.vbox.w / 2, S.camera.vbox.h - 20),
       starting_offset = Origin.BOTTOM_CENTER,
     }),
-    prev_box = Box.zero(),
+    prev_box = math.Box.zero(),
     input_x = 0,
     speed = 0.55 * S.camera.vbox.w,
   }
@@ -14,12 +14,12 @@ return Scene.build(function()
       pos = math.Vec2.new(player.sprite.box.x + player.sprite.box.w / 2, player.sprite.box.y),
       starting_offset = Origin.BOTTOM_CENTER,
     }),
-    prev_box = Box.zero(),
+    prev_box = math.Box.zero(),
     velocity = math.Vec2.zero(),
     speed = 0.5 * S.camera.vbox.w,
   }
 
-  --- @type StatusMap
+  --- @type Status
   local status = {
     ATTACHED = {
       update = function(self, dt)
@@ -64,46 +64,7 @@ return Scene.build(function()
           ball.sprite.box:clampWithinY(S.camera.vbox)
         end
 
-        -- Paddle collision
-        local x_overlap, y_overlap = ball.sprite.box:overlaps(player.sprite.box)
-
-        if x_overlap > 0 and y_overlap > 0 then
-          -- Smaller overlap = collision axis (less penetration)
-          if y_overlap < x_overlap then
-            -- Y-axis collision
-            if ball.sprite.box.y < player.sprite.box.y then
-              -- stylua: ignore start
-
-              -- Calculate hit position: -1 (left edge) to +1 (right edge)
-              local hit_pos = (
-                -- ball center x
-                ball.sprite.box.x + ball.sprite.box.w * 0.5
-                -- paddle center x
-                - (player.sprite.box.x + player.sprite.box.w * 0.5)
-              ) / (player.sprite.box.w * 0.5)
-
-              -- stylua: ignore end
-
-              -- hit_pos = math.clamp(hit_pos, -1, 1)
-              -- Feels closest to my memory of the original game with unmodified hit_pos
-              ball.velocity:set(hit_pos, -1):normalize()
-            else
-              -- Bottom of paddle - bounce downward
-              ball.velocity.y = math.abs(ball.velocity.y)
-            end
-
-            ball.sprite.box:clampOutsideY(player.sprite.box)
-          else
-            -- X-axis collision
-            if ball.sprite.box.x < player.sprite.box.x then
-              ball.velocity.x = -math.abs(ball.velocity.x)
-            else
-              ball.velocity.x = math.abs(ball.velocity.x)
-            end
-
-            ball.sprite.box:clampOutsideX(player.sprite.box)
-          end
-        end
+        player.sprite.box:paddle(ball.sprite.box, ball.velocity)
       end,
     },
   }

@@ -1,14 +1,14 @@
----@alias StatusMap table<string, SceneStatus>
+---@alias Status table<string, CurrentStatus>
 
---- @class SceneStatus
+--- @class CurrentStatus
 --- @field update? fun(self: Scene, dt: number)
 --- @field fixed? fun(self: Scene, dt: number)
 --- @field draw? fun(self: Scene)
 --- @field exit? fun(self: Scene)
 
---- @class Scene : SceneStatus
---- @field status StatusMap
---- @field current SceneStatus
+--- @class Scene : CurrentStatus
+--- @field status Status
+--- @field current CurrentStatus
 local Scene = {}
 Scene.__index = Scene
 

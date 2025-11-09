@@ -18,3 +18,4 @@ function math.lerp(a, b, t)
 end
 
 math.Vec2 = require('lib.math.vec2')
+math.Box = require('lib.math.box')

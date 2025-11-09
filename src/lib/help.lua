@@ -1,6 +1,5 @@
 local Help = {}
 
---- Executes a case based on the value (switch/case) becuase Lua doesn't have it :(
 --- @generic T
 --- @param value T The value to switch on
 --- @param cases table<T, function> Table mapping values to handler functions
