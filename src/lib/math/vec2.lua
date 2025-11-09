@@ -65,6 +65,14 @@ function Vec2:scale(s)
   return self
 end
 
+--- @param other Vec2
+--- @param scalar number
+function Vec2:addScaled(other, scalar)
+  self.x = self.x + other.x * scalar
+  self.y = self.y + other.y * scalar
+  return self
+end
+
 --- Sets this vector’s components.
 --- @param x? number
 --- @param y? number

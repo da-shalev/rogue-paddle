@@ -4,6 +4,7 @@ Box = require('lib.box')
 Origin = require('lib.origin')
 Help = require('lib.help')
 Sprite = require('lib.sprite')
+Scene = require('lib.scene')
 S = require('state')
 
 -- define current scene

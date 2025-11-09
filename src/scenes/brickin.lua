@@ -1,4 +1,4 @@
-return S.scene.build(function()
+return Scene.build(function()
   --- @enum Status
   local status = {
     ATTACHED = 1,
@@ -8,26 +8,20 @@ return S.scene.build(function()
   local current = status.ATTACHED
 
   local player = {
-    sprite = Res.sprites.player:state(),
-    box = Box.fromSprite(
-      Res.sprites.player,
-      math.Vec2.new(S.camera.vbox.w / 2, S.camera.vbox.h - 20),
-      0,
-      Origin.BOTTOM_CENTER
-    ),
+    sprite = Res.sprites.player:state({
+      pos = math.Vec2.new(S.camera.vbox.w / 2, S.camera.vbox.h - 20),
+      starting_offset = Origin.BOTTOM_CENTER,
+    }),
     prev_box = Box.zero(),
     input_x = 0,
     speed = 0.55 * S.camera.vbox.w,
   }
 
   local ball = {
-    sprite = Res.sprites.ball:state(),
-    box = Box.fromSprite(
-      Res.sprites.ball,
-      math.Vec2.new(player.box.x + player.box.w / 2, player.box.y),
-      0,
-      Origin.BOTTOM_CENTER
-    ),
+    sprite = Res.sprites.ball:state({
+      pos = math.Vec2.new(player.sprite.box.x + player.sprite.box.w / 2, player.sprite.box.y),
+      starting_offset = Origin.BOTTOM_CENTER,
+    }),
     prev_box = Box.zero(),
     velocity = math.Vec2.zero(),
     speed = 0.5 * S.camera.vbox.w,
@@ -57,43 +51,42 @@ return S.scene.build(function()
 
   local on_fixed_update = {
     [status.PLAYING] = function(dt)
-      player.prev_box:copy(player.box)
-      player.box.x = player.box.x + player.input_x * dt * player.speed
-      player.box:clampWithin(S.camera.vbox)
+      player.prev_box:copy(player.sprite.box)
+      player.sprite.box.x = player.sprite.box.x + player.input_x * dt * player.speed
+      player.sprite.box:clampWithin(S.camera.vbox)
 
-      ball.prev_box:copy(ball.box)
-      ball.box.x = ball.box.x + ball.velocity.x * dt * ball.speed
-      ball.box.y = ball.box.y + ball.velocity.y * dt * ball.speed
+      ball.prev_box:copy(ball.sprite.box)
+      ball.sprite.box.pos:addScaled(ball.velocity, dt * ball.speed)
 
-      local x_within, y_within = ball.box:within(S.camera.vbox)
+      local x_within, y_within = ball.sprite.box:within(S.camera.vbox)
 
       if not x_within then
         ball.velocity.x = -ball.velocity.x
-        ball.box:clampWithinX(S.camera.vbox)
+        ball.sprite.box:clampWithinX(S.camera.vbox)
       end
 
       if not y_within then
         ball.velocity.y = -ball.velocity.y
-        ball.box:clampWithinY(S.camera.vbox)
+        ball.sprite.box:clampWithinY(S.camera.vbox)
       end
 
       -- Paddle collision
-      local x_overlap, y_overlap = ball.box:overlaps(player.box)
+      local x_overlap, y_overlap = ball.sprite.box:overlaps(player.sprite.box)
 
       if x_overlap > 0 and y_overlap > 0 then
         -- Smaller overlap = collision axis (less penetration)
         if y_overlap < x_overlap then
           -- Y-axis collision
-          if ball.box.pos.y < player.box.pos.y then
+          if ball.sprite.box.pos.y < player.sprite.box.pos.y then
             -- stylua: ignore start
 
             -- Calculate hit position: -1 (left edge) to +1 (right edge)
             local hit_pos = (
             -- ball center x
-              ball.box.pos.x + ball.box.size.x * 0.5
+              ball.sprite.box.x + ball.sprite.box.w * 0.5
               -- paddle center x
-              - (player.box.x + player.box.w * 0.5)
-            ) / (player.box.w * 0.5)
+              - (player.sprite.box.x + player.sprite.box.w * 0.5)
+            ) / (player.sprite.box.w * 0.5)
 
             -- stylua: ignore end
 
@@ -105,16 +98,16 @@ return S.scene.build(function()
             ball.velocity.y = math.abs(ball.velocity.y)
           end
 
-          ball.box:clampOutsideY(player.box)
+          ball.sprite.box:clampOutsideY(player.sprite.box)
         else
           -- X-axis collision
-          if ball.box.x < player.box.x then
+          if ball.sprite.box.x < player.sprite.box.x then
             ball.velocity.x = -math.abs(ball.velocity.x)
           else
             ball.velocity.x = math.abs(ball.velocity.x)
           end
 
-          ball.box:clampOutsideX(player.box)
+          ball.sprite.box:clampOutsideX(player.sprite.box)
         end
       end
     end,
@@ -131,8 +124,8 @@ return S.scene.build(function()
     end,
 
     draw = function()
-      player.sprite:draw(player.prev_box:lerp(player.prev_box, player.box, S.alpha))
-      ball.sprite:draw(ball.prev_box:lerp(ball.prev_box, ball.box, S.alpha))
+      player.sprite:draw(player.prev_box:lerp(player.prev_box, player.sprite.box, S.alpha))
+      ball.sprite:draw(ball.prev_box:lerp(ball.prev_box, ball.sprite.box, S.alpha))
     end,
 
     exit = function() end,

@@ -1,8 +1,7 @@
 local aspect_ratio = 16 / 11
 local S = {
-  scene = require('lib.scene'),
+  scene = require('lib.scene_queue'),
   seed = 0,
-
   alpha = 0,
 
   camera = {

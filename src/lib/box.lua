@@ -80,15 +80,6 @@ function Box.zero()
   return Box.new(math.Vec2.zero(), math.Vec2.zero(), 0, { 0, 0 })
 end
 
---- @param sprite Sprite
---- @param pos Vec2
---- @param r? number The rotation, in degrees
---- @param starting_offset? Origin offset. Defaults to Origin.TOP_LEFT
---- @return Box
-function Box.fromSprite(sprite, pos, r, starting_offset)
-  return Box.new(pos, sprite.cell_size, r, starting_offset)
-end
-
 --- @param other Box
 --- @return boolean xCollide
 --- @return boolean yCollide
@@ -106,8 +97,8 @@ function Box:within(other)
 end
 
 --- @param other Box
---- @return number xWithin Percentage
---- @return number yWithin Percentage
+--- @return number xOverlap Percentage
+--- @return number yOverlap Percentage
 function Box:overlaps(other)
   return math.min(self.pos.x + self.size.x - other.pos.x, other.pos.x + other.size.x - self.pos.x),
     math.min(self.pos.y + self.size.y - other.pos.y, other.pos.y + other.size.y - self.pos.y)

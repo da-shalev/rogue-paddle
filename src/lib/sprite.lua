@@ -1,5 +1,5 @@
 --- @class SpriteState
---- @field pos Vec2
+--- @field box Box
 --- @field data Sprite
 --- @field flip_x boolean
 --- @field flip_y boolean
@@ -49,16 +49,29 @@ function Sprite.new(image_path, sx, sy)
   }, Sprite)
 end
 
---- @param frame_idx? number
---- @param flip_x? boolean
---- @param flip_y? boolean
+--- @param opts? {
+---   pos?: Vec2,
+---   starting_offset?: Origin,
+---   r?: number,
+---   frame_idx?: number,
+---   flip_x?: boolean,
+---   flip_y?: boolean,
+--- }
 --- @return SpriteState
-function Sprite:state(frame_idx, flip_x, flip_y)
+function Sprite:state(opts)
+  opts = opts or {}
+
   return setmetatable({
     data = self,
-    frame_idx = frame_idx or 1,
-    flip_x = flip_x or false,
-    flip_y = flip_y or false,
+    box = Box.new(
+      opts.pos or math.Vec2.zero(),
+      self.cell_size,
+      opts.r or 0,
+      opts.starting_offset or Origin.TOP_LEFT
+    ),
+    frame_idx = opts.frame_idx or 1,
+    flip_x = opts.flip_x or false,
+    flip_y = opts.flip_y or false,
   }, SpriteState)
 end
 
