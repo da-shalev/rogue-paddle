@@ -161,19 +161,19 @@ function Box:__tostring()
   return string.format('Box(%.3f, %.3f, %.3f, %.3f)', self.x, self.y, self.w, self.h)
 end
 
---- @param other Box
+--- @param source Box
 --- @param velocity Vec2
-function Box:paddle(other, velocity)
-  local x_overlap, y_overlap = self:overlaps(other)
+function Box:paddleCollision(source, velocity)
+  local x_overlap, y_overlap = self:overlaps(source)
 
   if x_overlap > 0 and y_overlap > 0 then
     -- Smaller overlap = collision axis (less penetration)
     if y_overlap < x_overlap then
       -- Y-axis collision
-      if other.y < self.y then
+      if source.y < self.y then
         -- Calculate hit position: -1 (left edge) to +1 (right edge)
         local hit_pos = (
-          (other.x + other.w * 0.5) -- ball center x
+          (source.x + source.w * 0.5) -- ball center x
           - (self.x + self.w * 0.5) -- self center x
         ) / (self.w * 0.5)
 
@@ -183,16 +183,16 @@ function Box:paddle(other, velocity)
         velocity.y = math.abs(velocity.y)
       end
 
-      other:clampOutsideY(self)
+      source:clampOutsideY(self)
     else
       -- X-axis collision
-      if other.x < self.x then
+      if source.x < self.x then
         velocity.x = -math.abs(velocity.x)
       else
         velocity.x = math.abs(velocity.x)
       end
 
-      other:clampOutsideX(self)
+      source:clampOutsideX(self)
     end
   end
 end

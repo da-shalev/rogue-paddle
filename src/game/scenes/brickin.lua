@@ -6,7 +6,7 @@ return Scene.build(function()
     },
     prev_box = math.box.zero(),
     input_x = 0,
-    speed = 0.55 * S.camera.vbox.w,
+    speed = 0.4 * S.camera.vbox.w,
   }
 
   local ball = {
@@ -16,16 +16,21 @@ return Scene.build(function()
     },
     prev_box = math.box.zero(),
     velocity = math.vec2.zero(),
-    speed = 0.5 * S.camera.vbox.w,
+    speed = 0.4 * S.camera.vbox.w,
   }
 
-  local bricks = require('game.bricks').new(Res.layouts.DEFAULT)
+  local bricks = require('game.brick_manager').new {
+    layout = Res.layouts.DEFAULT,
+    onGenerate = function(brick) end,
+    onRemove = function(self, brick) end,
+    onSpawn = function(self, brick) end,
+  }
 
   --- @type Status
   local status = {
     ATTACHED = {
       update = function(self, dt)
-        if love.keyboard.isPressed('space') or love.keyboard.isPressed('up') then
+        if love.keyboard.isPressed(Res.keybinds.CONFIRM) then
           self.current = self.status.PLAYING
           ball.velocity:set((math.random() < 0.5 and 1.0 or -1.0), -1.0):normalize()
         end
@@ -37,11 +42,11 @@ return Scene.build(function()
         -- detects player movement
         player.input_x = 0
 
-        if love.keyboard.isDown('d') then
+        if love.keyboard.isDown(Res.keybinds.RIGHT) then
           player.input_x = player.input_x + 1
         end
 
-        if love.keyboard.isDown('a') then
+        if love.keyboard.isDown(Res.keybinds.LEFT) then
           player.input_x = player.input_x - 1
         end
       end,
@@ -67,35 +72,8 @@ return Scene.build(function()
           ball.sprite.box:clampWithinY(S.camera.vbox)
         end
 
-        local brick_col = bricks:check_collision(ball.sprite.box)
-        local hit = nil
-
-        if ball.velocity.y < 0 and brick_col.top then
-          hit = brick_col.top
-        elseif ball.velocity.y > 0 and brick_col.bottom then
-          hit = brick_col.bottom
-        elseif ball.velocity.x < 0 and brick_col.left then
-          hit = brick_col.left
-        elseif ball.velocity.x > 0 and brick_col.right then
-          hit = brick_col.right
-        end
-
-        if hit then
-          if hit == brick_col.top or hit == brick_col.bottom then
-            ball.velocity.y = -ball.velocity.y
-            ball.sprite.box:clampOutsideY(hit.sprite.box)
-          else
-            ball.velocity.x = -ball.velocity.x
-            ball.sprite.box:clampOutsideX(hit.sprite.box)
-          end
-
-          bricks:remove(hit)
-          if bricks.data.count == 0 then
-            bricks.data = bricks.generate(Res.layouts.DEFAULT)
-          end
-        end
-
-        player.sprite.box:paddle(ball.sprite.box, ball.velocity)
+        bricks:collision(ball.sprite.box, ball.velocity)
+        player.sprite.box:paddleCollision(ball.sprite.box, ball.velocity)
       end,
     },
   }

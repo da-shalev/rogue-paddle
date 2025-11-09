@@ -9,7 +9,13 @@ local Res = {
     RESET = { 1.0, 1.0, 1.0, 1.0 },
   },
 
-  -- defines layout for levels
+  keybinds = {
+    RIGHT = 'd',
+    LEFT = 'a',
+    CONFIRM = 'space',
+  },
+
+  -- defines layouts for levels
   layouts = {
     DEFAULT = {
       { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
