@@ -19,7 +19,7 @@ return Scene.build(function()
     speed = 0.5 * S.camera.vbox.w,
   }
 
-  local bricks = require('game.bricks').new(Res.levels.DEFAULT)
+  local bricks = require('game.bricks').new(Res.layouts.DEFAULT)
 
   --- @type Status
   local status = {
@@ -68,25 +68,31 @@ return Scene.build(function()
         end
 
         local brick_col = bricks:check_collision(ball.sprite.box)
+        local hit = nil
 
-        if brick_col.top then
-          ball.velocity.y = -ball.velocity.y
-          ball.sprite.box:clampOutsideY(brick_col.top.sprite.box)
-          bricks.data.grid[brick_col.top.y][brick_col.top.x] = nil
-        elseif brick_col.bottom then
-          ball.velocity.y = -ball.velocity.y
-          ball.sprite.box:clampOutsideY(brick_col.bottom.sprite.box)
-          bricks.data.grid[brick_col.bottom.y][brick_col.bottom.x] = nil
+        if ball.velocity.y < 0 and brick_col.top then
+          hit = brick_col.top
+        elseif ball.velocity.y > 0 and brick_col.bottom then
+          hit = brick_col.bottom
+        elseif ball.velocity.x < 0 and brick_col.left then
+          hit = brick_col.left
+        elseif ball.velocity.x > 0 and brick_col.right then
+          hit = brick_col.right
         end
 
-        if brick_col.left then
-          ball.velocity.x = -ball.velocity.x
-          ball.sprite.box:clampOutsideX(brick_col.left.sprite.box)
-          bricks.data.grid[brick_col.left.y][brick_col.left.x] = nil
-        elseif brick_col.right then
-          ball.velocity.x = -ball.velocity.x
-          ball.sprite.box:clampOutsideX(brick_col.right.sprite.box)
-          bricks.data.grid[brick_col.right.y][brick_col.right.x] = nil
+        if hit then
+          if hit == brick_col.top or hit == brick_col.bottom then
+            ball.velocity.y = -ball.velocity.y
+            ball.sprite.box:clampOutsideY(hit.sprite.box)
+          else
+            ball.velocity.x = -ball.velocity.x
+            ball.sprite.box:clampOutsideX(hit.sprite.box)
+          end
+
+          bricks:remove(hit)
+          if bricks.data.count == 0 then
+            bricks.data = bricks.generate(Res.layouts.DEFAULT)
+          end
         end
 
         player.sprite.box:paddle(ball.sprite.box, ball.velocity)
