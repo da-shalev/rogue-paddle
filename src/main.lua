@@ -37,12 +37,12 @@ function love.update(dt)
   accumulator = accumulator + frame_time
 
   if current_scene then
-    current_scene.update(dt)
+    current_scene:update(dt)
   end
 
   while accumulator >= FIXED_DT do
     if current_scene then
-      current_scene.fixed(FIXED_DT)
+      current_scene:fixed(FIXED_DT)
     end
 
     t = t + FIXED_DT
@@ -57,7 +57,7 @@ function love.update(dt)
     local scene = next_scene()
 
     if current_scene then
-      current_scene.exit()
+      current_scene:exit()
     end
 
     current_scene = scene
@@ -76,7 +76,7 @@ function love.draw()
   love.graphics.clear(state.camera.color, 1)
 
   if current_scene then
-    current_scene.draw()
+    current_scene:draw()
   end
 
   love.graphics.pop()

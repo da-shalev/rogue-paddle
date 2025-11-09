@@ -94,8 +94,8 @@ end
 --- @param alpha number
 --- @return Vec2 self
 function Vec2:lerp(other, alpha)
-  self.x = self.x + (other.x - self.x) * alpha
-  self.y = self.y + (other.y - self.y) * alpha
+  self.x = math.lerp(self.x, other.x, alpha)
+  self.y = math.lerp(self.y, other.y, alpha)
   return self
 end
 

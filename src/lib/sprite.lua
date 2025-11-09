@@ -52,7 +52,7 @@ end
 --- @param opts? {
 ---   pos?: Vec2,
 ---   starting_offset?: Origin,
----   r?: number,
+---   rot?: number,
 ---   frame_idx?: number,
 ---   flip_x?: boolean,
 ---   flip_y?: boolean,
@@ -66,7 +66,7 @@ function Sprite:state(opts)
     box = Box.new(
       opts.pos or math.Vec2.zero(),
       self.cell_size,
-      opts.r or 0,
+      opts.rot or 0,
       opts.starting_offset or Origin.TOP_LEFT
     ),
     frame_idx = opts.frame_idx or 1,

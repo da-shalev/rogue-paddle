@@ -1,28 +1,49 @@
---- @class Scene
---- @field update fun(dt: number)
---- @field fixed fun(dt: number)
---- @field draw fun()
---- @field exit fun()
+---@alias StatusMap table<string, SceneStatus>
+
+--- @class SceneStatus
+--- @field update? fun(self: Scene, dt: number)
+--- @field fixed? fun(self: Scene, dt: number)
+--- @field draw? fun(self: Scene)
+--- @field exit? fun(self: Scene)
+
+--- @class Scene : SceneStatus
+--- @field status StatusMap
+--- @field current SceneStatus
 local Scene = {}
 Scene.__index = Scene
 
---- General input and logic-per frame is handled here
---- @param dt number
-function Scene.update(dt) end
+--- @param config Scene?
+--- @return Scene
+function Scene.new(config)
+  config = config or {}
+  local empty = function() end
 
---- Used for computing physics ensuring behaviour is consistent across devices
---- @param dt number
-function Scene.fixed(dt) end
+  --- @type Scene
+  local scene = {
+    update = function(self, dt)
+      (config.update or empty)(self, dt);
+      (self.current.update or empty)(self, dt)
+    end,
+    fixed = function(self, dt)
+      (config.fixed or empty)(self, dt);
+      (self.current.fixed or empty)(self, dt)
+    end,
+    draw = function(self)
+      (config.draw or empty)(self);
+      (self.current.draw or empty)(self)
+    end,
+    exit = config.exit or empty,
+    status = config.status,
+    current = config.current,
+  }
 
-function Scene.draw() end
+  return setmetatable(scene, Scene)
+end
 
-function Scene.exit() end
-
---- @param scene fun(): Scene
---- @return fun(): Scene A builder function that constructs a new Scene instance
-Scene.build = function(scene)
+--- @param constructor fun(): Scene?
+Scene.build = function(constructor)
   return function()
-    return setmetatable(scene(), Scene)
+    return constructor()
   end
 end
 
