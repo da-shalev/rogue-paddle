@@ -6,7 +6,7 @@ local keys_pressed = {}
 local keys_released = {}
 
 local t = 0.0
-local FIXED_DT = 1. / 60.
+local FIXED_DT = 1. / 64.
 local accumulator = 0.0
 local current_time = love.timer.getTime()
 
@@ -51,7 +51,7 @@ function love.update(dt)
 
   state.alpha = accumulator / FIXED_DT
 
-  local next_scene = state.scene.queueNext()
+  local next_scene = state.scene_queue.queueNext()
 
   if next_scene then
     local scene = next_scene()

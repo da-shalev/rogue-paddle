@@ -44,13 +44,14 @@ function Sprite.new(image_path, sx, sy)
 
   return setmetatable({
     image = image,
-    cell_size = math.Vec2.new(cw, ch),
+    cell_size = math.vec2.new(cw, ch),
     cells = cells,
   }, Sprite)
 end
 
 --- @param opts? {
 ---   pos?: Vec2,
+---   size?: Vec2,
 ---   starting_offset?: Origin,
 ---   rot?: number,
 ---   frame_idx?: number,
@@ -63,9 +64,9 @@ function Sprite:state(opts)
 
   return setmetatable({
     data = self,
-    box = math.Box.new(
-      opts.pos or math.Vec2.zero(),
-      self.cell_size,
+    box = math.box.new(
+      opts.pos or math.vec2.zero(),
+      opts.size or self.cell_size,
       opts.rot or 0,
       opts.starting_offset or Origin.TOP_LEFT
     ),
@@ -100,19 +101,19 @@ end
 function SpriteState:draw(box, color)
   love.graphics.setColor(color or Res.colors.RESET)
 
-  local scale_x = self.flip_x and -1 or 1
-  local scale_y = self.flip_y and -1 or 1
   local quad = self.data.cells[self.frame_idx]
   local _, _, w, h = quad:getViewport()
+  local sx = (self.box.size.x / w) * (self.flip_x and -1 or 1)
+  local sy = (self.box.size.y / h) * (self.flip_y and -1 or 1)
 
   love.graphics.draw(
     self.data.image,
     quad,
-    box.pos.x + (self.flip_x and w or 0),
-    box.pos.y + (self.flip_y and h or 0),
+    box.pos.x + (self.flip_x and self.box.size.x or 0),
+    box.pos.y + (self.flip_y and self.box.size.y or 0),
     math.rad(box.rot),
-    scale_x,
-    scale_y
+    sx,
+    sy
   )
 end
 

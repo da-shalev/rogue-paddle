@@ -7,7 +7,7 @@ Scene = require('lib.scene')
 S = require('state')
 
 -- define current scene
-S.scene.setNext(require('game.scenes.brickin'))
+S.scene_queue.setNext(require('game.scenes.brickin'))
 
 -- define love2d configuration
 function love.conf(t)

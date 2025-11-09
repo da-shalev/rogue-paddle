@@ -1,23 +1,25 @@
 return Scene.build(function()
   local player = {
-    sprite = Res.sprites.player:state({
-      pos = math.Vec2.new(S.camera.vbox.w / 2, S.camera.vbox.h - 20),
+    sprite = Res.sprites.PLAYER:state {
+      pos = math.vec2.new(S.camera.vbox.w / 2, S.camera.vbox.h - 20),
       starting_offset = Origin.BOTTOM_CENTER,
-    }),
-    prev_box = math.Box.zero(),
+    },
+    prev_box = math.box.zero(),
     input_x = 0,
     speed = 0.55 * S.camera.vbox.w,
   }
 
   local ball = {
-    sprite = Res.sprites.ball:state({
-      pos = math.Vec2.new(player.sprite.box.x + player.sprite.box.w / 2, player.sprite.box.y),
+    sprite = Res.sprites.BALL:state {
+      pos = math.vec2.new(player.sprite.box.x + player.sprite.box.w / 2, player.sprite.box.y),
       starting_offset = Origin.BOTTOM_CENTER,
-    }),
-    prev_box = math.Box.zero(),
-    velocity = math.Vec2.zero(),
+    },
+    prev_box = math.box.zero(),
+    velocity = math.vec2.zero(),
     speed = 0.5 * S.camera.vbox.w,
   }
+
+  local bricks = require('game.bricks').new(Res.levels.DEFAULT)
 
   --- @type Status
   local status = {
@@ -46,10 +48,11 @@ return Scene.build(function()
 
       fixed = function(self, dt)
         player.prev_box:copy(player.sprite.box)
+        ball.prev_box:copy(ball.sprite.box)
+
         player.sprite.box.x = player.sprite.box.x + player.input_x * dt * player.speed
         player.sprite.box:clampWithin(S.camera.vbox)
 
-        ball.prev_box:copy(ball.sprite.box)
         ball.sprite.box.pos:addScaled(ball.velocity, dt * ball.speed)
 
         local x_within, y_within = ball.sprite.box:within(S.camera.vbox)
@@ -72,13 +75,11 @@ return Scene.build(function()
   return Scene.new {
     status = status,
     current = status.ATTACHED,
-    fixed = function(self, dt)
-      player.prev_box:copy(player.sprite.box)
-      ball.prev_box:copy(ball.sprite.box)
-    end,
+    fixed = function(self, dt) end,
     draw = function(self)
       player.sprite:draw(player.prev_box:lerp(player.prev_box, player.sprite.box, S.alpha))
       ball.sprite:draw(ball.prev_box:lerp(ball.prev_box, ball.sprite.box, S.alpha))
+      bricks:draw()
     end,
   }
 end)

@@ -78,7 +78,7 @@ function Box.new(pos, size, rot, starting_offset)
 end
 
 function Box.zero()
-  return Box.new(math.Vec2.zero(), math.Vec2.zero(), 0, { 0, 0 })
+  return Box.new(math.vec2.zero(), math.vec2.zero(), 0, { 0, 0 })
 end
 
 --- @param other Box
@@ -143,7 +143,7 @@ end
 --- @return Box self This box (for chaining)
 function Box:lerp(prev, current, alpha)
   self.pos = prev.pos:lerp(current.pos, alpha)
-  self.size = prev.size:lerp(current.pos, alpha)
+  self.size = prev.size:lerp(current.size, alpha)
   self.rot = math.lerp(prev.rot, current.rot, alpha)
   return self
 end
