@@ -1,11 +1,7 @@
 {
   "Lua.runtime.version": "LuaJIT",
   "hint.enable": true,
-  "Lua.diagnostics.unusedLocalExclude": [
-    "_*"
-  ],
-  "Lua.workspace.library": [
-    "library",
-    "${3rd}/love2d/library"
-  ]
+  "Lua.diagnostics.unusedLocalExclude": ["_*"],
+  "Lua.diagnostics.disable": ["redefined-local"],
+  "Lua.workspace.library": ["library", "${3rd}/love2d/library"]
 }

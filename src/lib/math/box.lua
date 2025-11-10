@@ -105,38 +105,6 @@ function Box:overlaps(other)
     math.min(self.pos.y + self.size.y - other.pos.y, other.pos.y + other.size.y - self.pos.y)
 end
 
---- @param other Box
-function Box:clampOutsideX(other)
-  self.pos.x = self.pos.x < other.pos.x and other.pos.x - self.size.x or other.pos.x + other.size.x
-end
-
---- @param other Box
-function Box:clampOutsideY(other)
-  self.pos.y = self.pos.y < other.pos.y and other.pos.y - self.size.y or other.pos.y + other.size.y
-end
-
---- @param other Box
-function Box:clampOutside(other)
-  self:clampOutsideX(other)
-  self:clampOutsideY(other)
-end
-
---- @param other Box
-function Box:clampWithinX(other)
-  self.pos.x = math.clamp(self.pos.x, other.pos.x, other.pos.x + other.size.x - self.size.x)
-end
-
---- @param other Box
-function Box:clampWithinY(other)
-  self.pos.y = math.clamp(self.pos.y, other.pos.y, other.pos.y + other.size.y - self.size.y)
-end
-
---- @param other Box
-function Box:clampWithin(other)
-  self:clampWithinX(other)
-  self:clampWithinY(other)
-end
-
 --- @param prev Box Previous frame's box
 --- @param current Box Current frame's box
 --- @param alpha number Interpolation factor (0=prev, 1=current)
@@ -184,7 +152,7 @@ function Box:paddleCollision(source, velocity)
         velocity.y = math.abs(velocity.y)
       end
 
-      source:clampOutsideY(self)
+      source:clampOutsideY(self, true, true)
     else
       -- X-axis collision
       if source.x < self.x then
@@ -193,13 +161,123 @@ function Box:paddleCollision(source, velocity)
         velocity.x = math.abs(velocity.x)
       end
 
-      source:clampOutsideX(self)
+      source:clampOutsideX(self, true, true)
     end
 
     return true
   end
 
   return false
+end
+
+local function clampValue(value, min, max, clampMin, clampMax)
+  if clampMin and value < min then
+    return min, true
+  end
+  if clampMax and value > max then
+    return max, true
+  end
+  return value, false
+end
+
+--- @param other Box
+--- @param left boolean
+--- @param right boolean
+--- @return boolean, boolean
+function Box:clampWithinX(other, left, right)
+  local minX = other.pos.x
+  local maxX = other.pos.x + other.size.x - self.size.x
+
+  local hitLeft = self.pos.x < minX
+  local hitRight = self.pos.x > maxX
+
+  self.pos.x = select(1, clampValue(self.pos.x, minX, maxX, left, right))
+  return hitLeft, hitRight
+end
+
+--- @param other Box
+--- @param top boolean
+--- @param bottom boolean
+--- @return boolean, boolean
+function Box:clampWithinY(other, top, bottom)
+  local minY = other.pos.y
+  local maxY = other.pos.y + other.size.y - self.size.y
+
+  local hitTop = self.pos.y < minY
+  local hitBottom = self.pos.y > maxY
+
+  self.pos.y = select(1, clampValue(self.pos.y, minY, maxY, top, bottom))
+  return hitTop, hitBottom
+end
+
+--- @param other Box
+--- @param top boolean
+--- @param bottom boolean
+--- @param left boolean
+--- @param right boolean
+--- @return boolean, boolean, boolean, boolean
+function Box:clampWithin(other, top, bottom, left, right)
+  local top, bottom = self:clampWithinY(other, top, bottom)
+  local left, right = self:clampWithinX(other, left, right)
+  return top, bottom, left, right
+end
+
+--- @param other Box
+--- @param left boolean
+--- @param right boolean
+--- @return boolean, boolean
+function Box:clampOutsideX(other, left, right)
+  local otherLeft = other.pos.x
+  local otherRight = other.pos.x + other.size.x
+  local selfLeft = self.pos.x
+  local selfRight = self.pos.x + self.size.x
+
+  local hitLeft = selfRight > otherLeft and selfLeft < otherLeft
+  local hitRight = selfLeft < otherRight and selfRight > otherRight
+
+  if left and hitLeft then
+    self.pos.x = otherLeft - self.size.x
+  end
+  if right and hitRight then
+    self.pos.x = otherRight
+  end
+
+  return hitLeft, hitRight
+end
+
+--- @param other Box
+--- @param top boolean
+--- @param bottom boolean
+--- @return boolean, boolean
+function Box:clampOutsideY(other, top, bottom)
+  local otherTop = other.pos.y
+  local otherBottom = other.pos.y + other.size.y
+  local selfTop = self.pos.y
+  local selfBottom = self.pos.y + self.size.y
+
+  local hitTop = selfBottom > otherTop and selfTop < otherTop
+  local hitBottom = selfTop < otherBottom and selfBottom > otherBottom
+
+  if top and hitTop then
+    self.pos.y = otherTop - self.size.y
+  end
+  if bottom and hitBottom then
+    self.pos.y = otherBottom
+  end
+
+  return hitTop, hitBottom
+end
+
+--- @param other Box
+--- @param top boolean
+--- @param bottom boolean
+--- @param left boolean
+--- @param right boolean
+--- @return boolean, boolean, boolean, boolean
+function Box:clampOutside(other, top, bottom, left, right)
+  local top, bottom = self:clampOutsideY(other, top, bottom)
+  local left, right = self:clampOutsideX(other, left, right)
+  return top, bottom, left, right
 end
 
 return Box

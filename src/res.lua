@@ -2,13 +2,15 @@ local Res = {
   sprites = {
     PLAYER = Sprite.new('res/sprites/player.png'),
     BALL = Sprite.new('res/sprites/ball.png'),
+    HEART = Sprite.new('res/sprites/heart.png'),
   },
 
   font = love.graphics.newFont('res/prstart.ttf', 8),
 
   colors = {
+    background = { 0.05, 0.05, 0.05, 1.0 },
     RESET = { 1.0, 1.0, 1.0, 1.0 },
-    BACKGROUND = { 0.000, 0.000, 0.000, 1.0 },
+    FOREGROUND = { 0.922, 0.859, 0.698, 1.0 }, -- #ebdbb2
 
     -- gruvbox color scheme
     BRIGHT0 = { 0.573, 0.514, 0.455, 1.0 }, -- #928374
@@ -20,9 +22,7 @@ local Res = {
     BRIGHT6 = { 0.557, 0.753, 0.486, 1.0 }, -- #8ec07c
     BRIGHT7 = { 0.922, 0.859, 0.698, 1.0 }, -- #ebdbb2
 
-    FOREGROUND = { 0.922, 0.859, 0.698, 1.0 }, -- #ebdbb2
-
-    REGULAR0 = { 0.157, 0.157, 0.157, 1.0 }, -- #282828 dark gray
+    REGULAR0 = { 0.157, 0.157, 0.157, 1.0 }, -- #282828 gray
     REGULAR1 = { 0.800, 0.141, 0.114, 1.0 }, -- #cc241d red
     REGULAR2 = { 0.596, 0.592, 0.102, 1.0 }, -- #98971a olive green
     REGULAR3 = { 0.843, 0.600, 0.129, 1.0 }, -- #d79921 yellow/orange
@@ -33,8 +33,10 @@ local Res = {
   },
 
   keybinds = {
-    MOVE_RIGHT = unpack { 'd', 'right', 'h' },
-    MOVE_LEFT = unpack { 'a', 'left', 'l' },
+    MOVE_RIGHT = { 'd', 'right', 'l' },
+    MOVE_LEFT = { 'a', 'left', 'h' },
+    MOVE_UP = { 'w', 'k', 'up' },
+    MOVE_DOWN = { 's', 'j', 'down' },
     CONFIRM = 'space',
   },
 

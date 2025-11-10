@@ -1,3 +1,5 @@
+--- @class Help
+--- @field HELP table
 local Help = {}
 
 --- @generic T
@@ -40,5 +42,8 @@ Help.timers = {}
 function Help.setTimeout(delay, func)
   table.insert(Help.timers, { time = delay, func = func })
 end
+
+-- empty table
+Help.EMPTY = {}
 
 return Help

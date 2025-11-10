@@ -15,8 +15,6 @@ local S = {
       -- (240/1.78) instead of 240, making it proportional
       math.vec2.new(240, 240 / aspect_ratio)
     ),
-    -- the background color of the game
-    color = { 0, 0, 0 },
   },
 }
 

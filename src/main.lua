@@ -84,7 +84,7 @@ function love.draw()
 
   love.graphics.scale(canvas_w / state.camera.vbox.w, canvas_h / state.camera.vbox.h)
   love.graphics.translate(state.camera.vbox.x, state.camera.vbox.y)
-  love.graphics.clear(state.camera.color, 1)
+  love.graphics.clear(Res.colors.background)
 
   if current_scene then
     current_scene:draw()

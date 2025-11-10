@@ -1,4 +1,4 @@
----@alias Status table<string, CurrentStatus>
+--- @alias Status table<string, CurrentStatus>
 
 --- @class CurrentStatus
 --- @field update? fun(self: Scene, dt: number)

@@ -1,9 +1,7 @@
 --- @class SpriteState
 --- @field box Box
 --- @field data Sprite
---- @field flip_x boolean
---- @field flip_y boolean
---- @field frame_idx number
+--- @field render SpriteRenderOpts
 local SpriteState = {}
 SpriteState.__index = SpriteState
 
@@ -14,19 +12,12 @@ SpriteState.__index = SpriteState
 local Sprite = {}
 Sprite.__index = Sprite
 
---- @param image_path? string
---- @param sx? number
---- @param sy? number
+--- @param image_path string
+--- @param split_x? number
+--- @param split_y? number
 --- @return Sprite
-function Sprite.new(image_path, sx, sy)
-  local image
-
-  if image_path then
-    image = love.graphics.newImage(image_path)
-  else
-    image = love.graphics.newImage('lib/null_image.png')
-  end
-
+function Sprite.new(image_path, split_x, split_y)
+  local image = love.graphics.newImage(image_path)
   image:setFilter('nearest', 'nearest')
 
   local w, h = image:getDimensions()
@@ -34,12 +25,13 @@ function Sprite.new(image_path, sx, sy)
   --- @type love.Quad[]
   local cells = {}
 
-  sx = math.max(sx or 1, 1)
-  sy = math.max(sy or 1, 1)
-  local cw, ch = w / sx, h / sy
+  split_x = math.max(split_x or 1, 1)
+  split_y = math.max(split_y or 1, 1)
+  local cw = w / split_x
+  local ch = h / split_y
 
-  for row = 0, sy - 1 do
-    for col = 0, sx - 1 do
+  for row = 0, split_y - 1 do
+    for col = 0, split_x - 1 do
       cells[#cells + 1] = love.graphics.newQuad(col * cw, row * ch, cw, ch, w, h)
     end
   end
@@ -51,15 +43,36 @@ function Sprite.new(image_path, sx, sy)
   }, Sprite)
 end
 
---- @param opts? {
----   pos?: Vec2,
----   size?: Vec2,
----   starting_offset?: Origin,
----   rot?: number,
----   frame_idx?: number,
----   flip_x?: boolean,
----   flip_y?: boolean,
---- }
+--- @return number
+function Sprite:getWidth()
+  return self.cell_size.x
+end
+
+--- @return number
+function Sprite:getHeight()
+  return self.cell_size.y
+end
+
+--- @return Vec2
+function Sprite:getDimensions()
+  return self.cell_size
+end
+
+--- @class SpriteRenderOpts
+--- @field frame_idx? number
+--- @field flip_x? boolean
+--- @field flip_y? boolean
+--- @field color? Color
+
+--- @class SpriteStateOpts: SpriteRenderOpts
+--- @field pos? Vec2
+--- @field size? Vec2
+--- @field starting_offset? Origin
+--- @field rot? number
+
+--- Stores render data directly on the sprite by extending
+--- a reference to the original sprite and holding its own render parameters.
+--- @param opts? SpriteStateOpts
 --- @return SpriteState
 function Sprite:state(opts)
   opts = opts or {}
@@ -72,48 +85,62 @@ function Sprite:state(opts)
       opts.rot or 0,
       opts.starting_offset or Origin.TOP_LEFT
     ),
-    frame_idx = opts.frame_idx or 1,
-    flip_x = opts.flip_x or false,
-    flip_y = opts.flip_y or false,
+    render = {
+      frame_idx = opts.frame_idx or 1,
+      flip_x = opts.flip_x or false,
+      flip_y = opts.flip_y or false,
+    },
   }, SpriteState)
 end
 
---- @param box Box
---- @param mode love.DrawMode
---- @param color? Color
-function SpriteState:drawRectangle(box, mode, color)
-  assert(
-    mode == 'fill' or mode == 'line',
-    ('Did not specifiy valid mode to drawRectangle, got %s'):format(mode)
-  )
+--- @param prev_box Box
+function SpriteState:drawLerp(prev_box)
+  self.data:drawBox(prev_box:lerp(prev_box, self.box, S.alpha), self.render)
+end
 
-  love.graphics.setColor(color or Res.colors.RESET)
-  love.graphics.rectangle(
-    mode,
-    box.pos.x,
-    box.pos.y,
-    self.data.cell_size.x,
-    self.data.cell_size.y,
-    math.rad(box.rot)
+function SpriteState:draw()
+  self.data:drawBox(self.box, self.render)
+end
+
+--- @param x? number
+--- @param y? number
+--- @param rot? number
+--- @param opts? SpriteRenderOpts
+function Sprite:draw(x, y, rot, opts)
+  opts = opts or Help.EMPTY
+  love.graphics.setColor(opts.color or Res.colors.RESET)
+
+  local quad = self.cells[opts.frame_idx or 1]
+  local _, _, w, h = quad:getViewport()
+  local sx = (opts.flip_x and -1 or 1)
+  local sy = (opts.flip_y and -1 or 1)
+
+  love.graphics.draw(
+    self.image,
+    quad,
+    x + (opts.flip_x and w or 0),
+    y + (opts.flip_y and h or 0),
+    rot and math.rad(rot) or 0,
+    sx,
+    sy
   )
 end
 
---- @param box? Box
---- @param color? Color
-function SpriteState:draw(box, color)
-  box = box or self.box
-  love.graphics.setColor(color or Res.colors.RESET)
+--- @param box Box
+--- @param opts SpriteRenderOpts
+function Sprite:drawBox(box, opts)
+  love.graphics.setColor(opts.color or Res.colors.RESET)
 
-  local quad = self.data.cells[self.frame_idx]
+  local quad = self.cells[opts.frame_idx]
   local _, _, w, h = quad:getViewport()
-  local sx = (self.box.size.x / w) * (self.flip_x and -1 or 1)
-  local sy = (self.box.size.y / h) * (self.flip_y and -1 or 1)
+  local sx = (box.size.x / w) * (opts.flip_x and -1 or 1)
+  local sy = (box.size.y / h) * (opts.flip_y and -1 or 1)
 
   love.graphics.draw(
-    self.data.image,
+    self.image,
     quad,
-    box.pos.x + (self.flip_x and self.box.size.x or 0),
-    box.pos.y + (self.flip_y and self.box.size.y or 0),
+    box.pos.x + (opts.flip_x and box.size.x or 0),
+    box.pos.y + (opts.flip_y and box.size.y or 0),
     math.rad(box.rot),
     sx,
     sy

@@ -10,10 +10,15 @@ return Scene.build(function()
   }
 
   local points = 0
+  local lives = 3
+
+  local function ballOnPlayer()
+    return math.vec2.new(player.sprite.box.x + player.sprite.box.w / 2, player.sprite.box.y)
+  end
 
   local ball = {
     sprite = Res.sprites.BALL:state {
-      pos = math.vec2.new(player.sprite.box.x + player.sprite.box.w / 2, player.sprite.box.y),
+      pos = ballOnPlayer(),
       starting_offset = Origin.BOTTOM_CENTER,
     },
     prev_box = math.box.zero(),
@@ -32,7 +37,6 @@ return Scene.build(function()
     variants = {},
     onGenerate = function(brick) end,
     onReset = function(self)
-      ball.velocity.y = 1
       points = points + 100
     end,
     onRemove = function(self, brick)
@@ -67,11 +71,11 @@ return Scene.build(function()
       update = function(self, dt)
         player.input_x = 0
 
-        if love.keyboard.isDown(Res.keybinds.MOVE_RIGHT) then
+        if love.keyboard.isDown(unpack(Res.keybinds.MOVE_RIGHT)) then
           player.input_x = player.input_x + 1
         end
 
-        if love.keyboard.isDown(Res.keybinds.MOVE_LEFT) then
+        if love.keyboard.isDown(unpack(Res.keybinds.MOVE_LEFT)) then
           player.input_x = player.input_x - 1
         end
 
@@ -96,7 +100,7 @@ return Scene.build(function()
         ball.prev_box:copy(ball.sprite.box)
 
         player.sprite.box.x = player.sprite.box.x + player.input_x * dt * player.speed
-        player.sprite.box:clampWithin(S.camera.vbox)
+        player.sprite.box:clampWithin(S.camera.vbox, true, true, true, true)
 
         ball.sprite.box.pos:addScaled(ball.velocity, dt * ball.speed)
 
@@ -104,23 +108,29 @@ return Scene.build(function()
 
         if not x_within then
           ball.velocity.x = -ball.velocity.x
-          ball.sprite.box:clampWithinX(S.camera.vbox)
+          ball.sprite.box:clampWithinX(S.camera.vbox, true, true)
         end
 
         if not y_within then
-          ball.velocity.y = -ball.velocity.y
-          ball.sprite.box:clampWithinY(S.camera.vbox)
+          local top, bottom = ball.sprite.box:clampWithinY(S.camera.vbox, true, false)
+
+          if top then
+            ball.velocity.y = -ball.velocity.y
+          end
+
+          if bottom then
+            lives = lives - 1
+            ball.sprite.box.pos =
+              ballOnPlayer():sub(ball.sprite.data:getDimensions():clone():scale(0.5))
+            self.current = self.status.ATTACHED
+          end
         end
 
-        bricks:collision(ball.sprite.box, ball.velocity)
+        bricks:removeOnCollision(ball.sprite.box, ball.velocity)
         player.sprite.box:paddleCollision(ball.sprite.box, ball.velocity)
       end,
 
-      draw = function()
-        love.graphics.print(points, (S.camera.vbox.w - Res.font:getWidth(points)) / 2, 3)
-
-        bricks:draw()
-      end,
+      draw = function() end,
     },
   }
 
@@ -129,8 +139,14 @@ return Scene.build(function()
     current = status.ATTACHED,
     fixed = function(self, dt) end,
     draw = function(self)
-      player.sprite:draw(player.prev_box:lerp(player.prev_box, player.sprite.box, S.alpha))
-      ball.sprite:draw(ball.prev_box:lerp(ball.prev_box, ball.sprite.box, S.alpha))
+      player.sprite:drawLerp(player.prev_box)
+      ball.sprite:drawLerp(ball.prev_box)
+      love.graphics.print(points, (S.camera.vbox.w - Res.font:getWidth(points)) / 2, 3)
+      bricks:draw()
+
+      for live = 1, lives do
+        Res.sprites.HEART:draw(3 + (live - 1) * (Res.sprites.HEART:getWidth() + 2), 3, 0)
+      end
     end,
   }
 end)

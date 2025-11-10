@@ -205,7 +205,7 @@ end
 --- checks and applies collision logic to any moving box
 --- @param source Box
 --- @param velocity Vec2
-function BrickManager:collision(source, velocity)
+function BrickManager:removeOnCollision(source, velocity)
   local col = self:boxCollision(source)
   local hit = nil
 
@@ -222,10 +222,10 @@ function BrickManager:collision(source, velocity)
   if hit then
     if hit == col.top or hit == col.bottom then
       velocity.y = -velocity.y
-      source:clampOutsideY(hit.box)
+      source:clampOutsideY(hit.box, true, true)
     else
       velocity.x = -velocity.x
-      source:clampOutsideX(hit.box)
+      source:clampOutsideX(hit.box, true, true)
     end
 
     self:remove(hit)
@@ -253,17 +253,17 @@ function BrickManager:remove(brick)
 end
 
 --- @return number
-function BrickManager:count()
+function BrickManager:getCount()
   return self._data.count
 end
 
 --- @return number
-function BrickManager:cols()
+function BrickManager:getCols()
   return self._data.cols
 end
 
 --- @return number
-function BrickManager:rows()
+function BrickManager:getRows()
   return self._data.rows
 end
 
