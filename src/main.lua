@@ -17,6 +17,8 @@ function love.load()
   -- All resources are loaded and accessed from the global 'Res'
   -- In fashion, you will not be able to accces anything loaded here before love.load executes
   Res = require('res')
+  love.graphics.setFont(Res.font)
+  Res.font:setFilter('nearest', 'nearest')
 
   love.resize()
 end

@@ -9,6 +9,8 @@ return Scene.build(function()
     speed = 0.4 * S.camera.vbox.w,
   }
 
+  local points = 0
+
   local ball = {
     sprite = Res.sprites.BALL:state {
       pos = math.vec2.new(player.sprite.box.x + player.sprite.box.w / 2, player.sprite.box.y),
@@ -27,6 +29,8 @@ return Scene.build(function()
         ball.velocity.y = 1
         self:reset()
       end
+
+      points = points + 10
     end,
     onSpawn = function(self, brick) end,
     viewTransitionSpeed = 1.0,
@@ -95,6 +99,12 @@ return Scene.build(function()
         bricks:collision(ball.sprite.box, ball.velocity)
         player.sprite.box:paddleCollision(ball.sprite.box, ball.velocity)
       end,
+
+      draw = function()
+        love.graphics.print(points, (S.camera.vbox.w - Res.font:getWidth(points)) / 2, 3)
+
+        bricks:draw()
+      end,
     },
   }
 
@@ -105,7 +115,6 @@ return Scene.build(function()
     draw = function(self)
       player.sprite:draw(player.prev_box:lerp(player.prev_box, player.sprite.box, S.alpha))
       ball.sprite:draw(ball.prev_box:lerp(ball.prev_box, ball.sprite.box, S.alpha))
-      bricks:draw()
     end,
   }
 end)

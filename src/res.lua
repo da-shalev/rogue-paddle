@@ -1,8 +1,10 @@
 local Res = {
   sprites = {
-    PLAYER = Sprite.new('./res/sprites/player.png'),
-    BALL = Sprite.new('./res/sprites/ball.png'),
+    PLAYER = Sprite.new('res/sprites/player.png'),
+    BALL = Sprite.new('res/sprites/ball.png'),
   },
+
+  font = love.graphics.newFont('res/prstart.ttf', 8),
 
   bricks = {},
 
@@ -61,5 +63,7 @@ local Res = {
     },
   },
 }
+
+-- Res.font:setFilter('nearest', 'nearest')
 
 return Res
