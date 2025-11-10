@@ -22,12 +22,21 @@ return Scene.build(function()
   }
 
   local bricks = require('game.brick_manager').new {
+    colors = {
+      Res.colors.REGULAR1,
+      Res.colors.REGULAR3,
+      Res.colors.REGULAR2,
+      Res.colors.REGULAR4,
+    },
     layout = Res.layouts.DEFAULT,
+    variants = {},
     onGenerate = function(brick) end,
     onRemove = function(self, brick)
-      if self:count() == 1 then
+      if self.bricks:count() == 1 then
         ball.velocity.y = 1
-        self:reset()
+        points = points + 100
+        self.bricks:reset()
+        self.cancel = true
       end
 
       points = points + 10
@@ -35,6 +44,8 @@ return Scene.build(function()
     onSpawn = function(self, brick) end,
     viewTransitionSpeed = 1.0,
   }
+
+  local begin_msg = string.format('Press %s to begin', Res.keybinds.CONFIRM)
 
   --- @type Status
   local status = {
@@ -44,6 +55,14 @@ return Scene.build(function()
           self.current = self.status.PLAYING
           ball.velocity:set((math.random() < 0.5 and 1.0 or -1.0), -1.0):normalize()
         end
+      end,
+
+      draw = function(self)
+        love.graphics.print(
+          begin_msg,
+          (S.camera.vbox.w - Res.font:getWidth(begin_msg)) / 2,
+          S.camera.vbox.h / 2
+        )
       end,
     },
 

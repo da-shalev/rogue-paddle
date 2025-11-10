@@ -2,14 +2,32 @@
 --- @alias BrickLayout integer[][]
 --- @alias BrickRow Brick[]
 --- @alias BrickGrid BrickRow[]
+--- @alias BrickVariants BrickVariant[]
 
 -- events
+--- @class BrickEvent
+--- @field bricks BrickManager
+--- @field cancel boolean
+local BrickEvent = {}
+BrickEvent.__index = BrickEvent
+
+function BrickEvent:new(manager)
+  return setmetatable({
+    manager = manager,
+    cancel = false,
+  }, self)
+end
+
 --- triggers when a new brick is being generated
 --- @alias BrickGenerateEvent fun(brick: Brick)
 --- triggers when a new brick has been spawned
---- @alias BrickSpawnEvent fun(self: BrickManager, brick: Brick)
+--- @alias BrickSpawnEvent fun(e: BrickEvent, brick: Brick)
 --- triggers when a new brick has been removed
---- @alias BrickRemoveEvent fun(self: BrickManager, brick: Brick)
+--- @alias BrickRemoveEvent fun(e: BrickEvent, brick: Brick)
+--- triggers when there are no bricks left
+--- @alias BrickResetEvent fun(e: BrickEvent, brick: Brick)
+
+--- @class BrickVariant
 
 -- meta
 --- @class Brick
@@ -17,6 +35,8 @@
 --- @field y integer
 --- @field idx integer
 --- @field box Box
+--- @field color? Color
+--- @field variant BrickVariant
 
 --- @class BrickGridData
 --- @field grid BrickGrid
@@ -36,7 +56,10 @@ BrickManager.__index = BrickManager
 ---   onGenerate?: BrickGenerateEvent,
 ---   onSpawn?: BrickSpawnEvent,
 ---   onRemove?: BrickRemoveEvent,
+---   onReset?: BrickResetEvent,
 ---   viewTransitionSpeed?: number,
+---   variants?: BrickVariants,
+---   colors: Color[],
 --- }
 
 --- @param opts BrickManagerOpts
@@ -61,16 +84,23 @@ function BrickManager.generate(opts)
   end
 
   local size = math.vec2.new(S.camera.vbox.w / cols, S.camera.vbox.h / rows)
+  local color_y = 1
 
-  for y, row in ipairs(opts.layout) do
+  for y, y_rows in ipairs(opts.layout) do
     grid[y] = {}
-    for x, idx in ipairs(row) do
+    local row_has_brick = false
+
+    for x, idx in ipairs(y_rows) do
       if idx ~= 0 then
+        row_has_brick = true
+
         --- @type Brick
         local brick = {
           x = x,
           y = y,
           idx = idx,
+          color = opts.colors[color_y],
+          variant = opts.variants[love.math.random(#opts.variants)],
           box = math.box.new(
             math.vec2.new((x - 1) * size.x, ((y - 1) * size.y - S.camera.vbox.h)),
             size
@@ -81,6 +111,10 @@ function BrickManager.generate(opts)
         grid[y][x] = brick
         count = count + 1
       end
+    end
+
+    if row_has_brick then
+      color_y = color_y + 1
     end
   end
 
@@ -108,7 +142,12 @@ function BrickManager:draw()
 
   for _, row in ipairs(self._data.grid) do
     for _, brick in pairs(row) do
+      love.graphics.setColor(brick.color or Res.colors.RESET)
+
       love.graphics.rectangle('fill', brick.box.x, brick.box.y, brick.box.w, brick.box.h)
+
+      love.graphics.setColor(Res.colors.REGULAR0)
+      love.graphics.rectangle('line', brick.box.x, brick.box.y, brick.box.w, brick.box.h)
     end
   end
 end
@@ -195,7 +234,11 @@ end
 --- @param brick Brick
 function BrickManager:remove(brick)
   if self.opts.onRemove then
-    self.opts.onRemove(self, brick)
+    local ev = BrickEvent:new(self)
+    self.opts.onRemove(ev, brick)
+    if ev.cancel then
+      return
+    end
   end
 
   self._data.grid[brick.y][brick.x] = nil
