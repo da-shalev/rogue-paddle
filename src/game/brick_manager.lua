@@ -5,33 +5,32 @@
 --- @field sprite SpriteState
 
 --- data
---- @alias Layout integer[][]
+--- @alias BrickLayout integer[][]
 --- @alias BrickRow Brick[]
 --- @alias BrickGrid BrickRow[]
 
 --- events
---- when a new brick is being generated via Bricks.generate
---- self not provided as it is not determined yet
+--- triggers when a new brick is being generated
 --- @alias BrickGenerateEvent fun(brick: Brick)
---- when a new brick has been spawned via BrickManager:spawn
+--- triggers when a new brick has been spawned
 --- @alias BrickSpawnEvent fun(self: BrickManager, brick: Brick)
---- when a new brick has been spawned via BrickManager:remove
+--- triggers when a new brick has been removed
 --- @alias BrickRemoveEvent fun(self: BrickManager, brick: Brick)
 
 --- @class BrickGridData
---- @field _grid BrickGrid
+--- @field grid BrickGrid
 --- @field cols integer
 --- @field rows integer
 --- @field count integer
 
 --- @class BrickManager
---- @field data BrickGridData
+--- @field _data BrickGridData
 --- @field opts BrickManagerOpts
 local BrickManager = {}
 BrickManager.__index = BrickManager
 
 --- @alias BrickManagerOpts {
----   layout: Layout,
+---   layout: BrickLayout,
 ---   onGenerate?: BrickGenerateEvent,
 ---   onSpawn?: BrickSpawnEvent,
 ---   onRemove?: BrickRemoveEvent,
@@ -41,7 +40,7 @@ BrickManager.__index = BrickManager
 --- @return BrickManager
 function BrickManager.new(opts)
   return setmetatable({
-    data = BrickManager.generate(opts),
+    _data = BrickManager.generate(opts),
     opts = opts,
   }, BrickManager)
 end
@@ -83,7 +82,7 @@ function BrickManager.generate(opts)
   end
 
   return {
-    _grid = grid,
+    grid = grid,
     cols = cols,
     rows = rows,
     count = count,
@@ -91,9 +90,9 @@ function BrickManager.generate(opts)
 end
 
 function BrickManager:draw()
-  for _, row in ipairs(self.data._grid) do
+  for _, row in ipairs(self._data.grid) do
     for _, brick in pairs(row) do
-      brick.sprite:draw(brick.sprite.box)
+      brick.sprite:draw()
     end
   end
 end
@@ -102,7 +101,7 @@ end
 --- @param grid_y integer
 --- @return Brick? brick
 function BrickManager:gridAt(grid_x, grid_y)
-  return self.data._grid[grid_y] and self.data._grid[grid_y][grid_x]
+  return self._data.grid[grid_y] and self._data.grid[grid_y][grid_x]
 end
 
 --- @param world_x number
@@ -110,8 +109,8 @@ end
 --- @return integer grid_x
 --- @return integer grid_y
 function BrickManager:gridCellCoords(world_x, world_y)
-  local cell_w = S.camera.vbox.w / self.data.cols
-  local cell_h = S.camera.vbox.h / self.data.rows
+  local cell_w = S.camera.vbox.w / self._data.cols
+  local cell_h = S.camera.vbox.h / self._data.rows
   local grid_x = math.floor(world_x / cell_w) + 1
   local grid_y = math.floor(world_y / cell_h) + 1
   return grid_x, grid_y
@@ -133,7 +132,7 @@ end
 
 --- @param source Box
 --- @return CollisionResult result
-function BrickManager:checkCollision(source)
+function BrickManager:boxCollision(source)
   local x, y, w, h = source.pos.x, source.pos.y, source.size.x, source.size.y
   return {
     top = self:gridWorldAt(x + w * 0.5, y),
@@ -147,7 +146,7 @@ end
 --- @param source Box
 --- @param velocity Vec2
 function BrickManager:collision(source, velocity)
-  local col = self:checkCollision(source)
+  local col = self:boxCollision(source)
   local hit = nil
 
   if velocity.y < 0 and col.top then
@@ -176,11 +175,30 @@ end
 --- @param brick Brick
 function BrickManager:remove(brick)
   if self.opts.onRemove then
-    self.opts:onRemove(brick)
+    self.opts.onRemove(self, brick)
   end
 
-  self.data._grid[brick.y][brick.x] = nil
-  self.data.count = self.data.count - 1
+  self._data.grid[brick.y][brick.x] = nil
+  self._data.count = self._data.count - 1
+end
+
+--- @return number
+function BrickManager:count()
+  return self._data.count
+end
+
+--- @return number
+function BrickManager:cols()
+  return self._data.cols
+end
+
+--- @return number
+function BrickManager:rows()
+  return self._data.rows
+end
+
+function BrickManager:reset()
+  self._data = self.generate(self.opts)
 end
 
 return BrickManager

@@ -96,9 +96,10 @@ function SpriteState:drawRectangle(box, mode, color)
   )
 end
 
---- @param box Box
+--- @param box? Box
 --- @param color? Color
 function SpriteState:draw(box, color)
+  box = box or self.box
   love.graphics.setColor(color or Res.colors.RESET)
 
   local quad = self.data.cells[self.frame_idx]

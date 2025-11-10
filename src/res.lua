@@ -15,7 +15,9 @@ local Res = {
     CONFIRM = 'space',
   },
 
-  -- defines layouts for levels
+  cheats = true,
+
+  -- defines layouts for bricks
   layouts = {
     DEFAULT = {
       { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },

@@ -133,3 +133,7 @@ end
 function love.keyreleased(key)
   keys_released[key] = true
 end
+
+love.mouse.getPosition = function()
+  return tlfres.getMousePosition(S.camera.vbox.w, S.camera.vbox.h)
+end

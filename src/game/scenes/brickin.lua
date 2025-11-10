@@ -22,7 +22,11 @@ return Scene.build(function()
   local bricks = require('game.brick_manager').new {
     layout = Res.layouts.DEFAULT,
     onGenerate = function(brick) end,
-    onRemove = function(self, brick) end,
+    onRemove = function(self, brick)
+      if self:count() == 1 then
+        self:reset()
+      end
+    end,
     onSpawn = function(self, brick) end,
   }
 
@@ -48,6 +52,17 @@ return Scene.build(function()
 
         if love.keyboard.isDown(Res.keybinds.LEFT) then
           player.input_x = player.input_x - 1
+        end
+
+        if Res.cheats then
+          if love.mouse.isDown(1) then
+            local x, y = love.mouse.getPosition()
+            local brick = bricks:gridWorldAt(x, y)
+
+            if brick then
+              bricks:remove(brick)
+            end
+          end
         end
       end,
 
