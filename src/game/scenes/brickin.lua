@@ -31,14 +31,11 @@ return Scene.build(function()
     layout = Res.layouts.DEFAULT,
     variants = {},
     onGenerate = function(brick) end,
+    onReset = function(self)
+      ball.velocity.y = 1
+      points = points + 100
+    end,
     onRemove = function(self, brick)
-      if self.bricks:count() == 1 then
-        ball.velocity.y = 1
-        points = points + 100
-        self.bricks:reset()
-        self.cancel = true
-      end
-
       points = points + 10
     end,
     onSpawn = function(self, brick) end,

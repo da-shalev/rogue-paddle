@@ -11,9 +11,10 @@
 local BrickEvent = {}
 BrickEvent.__index = BrickEvent
 
-function BrickEvent:new(manager)
+--- @param bricks BrickManager
+function BrickEvent:new(bricks)
   return setmetatable({
-    manager = manager,
+    bricks = bricks,
     cancel = false,
   }, self)
 end
@@ -25,7 +26,7 @@ end
 --- triggers when a new brick has been removed
 --- @alias BrickRemoveEvent fun(e: BrickEvent, brick: Brick)
 --- triggers when there are no bricks left
---- @alias BrickResetEvent fun(e: BrickEvent, brick: Brick)
+--- @alias BrickResetEvent fun(e: BrickEvent)
 
 --- @class BrickVariant
 
@@ -59,7 +60,7 @@ BrickManager.__index = BrickManager
 ---   onReset?: BrickResetEvent,
 ---   viewTransitionSpeed?: number,
 ---   variants?: BrickVariants,
----   colors: Color[],
+---   colors?: Color[],
 --- }
 
 --- @param opts BrickManagerOpts
@@ -233,9 +234,15 @@ end
 
 --- @param brick Brick
 function BrickManager:remove(brick)
-  if self.opts.onRemove then
+  if self._data.count == 1 then
+    self:reset()
+    return
+  else
     local ev = BrickEvent:new(self)
-    self.opts.onRemove(ev, brick)
+    if self.opts.onRemove then
+      self.opts.onRemove(ev, brick)
+    end
+
     if ev.cancel then
       return
     end
@@ -260,13 +267,23 @@ function BrickManager:rows()
   return self._data.rows
 end
 
---- @param layout? BrickLayout
-function BrickManager:reset(layout)
-  if layout then
-    self.opts.layout = layout
+function BrickManager:reset()
+  local ev = BrickEvent:new(self)
+
+  if self.opts.onReset then
+    self.opts.onReset(ev)
+  end
+
+  if ev.cancel then
+    return
   end
 
   self._data = self.generate(self.opts)
+end
+
+--- @param layout BrickLayout
+function BrickManager:setNewLayout(layout)
+  self.opts.layout = layout
 end
 
 return BrickManager
