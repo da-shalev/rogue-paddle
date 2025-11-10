@@ -24,10 +24,12 @@ return Scene.build(function()
     onGenerate = function(brick) end,
     onRemove = function(self, brick)
       if self:count() == 1 then
+        ball.velocity.y = 1
         self:reset()
       end
     end,
     onSpawn = function(self, brick) end,
+    viewTransitionSpeed = 1.0,
   }
 
   --- @type Status
@@ -43,18 +45,21 @@ return Scene.build(function()
 
     PLAYING = {
       update = function(self, dt)
-        -- detects player movement
         player.input_x = 0
 
-        if love.keyboard.isDown(Res.keybinds.RIGHT) then
+        if love.keyboard.isDown(Res.keybinds.MOVE_RIGHT) then
           player.input_x = player.input_x + 1
         end
 
-        if love.keyboard.isDown(Res.keybinds.LEFT) then
+        if love.keyboard.isDown(Res.keybinds.MOVE_LEFT) then
           player.input_x = player.input_x - 1
         end
 
         if Res.cheats then
+          if love.keyboard.isPressed('r') then
+            bricks:reset()
+          end
+
           if love.mouse.isDown(1) then
             local x, y = love.mouse.getPosition()
             local brick = bricks:gridWorldAt(x, y)

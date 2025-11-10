@@ -14,17 +14,24 @@ SpriteState.__index = SpriteState
 local Sprite = {}
 Sprite.__index = Sprite
 
---- @param image_path string
+--- @param image_path? string
 --- @param sx? number
 --- @param sy? number
 --- @return Sprite
 function Sprite.new(image_path, sx, sy)
-  -- strips ./ if it's there, should be for LSP conformation of correctness
-  if image_path:sub(1, 2) == './' then
-    image_path = image_path:sub(3)
+  local image
+
+  if image_path then
+    -- strips ./ if it's there, should be for LSP conformation of correctness
+    if image_path:sub(1, 2) == './' then
+      image_path = image_path:sub(3)
+    end
+
+    image = love.graphics.newImage(image_path)
+  else
+    image = love.graphics.newImage('lib/null_image.png')
   end
 
-  local image = love.graphics.newImage(image_path)
   image:setFilter('nearest', 'nearest')
 
   local w, h = image:getDimensions()

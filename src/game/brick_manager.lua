@@ -1,15 +1,9 @@
---- @class Brick
---- @field x integer
---- @field y integer
---- @field idx integer
---- @field sprite SpriteState
-
---- data
+-- types
 --- @alias BrickLayout integer[][]
 --- @alias BrickRow Brick[]
 --- @alias BrickGrid BrickRow[]
 
---- events
+-- events
 --- triggers when a new brick is being generated
 --- @alias BrickGenerateEvent fun(brick: Brick)
 --- triggers when a new brick has been spawned
@@ -17,11 +11,19 @@
 --- triggers when a new brick has been removed
 --- @alias BrickRemoveEvent fun(self: BrickManager, brick: Brick)
 
+-- meta
+--- @class Brick
+--- @field x integer
+--- @field y integer
+--- @field idx integer
+--- @field box Box
+
 --- @class BrickGridData
 --- @field grid BrickGrid
 --- @field cols integer
 --- @field rows integer
 --- @field count integer
+--- @field timer Timer
 
 --- @class BrickManager
 --- @field _data BrickGridData
@@ -34,6 +36,7 @@ BrickManager.__index = BrickManager
 ---   onGenerate?: BrickGenerateEvent,
 ---   onSpawn?: BrickSpawnEvent,
 ---   onRemove?: BrickRemoveEvent,
+---   viewTransitionSpeed?: number,
 --- }
 
 --- @param opts BrickManagerOpts
@@ -68,10 +71,10 @@ function BrickManager.generate(opts)
           x = x,
           y = y,
           idx = idx,
-          sprite = Res.sprites.BRICK:state {
-            pos = math.vec2.new((x - 1) * size.x, (y - 1) * size.y),
-            size = size,
-          },
+          box = math.box.new(
+            math.vec2.new((x - 1) * size.x, ((y - 1) * size.y - S.camera.vbox.h)),
+            size
+          ),
         }
 
         opts.onGenerate(brick)
@@ -86,13 +89,26 @@ function BrickManager.generate(opts)
     cols = cols,
     rows = rows,
     count = count,
+    timer = Timer.new(opts.viewTransitionSpeed or 0.5),
   }
 end
 
 function BrickManager:draw()
+  local timer = self._data.timer
+  if not timer.finished then
+    timer:update(love.timer.getDelta())
+
+    for y, row in ipairs(self._data.grid) do
+      for _, brick in pairs(row) do
+        local to = (y - 1) * brick.box.h
+        brick.box.y = math.lerp(to - S.camera.vbox.h, to, timer.alpha)
+      end
+    end
+  end
+
   for _, row in ipairs(self._data.grid) do
     for _, brick in pairs(row) do
-      brick.sprite:draw()
+      love.graphics.rectangle('fill', brick.box.x, brick.box.y, brick.box.w, brick.box.h)
     end
   end
 end
@@ -133,6 +149,10 @@ end
 --- @param source Box
 --- @return CollisionResult result
 function BrickManager:boxCollision(source)
+  if not self._data.timer.finished then
+    return {}
+  end
+
   local x, y, w, h = source.pos.x, source.pos.y, source.size.x, source.size.y
   return {
     top = self:gridWorldAt(x + w * 0.5, y),
@@ -162,10 +182,10 @@ function BrickManager:collision(source, velocity)
   if hit then
     if hit == col.top or hit == col.bottom then
       velocity.y = -velocity.y
-      source:clampOutsideY(hit.sprite.box)
+      source:clampOutsideY(hit.box)
     else
       velocity.x = -velocity.x
-      source:clampOutsideX(hit.sprite.box)
+      source:clampOutsideX(hit.box)
     end
 
     self:remove(hit)
@@ -197,7 +217,12 @@ function BrickManager:rows()
   return self._data.rows
 end
 
-function BrickManager:reset()
+--- @param layout? BrickLayout
+function BrickManager:reset(layout)
+  if layout then
+    self.opts.layout = layout
+  end
+
   self._data = self.generate(self.opts)
 end
 

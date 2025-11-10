@@ -163,6 +163,7 @@ end
 
 --- @param source Box
 --- @param velocity Vec2
+--- @return boolean
 function Box:paddleCollision(source, velocity)
   local x_overlap, y_overlap = self:overlaps(source)
 
@@ -194,7 +195,11 @@ function Box:paddleCollision(source, velocity)
 
       source:clampOutsideX(self)
     end
+
+    return true
   end
+
+  return false
 end
 
 return Box

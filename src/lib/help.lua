@@ -27,4 +27,18 @@ function Help.shallowCopy(t)
   return setmetatable(copy, getmetatable(t))
 end
 
+--- @class Timeout
+--- @field time number
+--- @field func fun()
+
+---@type Timeout[]
+Help.timers = {}
+
+--- Runs a function after a delay (seconds)
+--- @param delay number
+--- @param func fun()
+function Help.setTimeout(delay, func)
+  table.insert(Help.timers, { time = delay, func = func })
+end
+
 return Help

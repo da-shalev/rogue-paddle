@@ -1,6 +1,7 @@
 -- define util globals
 require('lib.math')
 Origin = require('lib.origin')
+Timer = require('lib.timer')
 Help = require('lib.help')
 Sprite = require('lib.sprite')
 Scene = require('lib.scene')

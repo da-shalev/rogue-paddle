@@ -38,6 +38,15 @@ function love.update(dt)
 
   if current_scene then
     current_scene:update(dt)
+
+    for i = #Help.timers, 1, -1 do
+      local delay = Help.timers[i]
+      delay.time = delay.time - dt
+      if delay.time <= 0 then
+        delay.func()
+        table.remove(Help.timers, i)
+      end
+    end
   end
 
   while accumulator >= FIXED_DT do
@@ -57,6 +66,7 @@ function love.update(dt)
     local scene = next_scene()
 
     if current_scene then
+      Help.timers = {}
       current_scene:exit()
     end
 
