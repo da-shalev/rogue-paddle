@@ -46,6 +46,7 @@ end
 --- @field count integer
 --- @field timer Timer
 
+-- manager
 --- @class BrickManager
 --- @field _data BrickGridData
 --- @field opts BrickManagerOpts

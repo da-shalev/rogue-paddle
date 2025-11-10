@@ -120,8 +120,7 @@ return Scene.build(function()
 
           if bottom then
             lives = lives - 1
-            ball.sprite.box.pos =
-              ballOnPlayer():sub(ball.sprite.data:getDimensions():clone():scale(0.5))
+            ball.sprite.box.pos = ballOnPlayer():subScaled(ball.sprite.box.size, Origin.CENTER)
             self.current = self.status.ATTACHED
           end
         end

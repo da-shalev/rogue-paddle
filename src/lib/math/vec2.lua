@@ -56,6 +56,15 @@ function Vec2:sub(other)
   return self
 end
 
+--- Multiplies this vector by another vector component-wise.
+--- @param other Vec2
+--- @return Vec2 self
+function Vec2:mul(other)
+  self.x = self.x * other.x
+  self.y = self.y * other.y
+  return self
+end
+
 --- Scales this vector by a scalar in place.
 --- @param s number
 --- @return Vec2 self
@@ -70,6 +79,15 @@ end
 function Vec2:addScaled(other, scalar)
   self.x = self.x + other.x * scalar
   self.y = self.y + other.y * scalar
+  return self
+end
+
+--- @param offset Vec2
+--- @param scale Vec2
+--- @return Vec2 self
+function Vec2:subScaled(offset, scale)
+  self.x = self.x - offset.x * scale.x
+  self.y = self.y - offset.y * scale.y
   return self
 end
 

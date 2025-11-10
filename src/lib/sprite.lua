@@ -67,7 +67,7 @@ end
 --- @class SpriteStateOpts: SpriteRenderOpts
 --- @field pos? Vec2
 --- @field size? Vec2
---- @field starting_offset? Origin
+--- @field starting_offset? Vec2
 --- @field rot? number
 
 --- Stores render data directly on the sprite by extending

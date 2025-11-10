@@ -63,12 +63,11 @@ end
 --- @param pos Vec2
 --- @param size Vec2
 --- @param rot? number
---- @param starting_offset? Origin Offset origin. Defaults to `Origin.TOP_LEFT`
+--- @param starting_offset? Vec2
 --- @return Box
 function Box.new(pos, size, rot, starting_offset)
   starting_offset = starting_offset or Origin.TOP_LEFT
-  pos.x = pos.x - starting_offset[1] * size.x
-  pos.y = pos.y - starting_offset[2] * size.y
+  pos:subScaled(size, starting_offset)
 
   return setmetatable({
     pos = pos,
@@ -78,7 +77,7 @@ function Box.new(pos, size, rot, starting_offset)
 end
 
 function Box.zero()
-  return Box.new(math.vec2.zero(), math.vec2.zero(), 0, { 0, 0 })
+  return Box.new(math.vec2.zero(), math.vec2.zero(), 0, math.vec2.zero())
 end
 
 --- @param other Box
