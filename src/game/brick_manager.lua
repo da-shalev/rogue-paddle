@@ -224,7 +224,8 @@ function BrickManager:removeOnCollision(source, velocity)
     if hit == col.top or hit == col.bottom then
       velocity.y = -velocity.y
       source:clampOutsideY(hit.box, true, true)
-    else
+    end
+    if hit == col.left or hit == col.right then
       velocity.x = -velocity.x
       source:clampOutsideX(hit.box, true, true)
     end

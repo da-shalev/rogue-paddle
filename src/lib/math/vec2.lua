@@ -14,6 +14,13 @@ function Vec2.new(x, y)
   return setmetatable({ x = x, y = y }, Vec2)
 end
 
+--- @param size number
+--- @return Vec2
+function Vec2.splat(size)
+  assert(type(size) == 'number', 'Vec2.splat: size must be a number, got ' .. type(size))
+  return setmetatable({ x = size, y = size }, Vec2)
+end
+
 function Vec2.zero()
   return Vec2.new(0, 0)
 end
@@ -38,57 +45,31 @@ function Vec2:normalize()
   return self
 end
 
---- Adds another vector to this one in place.
---- @param other Vec2
---- @return Vec2 self
-function Vec2:add(other)
-  self.x = self.x + other.x
-  self.y = self.y + other.y
-  return self
+--- @param a Vec2
+--- @param b Vec2
+--- @return Vec2
+function Vec2.__add(a, b)
+  return Vec2.new(a.x + b.x, a.y + b.y)
 end
 
---- Subtracts another vector from this one in place.
---- @param other Vec2
---- @return Vec2 self
-function Vec2:sub(other)
-  self.x = self.x - other.x
-  self.y = self.y - other.y
-  return self
+--- @param a Vec2
+--- @param b Vec2
+--- @return Vec2
+function Vec2.__sub(a, b)
+  return Vec2.new(a.x - b.x, a.y - b.y)
 end
 
---- Multiplies this vector by another vector component-wise.
---- @param other Vec2
---- @return Vec2 self
-function Vec2:mul(other)
-  self.x = self.x * other.x
-  self.y = self.y * other.y
-  return self
-end
-
---- Scales this vector by a scalar in place.
---- @param s number
---- @return Vec2 self
-function Vec2:scale(s)
-  self.x = self.x * s
-  self.y = self.y * s
-  return self
-end
-
---- @param other Vec2
---- @param scalar number
-function Vec2:addScaled(other, scalar)
-  self.x = self.x + other.x * scalar
-  self.y = self.y + other.y * scalar
-  return self
-end
-
---- @param offset Vec2
---- @param scale Vec2
---- @return Vec2 self
-function Vec2:subScaled(offset, scale)
-  self.x = self.x - offset.x * scale.x
-  self.y = self.y - offset.y * scale.y
-  return self
+--- @param a Vec2 | number
+--- @param b Vec2 | number
+--- @return Vec2
+function Vec2.__mul(a, b)
+  if type(b) == 'number' then
+    return Vec2.new(a.x * b, a.y * b)
+  elseif type(a) == 'number' then
+    return Vec2.new(a * b.x, a * b.y)
+  else
+    return Vec2.new(a.x * b.x, a.y * b.y)
+  end
 end
 
 --- Sets this vector’s components.
@@ -126,14 +107,14 @@ function Vec2:copy(other)
   return self
 end
 
+function Vec2:clone()
+  return Vec2.new(self.x, self.y)
+end
+
 --- Returns a string representation of the vector.
 --- @return string
 function Vec2:__tostring()
   return string.format('Vec2(%.3f, %.3f)', self.x, self.y)
-end
-
-function Vec2:clone()
-  return Vec2.new(self.x, self.y)
 end
 
 return Vec2

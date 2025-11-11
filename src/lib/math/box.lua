@@ -67,7 +67,7 @@ end
 --- @return Box
 function Box.new(pos, size, rot, starting_offset)
   starting_offset = starting_offset or Origin.TOP_LEFT
-  pos:subScaled(size, starting_offset)
+  pos = pos - (size * starting_offset)
 
   return setmetatable({
     pos = pos,
@@ -115,60 +115,63 @@ function Box:lerp(prev, current, alpha)
   return self
 end
 
---- Copies position and transform values from another box
---- @param source Box The box to copy values from
-function Box:copy(source)
-  self.pos:copy(source.pos)
-  self.size:copy(source.size)
-  self.rot = source.rot
-end
-
---- @return string
-function Box:__tostring()
-  return string.format('Box(%.3f, %.3f, %.3f, %.3f)', self.x, self.y, self.w, self.h)
-end
-
 --- @param source Box
 --- @param velocity Vec2
 --- @return boolean
-function Box:paddleCollision(source, velocity)
+function Box:paddleOnCollision(source, velocity)
   local x_overlap, y_overlap = self:overlaps(source)
 
-  if x_overlap > 0 and y_overlap > 0 then
-    -- Smaller overlap = collision axis (less penetration)
-    if y_overlap < x_overlap then
-      -- Y-axis collision
-      if source.y < self.y then
-        -- Calculate hit position: -1 (left edge) to +1 (right edge)
-        local hit_pos = (
-          (source.x + source.w * 0.5) -- ball center x
-          - (self.x + self.w * 0.5) -- self center x
-        ) / (self.w * 0.5)
-
-        velocity:set(hit_pos, -1):normalize()
-      else
-        -- Bottom of self - bounce downward
-        velocity.y = math.abs(velocity.y)
-      end
-
-      source:clampOutsideY(self, true, true)
-    else
-      -- X-axis collision
-      if source.x < self.x then
-        velocity.x = -math.abs(velocity.x)
-      else
-        velocity.x = math.abs(velocity.x)
-      end
-
-      source:clampOutsideX(self, true, true)
-    end
-
-    return true
+  if x_overlap <= 0 or y_overlap <= 0 then
+    return false
   end
 
-  return false
+  -- Smaller overlap = collision axis (less penetration)
+  if y_overlap < x_overlap then
+    -- Y-axis collision
+    if source.y < self.y then
+      -- Calculate hit position: -1 (left edge) to +1 (right edge)
+      local hit_pos = (
+        (source.x + source.w * 0.5) -- ball center x
+        - (self.x + self.w * 0.5) -- paddle center x
+      ) / (self.w * 0.5)
+
+      velocity:set(hit_pos, -1):normalize()
+    else
+      -- Bottom of self - bounce downward
+      velocity.y = math.abs(velocity.y)
+    end
+
+    source:clampOutsideY(self, true, true)
+  else
+    -- X-axis collision
+    if source.x < self.x then
+      velocity.x = -math.abs(velocity.x)
+    else
+      velocity.x = math.abs(velocity.x)
+    end
+
+    source:clampOutsideX(self, true, true)
+  end
+
+  return true
 end
 
+--- @param starting_offset? Vec2
+function Box:setPos(pos, starting_offset)
+  self.pos = pos - self.size * (starting_offset or Origin.TOP_LEFT)
+end
+
+--- @return Vec2
+function Box:getOffsetPos(offset)
+  return self.pos:clone() + self.size * offset
+end
+
+--- @param value number
+--- @param min number
+--- @param max number
+--- @param clampMin boolean
+--- @param clampMax boolean
+--- @return number, boolean
 local function clampValue(value, min, max, clampMin, clampMax)
   if clampMin and value < min then
     return min, true
@@ -184,13 +187,11 @@ end
 --- @param right boolean
 --- @return boolean, boolean
 function Box:clampWithinX(other, left, right)
-  local minX = other.pos.x
-  local maxX = other.pos.x + other.size.x - self.size.x
+  local hitLeft = self.pos.x < other.pos.x
+  local hitRight = self.pos.x > other.pos.x + other.size.x - self.size.x
 
-  local hitLeft = self.pos.x < minX
-  local hitRight = self.pos.x > maxX
-
-  self.pos.x = select(1, clampValue(self.pos.x, minX, maxX, left, right))
+  self.pos.x =
+    clampValue(self.pos.x, other.pos.x, other.pos.x + other.size.x - self.size.x, left, right)
   return hitLeft, hitRight
 end
 
@@ -199,13 +200,11 @@ end
 --- @param bottom boolean
 --- @return boolean, boolean
 function Box:clampWithinY(other, top, bottom)
-  local minY = other.pos.y
-  local maxY = other.pos.y + other.size.y - self.size.y
+  local hitTop = self.pos.y < other.pos.y
+  local hitBottom = self.pos.y > other.pos.y + other.size.y - self.size.y
 
-  local hitTop = self.pos.y < minY
-  local hitBottom = self.pos.y > maxY
-
-  self.pos.y = select(1, clampValue(self.pos.y, minY, maxY, top, bottom))
+  self.pos.y =
+    clampValue(self.pos.y, other.pos.y, other.pos.y + other.size.y - self.size.y, top, bottom)
   return hitTop, hitBottom
 end
 
@@ -226,19 +225,15 @@ end
 --- @param right boolean
 --- @return boolean, boolean
 function Box:clampOutsideX(other, left, right)
-  local otherLeft = other.pos.x
-  local otherRight = other.pos.x + other.size.x
-  local selfLeft = self.pos.x
-  local selfRight = self.pos.x + self.size.x
+  local hitLeft = self.pos.x + self.size.x > other.pos.x and self.pos.x < other.pos.x
+  local hitRight = self.pos.x < other.pos.x + other.size.x
+    and self.pos.x + self.size.x > other.pos.x + other.size.x
 
-  local hitLeft = selfRight > otherLeft and selfLeft < otherLeft
-  local hitRight = selfLeft < otherRight and selfRight > otherRight
-
-  if left and hitLeft then
-    self.pos.x = otherLeft - self.size.x
+  if hitLeft and left then
+    self.pos.x = other.pos.x - self.size.x
   end
-  if right and hitRight then
-    self.pos.x = otherRight
+  if hitRight and right then
+    self.pos.x = other.pos.x + other.size.x
   end
 
   return hitLeft, hitRight
@@ -249,19 +244,15 @@ end
 --- @param bottom boolean
 --- @return boolean, boolean
 function Box:clampOutsideY(other, top, bottom)
-  local otherTop = other.pos.y
-  local otherBottom = other.pos.y + other.size.y
-  local selfTop = self.pos.y
-  local selfBottom = self.pos.y + self.size.y
+  local hitTop = self.pos.y + self.size.y > other.pos.y and self.pos.y < other.pos.y
+  local hitBottom = self.pos.y < other.pos.y + other.size.y
+    and self.pos.y + self.size.y > other.pos.y + other.size.y
 
-  local hitTop = selfBottom > otherTop and selfTop < otherTop
-  local hitBottom = selfTop < otherBottom and selfBottom > otherBottom
-
-  if top and hitTop then
-    self.pos.y = otherTop - self.size.y
+  if hitTop and top then
+    self.pos.y = other.pos.y - self.size.y
   end
-  if bottom and hitBottom then
-    self.pos.y = otherBottom
+  if hitBottom and bottom then
+    self.pos.y = other.pos.y + other.size.y
   end
 
   return hitTop, hitBottom
@@ -277,6 +268,23 @@ function Box:clampOutside(other, top, bottom, left, right)
   local top, bottom = self:clampOutsideY(other, top, bottom)
   local left, right = self:clampOutsideX(other, left, right)
   return top, bottom, left, right
+end
+
+--- Copies position and transform values from another box
+--- @param source Box The box to copy values from
+function Box:copy(source)
+  self.pos:copy(source.pos)
+  self.size:copy(source.size)
+  self.rot = source.rot
+end
+
+function Box:clone()
+  return Box.new(self.pos:clone(), self.size:clone(), self.rot)
+end
+
+--- @return string
+function Box:__tostring()
+  return string.format('Box(%.3f, %.3f, %.3f, %.3f)', self.x, self.y, self.w, self.h)
 end
 
 return Box

@@ -75,7 +75,7 @@ end
 --- @param opts? SpriteStateOpts
 --- @return SpriteState
 function Sprite:state(opts)
-  opts = opts or {}
+  opts = opts or Help.EMPTY
 
   return setmetatable({
     data = self,
