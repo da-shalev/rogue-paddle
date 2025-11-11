@@ -1,29 +1,20 @@
 return Scene.build(function()
-  local paddle = {
-    sprite = Res.sprites.PLAYER:state {
-      pos = math.vec2.new(S.camera.vbox.w / 2, S.camera.vbox.h - 20),
-      starting_offset = Origin.BOTTOM_CENTER,
-    },
-    prev_box = math.box.zero(),
-    input_x = 0,
-    speed = 0.4 * S.camera.vbox.w,
-  }
-
+  local status = {}
   local points = 0
   local lives = 3
+
+  local paddle = require('game.entities.paddle') {
+    pos = math.vec2.new(S.camera.vbox.w / 2, S.camera.vbox.h - 20),
+    starting_offset = Origin.BOTTOM_CENTER,
+  }
 
   local function getBallOnPaddlePos()
     return paddle.sprite.box:getOffsetPos(Origin.TOP_CENTER)
   end
 
-  local ball = {
-    sprite = Res.sprites.BALL:state {
-      pos = getBallOnPaddlePos(),
-      starting_offset = Origin.BOTTOM_CENTER,
-    },
-    prev_box = math.box.zero(),
-    velocity = math.vec2.zero(),
-    speed = 0.4 * S.camera.vbox.w,
+  local ball = require('game.entities.ball') {
+    pos = getBallOnPaddlePos(),
+    starting_offset = Origin.BOTTOM_CENTER,
   }
 
   local bricks = require('game.brick_manager').new {
@@ -46,16 +37,6 @@ return Scene.build(function()
     viewTransitionSpeed = 1.0,
   }
 
-  local attach_msg = string.format('Press %s to begin', Res.keybinds.CONFIRM)
-
-  --- @param ctx SceneCtx
-  local function removeLive(ctx)
-    lives = lives - 1
-    ball.sprite.box:setPos(getBallOnPaddlePos(), Origin.BOTTOM_CENTER)
-    ball.prev_box:copy(ball.sprite.box)
-    ctx.current = ctx.status.ATTACHED
-  end
-
   local function cheats()
     if love.keyboard.isPressed('r') then
       bricks:reset()
@@ -67,91 +48,96 @@ return Scene.build(function()
     end
   end
 
+  local attach_msg = string.format('Press %s to begin', Res.keybinds.CONFIRM)
+
+  --- @param ctx SceneCtx
+  local function removeLive(ctx)
+    lives = lives - 1
+    ball.sprite.box:setPos(getBallOnPaddlePos(), Origin.BOTTOM_CENTER)
+    ball.prev_box:copy(ball.sprite.box)
+    attach_msg = string.format('Press %s to continue', Res.keybinds.CONFIRM)
+    ctx.current = status.ATTACHED
+  end
+
   --- @type Status
-  local status = {
-    ATTACHED = {
-      update = function(ctx, dt)
-        if love.keyboard.isPressed(Res.keybinds.CONFIRM) then
-          ctx.current = ctx.status.PLAYING
-          ball.velocity:set((math.random() < 0.5 and 1.0 or -1.0), -1.0):normalize()
-          attach_msg = string.format('Press %s to continue', Res.keybinds.CONFIRM)
-        end
-      end,
+  status.ATTACHED = {
+    update = function(ctx, dt)
+      if love.keyboard.isPressed(Res.keybinds.CONFIRM) then
+        ctx.current = status.PLAYING
+        ball.velocity:set((math.random() < 0.5 and 1.0 or -1.0), -1.0):normalize()
+      end
+    end,
 
-      draw = function(ctx)
-        love.graphics.print(
-          attach_msg,
-          (S.camera.vbox.w - Res.font:getWidth(attach_msg)) / 2,
-          S.camera.vbox.h / 2
-        )
-      end,
-    },
+    draw = function()
+      love.graphics.print(
+        attach_msg,
+        (S.camera.vbox.w - Res.font:getWidth(attach_msg)) / 2,
+        S.camera.vbox.h / 2
+      )
+    end,
+  }
 
-    PLAYING = {
-      update = function(ctx, dt)
-        paddle.input_x = 0
+  --- @type Status
+  status.PLAYING = {
+    update = function(ctx, dt)
+      paddle.input_x = 0
 
-        if love.keyboard.isDown(unpack(Res.keybinds.MOVE_RIGHT)) then
-          paddle.input_x = paddle.input_x + 1
-        end
+      if love.keyboard.isDown(unpack(Res.keybinds.MOVE_RIGHT)) then
+        paddle.input_x = paddle.input_x + 1
+      end
 
-        if love.keyboard.isDown(unpack(Res.keybinds.MOVE_LEFT)) then
-          paddle.input_x = paddle.input_x - 1
-        end
+      if love.keyboard.isDown(unpack(Res.keybinds.MOVE_LEFT)) then
+        paddle.input_x = paddle.input_x - 1
+      end
 
-        if Res.cheats then
-          cheats()
-        end
-      end,
+      if Res.cheats then
+        cheats()
+      end
+    end,
 
-      fixed = function(ctx, dt)
-        paddle.prev_box:copy(paddle.sprite.box)
-        ball.prev_box:copy(ball.sprite.box)
+    fixed = function(ctx, dt)
+      paddle.prev_box:copy(paddle.sprite.box)
+      ball.prev_box:copy(ball.sprite.box)
 
-        paddle.sprite.box.x = paddle.sprite.box.x + paddle.input_x * dt * paddle.speed
-        paddle.sprite.box:clampWithin(S.camera.vbox, true, true, true, true)
+      paddle.sprite.box.x = paddle.sprite.box.x + paddle.input_x * dt * paddle.speed
+      paddle.sprite.box:clampWithin(S.camera.vbox, true, true, true, true)
 
-        ball.sprite.box.pos = ball.sprite.box.pos + ball.velocity * dt * ball.speed
+      ball.sprite.box.pos = ball.sprite.box.pos + ball.velocity * dt * ball.speed
 
-        local x_within, y_within = ball.sprite.box:within(S.camera.vbox)
+      local x_within, y_within = ball.sprite.box:within(S.camera.vbox)
 
-        if not x_within then
-          ball.velocity.x = -ball.velocity.x
-          ball.sprite.box:clampWithinX(S.camera.vbox, true, true)
-        end
+      if not x_within then
+        ball.velocity.x = -ball.velocity.x
+        ball.sprite.box:clampWithinX(S.camera.vbox, true, true)
+      end
 
-        if not y_within then
-          local top, bottom = ball.sprite.box:clampWithinY(S.camera.vbox, true, false)
+      if not y_within then
+        local top, bottom = ball.sprite.box:clampWithinY(S.camera.vbox, true, false)
 
-          if top then
-            ball.velocity.y = 1
-          end
-
-          if bottom then
-            removeLive(ctx)
-          end
+        if top then
+          ball.velocity.y = 1
         end
 
-        bricks:removeOnCollision(ball.sprite.box, ball.velocity)
-        paddle.sprite.box:paddleOnCollision(ball.sprite.box, ball.velocity)
-      end,
+        if bottom then
+          removeLive(ctx)
+        end
+      end
 
-      draw = function() end,
-    },
+      bricks:removeOnCollision(ball.sprite.box, ball.velocity)
+      paddle.sprite.box:paddleOnCollision(ball.sprite.box, ball.velocity)
+    end,
   }
 
   return Scene.new {
-    ctx = {
-      status = status,
-      current = status.ATTACHED,
-    },
-    draw = function(_self)
+    current = status.ATTACHED,
+    draw = function()
       -- render scene objects
       paddle.sprite:drawLerp(paddle.prev_box)
       ball.sprite:drawLerp(ball.prev_box)
       bricks:draw()
 
       love.graphics.setColor(Res.colors.RESET)
+
       -- hearts ui
       for live = 1, lives do
         Res.sprites.HEART:draw(3 + (live - 1) * (Res.sprites.HEART:getWidth() + 2), 3, 0)
@@ -159,7 +145,6 @@ return Scene.build(function()
 
       -- points ui
       if points > 0 then
-        love.graphics.setColor(Res.colors.RESET)
         love.graphics.print(points, (S.camera.vbox.w - Res.font:getWidth(points)) / 2, 3)
       end
     end,

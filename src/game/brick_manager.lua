@@ -28,6 +28,12 @@ end
 --- triggers when there are no bricks left
 --- @alias BrickResetEvent fun(e: BrickEvent)
 
+--- @class BrickEvents
+--- @field onGenerate? BrickGenerateEvent
+--- @field onSpawn? BrickSpawnEvent
+--- @field onRemove? BrickRemoveEvent
+--- @field onReset? BrickResetEvent
+
 --- @class BrickVariant
 
 -- meta
@@ -53,16 +59,11 @@ end
 local BrickManager = {}
 BrickManager.__index = BrickManager
 
---- @alias BrickManagerOpts {
----   layout: BrickLayout,
----   onGenerate?: BrickGenerateEvent,
----   onSpawn?: BrickSpawnEvent,
----   onRemove?: BrickRemoveEvent,
----   onReset?: BrickResetEvent,
----   viewTransitionSpeed?: number,
----   variants?: BrickVariants,
----   colors?: Color[],
---- }
+--- @class BrickManagerOpts : BrickEvents
+--- @field layout BrickLayout
+--- @field viewTransitionSpeed? number
+--- @field variants? BrickVariants
+--- @field colors? Color[]
 
 --- @param opts BrickManagerOpts
 --- @return BrickManager
