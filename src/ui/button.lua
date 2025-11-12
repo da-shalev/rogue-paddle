@@ -4,6 +4,7 @@ local Text = require('ui.text')
 
 --- @class Button
 --- @field box Box
+--- @field hover boolean
 --- @field background Color
 --- @field foreground Color
 --- @field text Text
@@ -31,6 +32,7 @@ function Button.new(opts)
       pos = box:getOriginPos(Origin.CENTER),
       render_origin = Origin.CENTER,
     }),
+    hover = false,
     on_click = opts.on_click or function() end,
   }, Button)
 end
@@ -41,11 +43,21 @@ function Button:draw()
 end
 
 function Button:update()
-  if love.mouse.isDown(1) then
-    local x, y = S.cursor:within(self.box)
-    if x and y then
-      self:on_click()
+  local x, y = S.cursor:within(self.box)
+  local hover = x and y
+
+  if self.hover ~= hover then
+    self.hover = hover
+    if self.hover then
+      love.mouse.setCursor(love.mouse.getSystemCursor('hand'))
+    else
+      love.mouse.setCursor(love.mouse.getSystemCursor('arrow'))
     end
+  end
+
+  if love.mouse.isDown(1) then
+    self:on_click()
+    love.mouse.setCursor(love.mouse.getSystemCursor('arrow'))
   end
 end
 

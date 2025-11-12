@@ -5,6 +5,7 @@ Timer = require('lib.timer')
 Origin = require('lib.origin')
 Sprite = require('lib.sprite')
 Scene = require('lib.scene')
+Status = require('lib.status')
 S = require('state')
 
 -- define current scene

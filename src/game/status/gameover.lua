@@ -1,7 +1,7 @@
 local Button = require('ui.button')
 local Text = require('ui.text')
 
-return function()
+return Status.build(function()
   local function continueFn()
     S.scene_queue.setNext(require('game.scenes.brickin'))
   end
@@ -12,7 +12,7 @@ return function()
     text = 'GAME OVER',
     pos = S.camera.vbox:getOriginPos(Origin.CENTER - math.vec2.new(0, 0.15)),
     render_origin = Origin.CENTER,
-    font = Res.fonts.IBM
+    font = Res.fonts.IBM,
   }
 
   local continue = Button.new {
@@ -25,8 +25,7 @@ return function()
     on_click = continueFn,
   }
 
-  --- @type Status
-  return {
+  return Status.new {
     update = function(ctx, dt)
       if love.keyboard.isPressed(Res.keybinds.CONFIRM) then
         continueFn()
@@ -41,4 +40,4 @@ return function()
       continue:draw()
     end,
   }
-end
+end)

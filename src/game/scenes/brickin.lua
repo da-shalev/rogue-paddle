@@ -1,7 +1,7 @@
 local UI_INSET = 3
 local Text = require('ui.text')
 return Scene.build(function()
-  local status = {}
+  local state = {}
   local points = 0
 
   local points_text = Text.new {
@@ -54,33 +54,21 @@ return Scene.build(function()
     viewTransitionSpeed = 1.0,
   }
 
-  local function cheats()
-    if love.keyboard.isPressed('r') then
-      bricks:reset()
-    end
-
-    if love.mouse.isDown(2) then
-      ball.sprite.box.pos:copy(S.cursor.pos)
-    end
-  end
-
-  --- @type Status
-  status.ATTACHED = {
+  state.ATTACHED = Status.new {
     update = function(ctx, dt)
       if love.keyboard.isPressed(Res.keybinds.CONFIRM) then
-        ctx.current = status.PLAYING
+        ctx.current = state.PLAYING
         ball.velocity:set((math.random() < 0.5 and 1.0 or -1.0), -1.0):normalize()
       end
     end,
 
     draw = function()
-      status.drawLevel()
+      state.drawLevel()
       info_text:draw()
     end,
   }
 
-  --- @type Status
-  status.PLAYING = {
+  state.PLAYING = Status.new {
     update = function(ctx, dt)
       paddle.input_x = 0
 
@@ -93,7 +81,7 @@ return Scene.build(function()
       end
 
       if Res.cheats then
-        cheats()
+        state.updateCheats()
       end
     end,
 
@@ -121,7 +109,7 @@ return Scene.build(function()
         end
 
         if bottom then
-          status.removeLive(ctx)
+          state.removeLife(ctx)
         end
       end
 
@@ -130,11 +118,11 @@ return Scene.build(function()
     end,
 
     draw = function()
-      status.drawLevel()
+      state.drawLevel()
     end,
   }
 
-  status.drawLevel = function()
+  state.drawLevel = function()
     -- render scene objects
     paddle.sprite:drawLerp(paddle.prev_box)
     ball.sprite:drawLerp(ball.prev_box)
@@ -156,7 +144,7 @@ return Scene.build(function()
   end
 
   --- @param ctx StatusCtx
-  status.removeLive = function(ctx)
+  state.removeLife = function(ctx)
     lives = lives - 1
     ball.sprite.box:setPos(getBallOnPaddlePos(), Origin.BOTTOM_CENTER)
     ball.prev_box:copy(ball.sprite.box)
@@ -165,12 +153,22 @@ return Scene.build(function()
     if lives == 0 then
       ctx.current = require('game.status.gameover')()
     else
-      ctx.current = status.ATTACHED
+      ctx.current = state.ATTACHED
+    end
+  end
+
+  state.updateCheats = function()
+    if love.keyboard.isPressed('r') then
+      bricks:reset()
+    end
+
+    if love.mouse.isDown(2) then
+      ball.sprite.box.pos:copy(S.cursor.pos)
     end
   end
 
   return Scene.new {
-    current = status.ATTACHED,
+    current = state.ATTACHED,
     -- current = require('game.status.gameover')(),
   }
 end)
