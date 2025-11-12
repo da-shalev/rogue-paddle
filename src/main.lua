@@ -17,13 +17,15 @@ function love.load()
   -- All resources are loaded and accessed from the global 'Res'
   -- In fashion, you will not be able to accces anything loaded here before love.load executes
   Res = require('res')
-  love.graphics.setFont(Res.font)
-
   love.resize()
 end
 
 ---@param dt number
 function love.update(dt)
+  local x, y = love.mouse.getPosition()
+  S.cursor.pos.x = x
+  S.cursor.pos.y = y
+
   -- https://gafferongames.com/post/fix_your_timestep/
   -- We have 'freed the physics'
 
@@ -84,7 +86,7 @@ function love.draw()
 
   love.graphics.scale(canvas_w / state.camera.vbox.w, canvas_h / state.camera.vbox.h)
   love.graphics.translate(state.camera.vbox.x, state.camera.vbox.y)
-  love.graphics.clear(Res.colors.background)
+  love.graphics.clear(Res.colors.BACKGROUND)
 
   if current_scene then
     current_scene:draw()

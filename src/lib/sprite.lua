@@ -67,7 +67,7 @@ end
 --- @class SpriteStateOpts: SpriteRenderOpts
 --- @field pos? Vec2
 --- @field size? Vec2
---- @field starting_offset? Vec2
+--- @field starting_origin? Vec2
 --- @field rot? number
 
 --- Stores render data directly on the sprite by extending
@@ -75,7 +75,7 @@ end
 --- @param opts? SpriteStateOpts
 --- @return SpriteState
 function Sprite:state(opts)
-  opts = opts or Help.EMPTY
+  opts = opts or Res.EMPTY
 
   return setmetatable({
     data = self,
@@ -83,7 +83,7 @@ function Sprite:state(opts)
       opts.pos or math.vec2.zero(),
       opts.size or self.cell_size,
       opts.rot or 0,
-      opts.starting_offset or Origin.TOP_LEFT
+      opts.starting_origin or Origin.TOP_LEFT
     ),
     render = {
       frame_idx = opts.frame_idx or 1,
@@ -107,7 +107,7 @@ end
 --- @param rot? number
 --- @param opts? SpriteRenderOpts
 function Sprite:draw(x, y, rot, opts)
-  opts = opts or Help.EMPTY
+  opts = opts or Res.EMPTY
   love.graphics.setColor(opts.color or Res.colors.RESET)
 
   local quad = self.cells[opts.frame_idx or 1]

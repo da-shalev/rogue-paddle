@@ -3,6 +3,8 @@ local S = {
   scene_queue = require('lib.scene_queue'),
   seed = 0,
   alpha = 0,
+  -- mouse position
+  cursor = math.box.zero(),
 
   camera = {
     -- desired aspect ratio for the display

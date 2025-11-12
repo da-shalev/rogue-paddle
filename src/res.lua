@@ -1,14 +1,22 @@
 local Res = {
+  --- avoids allocating a empty table
+  EMPTY = {},
+
   sprites = {
     PLAYER = Sprite.new('res/sprites/player.png'),
     BALL = Sprite.new('res/sprites/ball.png'),
     HEART = Sprite.new('res/sprites/heart.png'),
   },
 
-  font = love.graphics.newFont('res/prstart.ttf', 8),
+  fonts = {
+    -- default font
+    PRSTART = love.graphics.newFont('res/fonts/prstart.ttf', 8),
+    IBM = love.graphics.newFont('res/fonts/Px437_IBM_BIOS-2y.ttf', 16),
+  },
 
   colors = {
-    background = { 0.05, 0.05, 0.05, 1.0 },
+    -- BACKGROUND = { 0.05, 0.05, 0.05, 1.0 },
+    BACKGROUND = { 0.0, 0.0, 0.0, 1.0 },
     RESET = { 1.0, 1.0, 1.0, 1.0 },
     FOREGROUND = { 0.922, 0.859, 0.698, 1.0 }, -- #ebdbb2
 
@@ -64,6 +72,8 @@ local Res = {
   },
 }
 
-Res.font:setFilter('nearest', 'nearest')
+for _, font in pairs(Res.fonts) do
+  font:setFilter('nearest', 'nearest')
+end
 
 return Res

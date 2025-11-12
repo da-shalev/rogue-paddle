@@ -1,3 +1,5 @@
+local BORDER_COLOR = Res.colors.REGULAR0
+
 -- types
 --- @alias BrickLayout integer[][]
 --- @alias BrickRow Brick[]
@@ -22,7 +24,7 @@ end
 --- triggers when a new brick is being generated
 --- @alias BrickGenerateEvent fun(brick: Brick)
 --- triggers when a new brick has been spawned
---- @alias BrickSpawnEvent fun(e: BrickEvent, brick: Brick)
+-- --- @alias BrickSpawnEvent fun(e: BrickEvent, brick: Brick)
 --- triggers when a new brick has been removed
 --- @alias BrickRemoveEvent fun(e: BrickEvent, brick: Brick)
 --- triggers when there are no bricks left
@@ -30,7 +32,7 @@ end
 
 --- @class BrickEvents
 --- @field onGenerate? BrickGenerateEvent
---- @field onSpawn? BrickSpawnEvent
+-- --- @field onSpawn? BrickSpawnEvent
 --- @field onRemove? BrickRemoveEvent
 --- @field onReset? BrickResetEvent
 
@@ -145,12 +147,8 @@ function BrickManager:draw()
 
   for _, row in ipairs(self._data.grid) do
     for _, brick in pairs(row) do
-      love.graphics.setColor(brick.color or Res.colors.RESET)
-
-      love.graphics.rectangle('fill', brick.box.x, brick.box.y, brick.box.w, brick.box.h)
-
-      love.graphics.setColor(Res.colors.REGULAR0)
-      love.graphics.rectangle('line', brick.box.x, brick.box.y, brick.box.w, brick.box.h)
+      brick.box:draw('fill', brick.color or Res.colors.RESET)
+      brick.box:draw('line', BORDER_COLOR)
     end
   end
 end

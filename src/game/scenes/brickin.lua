@@ -1,20 +1,35 @@
+local UI_INSET = 3
+local Text = require('ui.text')
 return Scene.build(function()
   local status = {}
   local points = 0
+
+  local points_text = Text.new {
+    text = points,
+    pos = S.camera.vbox:getOriginPos(Origin.TOP_CENTER) + math.vec2.new(0, UI_INSET),
+    render_origin = Origin.TOP_CENTER,
+  }
+
+  local info_text = Text.new {
+    text = string.format('Press %s to begin', Res.keybinds.CONFIRM),
+    pos = S.camera.vbox:getOriginPos(Origin.CENTER),
+    render_origin = Origin.CENTER,
+  }
+
   local lives = 3
 
   local paddle = require('game.entities.paddle') {
     pos = math.vec2.new(S.camera.vbox.w / 2, S.camera.vbox.h - 20),
-    starting_offset = Origin.BOTTOM_CENTER,
+    starting_origin = Origin.BOTTOM_CENTER,
   }
 
   local function getBallOnPaddlePos()
-    return paddle.sprite.box:getOffsetPos(Origin.TOP_CENTER)
+    return paddle.sprite.box:getOriginPos(Origin.TOP_CENTER)
   end
 
   local ball = require('game.entities.ball') {
     pos = getBallOnPaddlePos(),
-    starting_offset = Origin.BOTTOM_CENTER,
+    starting_origin = Origin.BOTTOM_CENTER,
   }
 
   local bricks = require('game.brick_manager').new {
@@ -27,13 +42,15 @@ return Scene.build(function()
     layout = Res.layouts.DEFAULT,
     variants = {},
     onGenerate = function(brick) end,
-    onReset = function(self)
+    onReset = function(e)
       points = points + 100
+      points_text:setText(points)
     end,
-    onRemove = function(self, brick)
+    onRemove = function(e, brick)
       points = points + 10
+      points_text:setText(points)
     end,
-    onSpawn = function(self, brick) end,
+    onSpawn = function(e, brick) end,
     viewTransitionSpeed = 1.0,
   }
 
@@ -43,20 +60,8 @@ return Scene.build(function()
     end
 
     if love.mouse.isDown(2) then
-      local x, y = love.mouse.getPosition()
-      ball.sprite.box:setPos(math.vec2.new(x, y), Origin.CENTER)
+      ball.sprite.box.pos:copy(S.cursor.pos)
     end
-  end
-
-  local attach_msg = string.format('Press %s to begin', Res.keybinds.CONFIRM)
-
-  --- @param ctx SceneCtx
-  local function removeLive(ctx)
-    lives = lives - 1
-    ball.sprite.box:setPos(getBallOnPaddlePos(), Origin.BOTTOM_CENTER)
-    ball.prev_box:copy(ball.sprite.box)
-    attach_msg = string.format('Press %s to continue', Res.keybinds.CONFIRM)
-    ctx.current = status.ATTACHED
   end
 
   --- @type Status
@@ -69,11 +74,8 @@ return Scene.build(function()
     end,
 
     draw = function()
-      love.graphics.print(
-        attach_msg,
-        (S.camera.vbox.w - Res.font:getWidth(attach_msg)) / 2,
-        S.camera.vbox.h / 2
-      )
+      status.drawLevel()
+      info_text:draw()
     end,
   }
 
@@ -119,34 +121,56 @@ return Scene.build(function()
         end
 
         if bottom then
-          removeLive(ctx)
+          status.removeLive(ctx)
         end
       end
 
       bricks:removeOnCollision(ball.sprite.box, ball.velocity)
       paddle.sprite.box:paddleOnCollision(ball.sprite.box, ball.velocity)
     end,
+
+    draw = function()
+      status.drawLevel()
+    end,
   }
+
+  status.drawLevel = function()
+    -- render scene objects
+    paddle.sprite:drawLerp(paddle.prev_box)
+    ball.sprite:drawLerp(ball.prev_box)
+    bricks:draw()
+
+    -- hearts ui
+    for live = 1, lives do
+      Res.sprites.HEART:draw(
+        UI_INSET + (live - 1) * (Res.sprites.HEART:getWidth() + 2),
+        UI_INSET,
+        0
+      )
+    end
+
+    -- points ui
+    if points > 0 then
+      points_text:draw()
+    end
+  end
+
+  --- @param ctx StatusCtx
+  status.removeLive = function(ctx)
+    lives = lives - 1
+    ball.sprite.box:setPos(getBallOnPaddlePos(), Origin.BOTTOM_CENTER)
+    ball.prev_box:copy(ball.sprite.box)
+    info_text:setText(string.format('Press %s to continue', Res.keybinds.CONFIRM))
+
+    if lives == 0 then
+      ctx.current = require('game.status.gameover')()
+    else
+      ctx.current = status.ATTACHED
+    end
+  end
 
   return Scene.new {
     current = status.ATTACHED,
-    draw = function()
-      -- render scene objects
-      paddle.sprite:drawLerp(paddle.prev_box)
-      ball.sprite:drawLerp(ball.prev_box)
-      bricks:draw()
-
-      love.graphics.setColor(Res.colors.RESET)
-
-      -- hearts ui
-      for live = 1, lives do
-        Res.sprites.HEART:draw(3 + (live - 1) * (Res.sprites.HEART:getWidth() + 2), 3, 0)
-      end
-
-      -- points ui
-      if points > 0 then
-        love.graphics.print(points, (S.camera.vbox.w - Res.font:getWidth(points)) / 2, 3)
-      end
-    end,
+    -- current = require('game.status.gameover')(),
   }
 end)

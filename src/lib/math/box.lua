@@ -60,14 +60,25 @@ Box.__newindex = function(t, k, v)
   end
 end
 
+--- @class BoxOpts
+--- @field pos Vec2
+--- @field size Vec2
+--- @field starting_origin? Vec2
+--- @field rot? number
+
+--- @param opts BoxOpts
+--- @return Box
+function Box.from(opts)
+  return Box.new(opts.pos, opts.size, opts.rot, opts.starting_origin)
+end
+
 --- @param pos Vec2
 --- @param size Vec2
 --- @param rot? number
---- @param starting_offset? Vec2
+--- @param starting_origin? Vec2
 --- @return Box
-function Box.new(pos, size, rot, starting_offset)
-  starting_offset = starting_offset or Origin.TOP_LEFT
-  pos = pos - (size * starting_offset)
+function Box.new(pos, size, rot, starting_origin)
+  pos = pos - (size * (starting_origin or Origin.TOP_LEFT))
 
   return setmetatable({
     pos = pos,
@@ -156,14 +167,15 @@ function Box:paddleOnCollision(source, velocity)
   return true
 end
 
---- @param starting_offset? Vec2
-function Box:setPos(pos, starting_offset)
-  self.pos = pos - self.size * (starting_offset or Origin.TOP_LEFT)
+--- @param starting_origin? Vec2
+function Box:setPos(pos, starting_origin)
+  self.pos = pos - self.size * (starting_origin or Origin.TOP_LEFT)
 end
 
+--- @param origin Vec2
 --- @return Vec2
-function Box:getOffsetPos(offset)
-  return self.pos:clone() + self.size * offset
+function Box:getOriginPos(origin)
+  return self.pos:clone() + self.size * origin
 end
 
 --- @param value number
@@ -276,6 +288,18 @@ function Box:copy(source)
   self.pos:copy(source.pos)
   self.size:copy(source.size)
   self.rot = source.rot
+end
+
+--- @param mode love.DrawMode
+--- @param color? Color
+function Box:draw(mode, color)
+  love.graphics.setColor(color or Res.colors.RESET)
+  assert(
+    mode == 'fill' or mode == 'line',
+    ('Did not specifiy valid mode to Box:draw, got %s'):format(mode)
+  )
+
+  love.graphics.rectangle(mode, self.pos.x, self.pos.y, self.size.x, self.size.y)
 end
 
 function Box:clone()
