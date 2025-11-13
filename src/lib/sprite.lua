@@ -75,7 +75,7 @@ end
 --- @param opts? SpriteStateOpts
 --- @return SpriteState
 function Sprite:state(opts)
-  opts = opts or Res.EMPTY
+  opts = opts or {}
 
   return setmetatable({
     data = self,
@@ -107,7 +107,7 @@ end
 --- @param rot? number
 --- @param opts? SpriteRenderOpts
 function Sprite:draw(x, y, rot, opts)
-  opts = opts or Res.EMPTY
+  opts = opts or {}
   love.graphics.setColor(opts.color or Res.colors.RESET)
 
   local quad = self.cells[opts.frame_idx or 1]

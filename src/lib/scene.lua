@@ -1,5 +1,40 @@
 --- @class StatusCtx
---- @field current Status
+--- @field _status Status
+--- @field _overlay? Status
+local StatusCtx = {}
+StatusCtx.__index = StatusCtx
+
+--- @param ctx StatusCtx
+StatusCtx.new = function(ctx)
+  return setmetatable(ctx, StatusCtx)
+end
+
+--- @param status Status
+function StatusCtx:setStatus(status)
+  self._status = status
+end
+
+function StatusCtx:popOverlay()
+  -- reset cursor state in case a button or other
+  -- was hovered
+  love.mouse.setCursor(love.mouse.getSystemCursor('arrow'))
+  self._overlay = nil
+end
+
+--- @param status Status
+function StatusCtx:setOverlay(status)
+  self._overlay = status
+end
+
+--- @return boolean
+function StatusCtx:hasStatus()
+  return self._status ~= nil
+end
+
+--- @return boolean
+function StatusCtx:hasOverlay()
+  return self._overlay ~= nil
+end
 
 --- @class Scene
 --- @field ctx StatusCtx
@@ -11,7 +46,8 @@ local Scene = {}
 Scene.__index = Scene
 
 --- @class SceneOpts : Status
---- @field current Status
+--- @field status Status
+--- @field overlay? Status
 --- @field exit? fun()
 
 --- @param events SceneOpts
@@ -22,20 +58,33 @@ function Scene.new(events)
   --- @type Scene
   local scene = {
     update = function(self, dt)
-      (self.ctx.current.update or empty)(self.ctx, dt);
+      (self.ctx._status.update or empty)(self.ctx, dt);
       (events.update or empty)(self.ctx, dt)
+
+      if self.ctx._overlay then
+        (self.ctx._overlay.update or empty)(self.ctx, dt)
+      end
     end,
     fixed = function(self, dt)
-      (self.ctx.current.fixed or empty)(self.ctx, dt);
+      (self.ctx._status.fixed or empty)(self.ctx, dt);
       (events.fixed or empty)(self.ctx, dt)
+
+      if self.ctx._overlay then
+        (self.ctx._overlay.fixed or empty)(self.ctx, dt)
+      end
     end,
     draw = function(self)
-      (self.ctx.current.draw or empty)();
-      (events.draw or empty)()
+      (self.ctx._status.draw or empty)(self.ctx);
+      (events.draw or empty)(self.ctx)
+
+      if self.ctx._overlay then
+        (self.ctx._overlay.draw or empty)(self.ctx)
+      end
     end,
     exit = events.exit or empty,
-    ctx = {
-      current = events.current,
+    ctx = StatusCtx.new {
+      _status = events.status,
+      _overlay = events.overlay,
     },
   }
 

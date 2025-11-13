@@ -56,13 +56,13 @@ return Scene.build(function()
 
   state.ATTACHED = Status.new {
     update = function(ctx, dt)
-      if love.keyboard.isPressed(Res.keybinds.CONFIRM) then
-        ctx.current = state.PLAYING
+      if love.keyboard.isPressed(Res.keybinds.CONFIRM) and not ctx:hasOverlay() then
+        ctx:setStatus(state.PLAYING)
         ball.velocity:set((math.random() < 0.5 and 1.0 or -1.0), -1.0):normalize()
       end
     end,
 
-    draw = function()
+    draw = function(ctx)
       state.drawLevel()
       info_text:draw()
     end,
@@ -70,6 +70,10 @@ return Scene.build(function()
 
   state.PLAYING = Status.new {
     update = function(ctx, dt)
+      if ctx:hasOverlay() then
+        return
+      end
+
       paddle.input_x = 0
 
       if love.keyboard.isDown(unpack(Res.keybinds.MOVE_RIGHT)) then
@@ -86,6 +90,11 @@ return Scene.build(function()
     end,
 
     fixed = function(ctx, dt)
+      -- pause if menu
+      if ctx:hasOverlay() then
+        return
+      end
+
       paddle.prev_box:copy(paddle.sprite.box)
       ball.prev_box:copy(ball.sprite.box)
 
@@ -151,9 +160,9 @@ return Scene.build(function()
     info_text:setText(string.format('Press %s to continue', Res.keybinds.CONFIRM))
 
     if lives == 0 then
-      ctx.current = require('game.status.gameover')()
+      ctx:setOverlay(require('game.overlays.gameover')())
     else
-      ctx.current = state.ATTACHED
+      ctx:setStatus(state.ATTACHED)
     end
   end
 
@@ -168,7 +177,15 @@ return Scene.build(function()
   end
 
   return Scene.new {
-    current = state.ATTACHED,
-    -- current = require('game.status.gameover')(),
+    status = state.ATTACHED,
+    update = function(ctx)
+      if love.keyboard.isPressed(Res.keybinds.PAUSE) and lives ~= 0 then
+        if ctx:hasOverlay() then
+          ctx:popOverlay()
+        else
+          ctx:setOverlay(require('game.overlays.pause')())
+        end
+      end
+    end,
   }
 end)

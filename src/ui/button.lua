@@ -1,22 +1,26 @@
-local DEFAULT_BACKGROUND = Res.colors.REGULAR0
-local DEFAULT_FOREGROUND = Res.colors.RESET
 local Text = require('ui.text')
+
+--- @class ButtonColors
+--- @field background? Color
+--- @field foreground? Color
+--- @field outline? Color
+--- @field outline_hover? Color
+--- @field background_hover? Color
+--- @field foreground_hover? Color
 
 --- @class Button
 --- @field box Box
+--- @field colors ButtonColors
 --- @field hover boolean
---- @field background Color
---- @field foreground Color
 --- @field text Text
 --- @field on_click? fun()
 local Button = {}
 Button.__index = Button
 
 --- @class ButtonOpts
---- @field box BoxOpts
 --- @field text string
---- @field background? Color
---- @field foreground? Color
+--- @field box BoxOpts
+--- @field colors? ButtonColors
 --- @field on_click? fun()
 
 --- @param opts ButtonOpts
@@ -25,8 +29,7 @@ function Button.new(opts)
   local box = math.box.from(opts.box)
   return setmetatable({
     box = box,
-    background = opts.background or DEFAULT_BACKGROUND,
-    foreground = opts.foreground or DEFAULT_FOREGROUND,
+    colors = opts.colors or {},
     text = Text.new({
       text = opts.text,
       pos = box:getOriginPos(Origin.CENTER),
@@ -38,8 +41,23 @@ function Button.new(opts)
 end
 
 function Button:draw()
-  self.box:draw('fill', self.background)
-  self.text:draw()
+  if self.colors.background_hover and self.hover then
+    self.box:draw('fill', self.colors.background_hover)
+  elseif self.colors.background then
+    self.box:draw('fill', self.colors.background)
+  end
+
+  if self.colors.outline_hover and self.hover then
+    self.box:draw('line', self.colors.outline_hover)
+  elseif self.colors.outline then
+    self.box:draw('line', self.colors.outline)
+  end
+
+  if self.colors.foreground_hover and self.hover then
+    self.text:draw(self.colors.foreground_hover)
+  else
+    self.text:draw(self.colors.foreground or Res.colors.RESET)
+  end
 end
 
 function Button:update()
@@ -55,7 +73,7 @@ function Button:update()
     end
   end
 
-  if love.mouse.isDown(1) then
+  if love.mouse.isDown(1) and hover then
     self:on_click()
     love.mouse.setCursor(love.mouse.getSystemCursor('arrow'))
   end
