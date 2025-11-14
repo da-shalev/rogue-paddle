@@ -10,7 +10,7 @@ local FIXED_DT = 1. / 64.
 local accumulator = 0.0
 local current_time = love.timer.getTime()
 
---- @type Scene?
+---@type Scene?
 local current_scene
 
 function love.load()
@@ -117,12 +117,12 @@ function love.resize()
   canvas = love.graphics.newCanvas(canvas_w, canvas_h)
 end
 
---- @return boolean
+---@return boolean
 function love.keyboard.isAnyPressed()
   return next(keys_pressed) ~= nil
 end
 
---- @return boolean
+---@return boolean
 function love.keyboard.isAnyReleased()
   return next(keys_released) ~= nil
 end
@@ -135,16 +135,16 @@ local function any(t, keys)
   end
 end
 
---- @param key love.KeyConstant
---- @param ... love.KeyConstant
---- @return boolean
+---@param key love.KeyConstant
+---@param ... love.KeyConstant
+---@return boolean
 function love.keyboard.isPressed(key, ...)
   return any(keys_pressed, { key, ... }) or false
 end
 
---- @param key love.KeyConstant
---- @param ... love.KeyConstant
---- @return boolean
+---@param key love.KeyConstant
+---@param ... love.KeyConstant
+---@return boolean
 function love.keyboard.isReleased(key, ...)
   return any(keys_released, { key, ... }) or false
 end

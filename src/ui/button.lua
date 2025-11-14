@@ -1,31 +1,31 @@
 local Text = require('ui.text')
 
---- @class ButtonStyle
---- @field background? Color
---- @field foreground? Color
---- @field outline? Color
---- @field outline_hover? Color
---- @field background_hover? Color
---- @field foreground_hover? Color
---- @field extend? Vec2
+---@class ButtonStyle
+---@field background? Color
+---@field foreground? Color
+---@field outline? Color
+---@field outline_hover? Color
+---@field background_hover? Color
+---@field foreground_hover? Color
+---@field extend? Vec2
 
---- @class Button
---- @field _box Box
---- @field style ButtonStyle
---- @field hover? boolean
---- @field text Text
---- @field onClick? fun()
+---@class Button
+---@field _box Box
+---@field style ButtonStyle
+---@field hover? boolean
+---@field text Text
+---@field onClick? fun()
 local Button = {}
 Button.__index = Button
 
---- @class ButtonOpts
---- @field text string
---- @field pos? Vec2
---- @field style? ButtonStyle
---- @field onClick? fun()
+---@class ButtonOpts
+---@field text string
+---@field pos? Vec2
+---@field style? ButtonStyle
+---@field onClick? fun()
 
---- @param opts ButtonOpts
---- @return Button
+---@param opts ButtonOpts
+---@return Button
 function Button.new(opts)
   opts.style = opts.style or {}
   opts.style.extend = opts.style.extend or math.vec2.zero()
@@ -89,9 +89,9 @@ function Button:update()
   end
 end
 
---- @return UiDrawable
+---@return UiDrawable
 function Button:ui()
-  --- @type UiDrawable
+  ---@type UiDrawable
   return {
     box = self._box,
     updatePos = function()

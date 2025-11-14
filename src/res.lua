@@ -49,14 +49,14 @@ local Res = {
   },
 
   ui = {
-    --- @type ButtonStyle
+    ---@type ButtonStyle
     BUTTON_STYLE = {
       -- background = colors.REGULAR0,
       outline_hover = colors.RESET,
       extend = math.vec2.new(5, 3),
     },
 
-    --- @type ButtonStyle
+    ---@type ButtonStyle
     BUTTON_QUIT_STYLE = {
       -- background = colors.REGULAR0,
       outline_hover = colors.REGULAR1,

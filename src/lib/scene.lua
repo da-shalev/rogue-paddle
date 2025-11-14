@@ -1,15 +1,15 @@
---- @class StatusCtx
---- @field _status Status
---- @field _overlay? Status
+---@class StatusCtx
+---@field _status Status
+---@field _overlay? Status
 local StatusCtx = {}
 StatusCtx.__index = StatusCtx
 
---- @param ctx StatusCtx
+---@param ctx StatusCtx
 StatusCtx.new = function(ctx)
   return setmetatable(ctx, StatusCtx)
 end
 
---- @param status Status
+---@param status Status
 function StatusCtx:setStatus(status)
   self._status = status
 end
@@ -21,41 +21,41 @@ function StatusCtx:popOverlay()
   self._overlay = nil
 end
 
---- @param status Status
+---@param status Status
 function StatusCtx:setOverlay(status)
   self._overlay = status
 end
 
---- @return boolean
+---@return boolean
 function StatusCtx:hasStatus()
   return self._status ~= nil
 end
 
---- @return boolean
+---@return boolean
 function StatusCtx:hasOverlay()
   return self._overlay ~= nil
 end
 
---- @class Scene
---- @field ctx StatusCtx
---- @field update fun(self: Scene, dt: number)
---- @field fixed fun(self: Scene, dt: number)
---- @field draw fun(self: Scene)
---- @field exit fun()
+---@class Scene
+---@field ctx StatusCtx
+---@field update fun(self: Scene, dt: number)
+---@field fixed fun(self: Scene, dt: number)
+---@field draw fun(self: Scene)
+---@field exit fun()
 local Scene = {}
 Scene.__index = Scene
 
---- @class SceneOpts : Status
---- @field status Status
---- @field overlay? Status
---- @field exit? fun()
+---@class SceneOpts : Status
+---@field status Status
+---@field overlay? Status
+---@field exit? fun()
 
---- @param events SceneOpts
---- @return Scene
+---@param events SceneOpts
+---@return Scene
 function Scene.new(events)
   local empty = function() end
 
-  --- @type Scene
+  ---@type Scene
   local scene = {
     update = function(self, dt)
       (self.ctx._status.update or empty)(self.ctx, dt);

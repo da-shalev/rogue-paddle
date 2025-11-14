@@ -1,44 +1,44 @@
---- @class Flexbox
---- @field box Box
---- @field dir FlexDirection
---- @field justify_items FlexJustifyItems
---- @field align_items FlexAlignItems
---- @field gap number
---- @field drawables (UiDrawable)[]
---- @field style? BoxStyle
+---@class Flexbox
+---@field box Box
+---@field dir FlexDirection
+---@field justify_items FlexJustifyItems
+---@field align_items FlexAlignItems
+---@field gap number
+---@field drawables (UiDrawable)[]
+---@field style? BoxStyle
 local Flexbox = {}
 Flexbox.__index = Flexbox
 
---- @class UiDrawable
---- @field box Box
---- @field updatePos? fun()
---- @field update? fun(dt: number)
---- @field draw fun()
+---@class UiDrawable
+---@field box Box
+---@field updatePos? fun()
+---@field update? fun(dt: number)
+---@field draw fun()
 
---- @alias FlexDirection "row" | "col" | "row-reverse" | "col-reverse"
---- @alias FlexItemOpts "start" | "end" | "center"
---- @alias FlexJustifyItems FlexItemOpts
---- @alias FlexAlignItems FlexItemOpts
+---@alias FlexDirection "row" | "col" | "row-reverse" | "col-reverse"
+---@alias FlexItemOpts "start" | "end" | "center"
+---@alias FlexJustifyItems FlexItemOpts
+---@alias FlexAlignItems FlexItemOpts
 
---- @class FlexOpts
---- @field dir? FlexDirection
---- @field justify_items? FlexJustifyItems
---- @field align_items? FlexAlignItems
---- @field gap? number
+---@class FlexOpts
+---@field dir? FlexDirection
+---@field justify_items? FlexJustifyItems
+---@field align_items? FlexAlignItems
+---@field gap? number
 
---- @class FlexboxOpts
---- @field box BoxOpts
---- @field flex? FlexOpts
---- @field style? BoxStyle
---- @field drawables (UiDrawable)[]
+---@class FlexboxOpts
+---@field box BoxOpts
+---@field flex? FlexOpts
+---@field style? BoxStyle
+---@field drawables (UiDrawable)[]
 
 --- a simple 'nowrap' flexbox
---- @param opts FlexboxOpts
---- @return Flexbox
+---@param opts FlexboxOpts
+---@return Flexbox
 function Flexbox.new(opts)
   opts.flex = opts.flex or {}
 
-  --- @type Flexbox
+  ---@type Flexbox
   local flex = {
     box = math.box.from(opts.box),
     dir = opts.flex.dir or 'row',
@@ -54,7 +54,7 @@ function Flexbox.new(opts)
   return setmetatable(flex, Flexbox)
 end
 
---- @param dt number
+---@param dt number
 function Flexbox:update(dt)
   for _, drawable in ipairs(self.drawables) do
     if drawable.update then
@@ -73,7 +73,7 @@ function Flexbox:draw()
   end
 end
 
---- @param flex Flexbox
+---@param flex Flexbox
 Flexbox.apply = function(flex)
   local cx = flex.box.pos.x
   local cy = flex.box.pos.y

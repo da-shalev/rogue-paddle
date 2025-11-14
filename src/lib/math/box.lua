@@ -35,14 +35,14 @@ local alias = {
 
 local empty_vec = math.vec2.zero()
 
---- @class Box
---- @field x number -- alias to pos.x
---- @field y number -- alias to pos.y
---- @field w number -- alias to size.x
---- @field h number -- alias to size.y
---- @field pos Vec2
---- @field size Vec2
---- @field rot number
+---@class Box
+---@field x number -- alias to pos.x
+---@field y number -- alias to pos.y
+---@field w number -- alias to size.x
+---@field h number -- alias to size.y
+---@field pos Vec2
+---@field size Vec2
+---@field rot number
 local Box = {}
 Box.__index = function(t, k)
   local a = alias[k]
@@ -62,23 +62,23 @@ Box.__newindex = function(t, k, v)
   end
 end
 
---- @class BoxOpts
---- @field pos Vec2
---- @field size Vec2
---- @field starting_origin? Vec2
---- @field rot? number
+---@class BoxOpts
+---@field pos Vec2
+---@field size Vec2
+---@field starting_origin? Vec2
+---@field rot? number
 
---- @param opts BoxOpts
---- @return Box
+---@param opts BoxOpts
+---@return Box
 function Box.from(opts)
   return Box.new(opts.pos, opts.size, opts.rot, opts.starting_origin)
 end
 
---- @param pos Vec2
---- @param size Vec2
---- @param rot? number
---- @param starting_origin? Vec2
---- @return Box
+---@param pos Vec2
+---@param size Vec2
+---@param rot? number
+---@param starting_origin? Vec2
+---@return Box
 function Box.new(pos, size, rot, starting_origin)
   pos = pos - (size * (starting_origin or Origin.TOP_LEFT))
 
@@ -93,8 +93,8 @@ function Box.zero()
   return Box.new(math.vec2.zero(), math.vec2.zero(), 0, math.vec2.zero())
 end
 
---- @param extend Vec2
---- @return Box
+---@param extend Vec2
+---@return Box
 function Box:extend(extend)
   self.x = self.x - extend.x
   self.y = self.y - extend.y
@@ -103,34 +103,34 @@ function Box:extend(extend)
   return self
 end
 
---- @param other Box
---- @return boolean xCollide
---- @return boolean yCollide
+---@param other Box
+---@return boolean xCollide
+---@return boolean yCollide
 function Box:collides(other)
   return not (other.pos.x >= self.pos.x + self.size.x or other.pos.x + other.size.x <= self.pos.x),
     not (other.pos.y >= self.pos.y + self.size.y or other.pos.y + other.size.y <= self.pos.y)
 end
 
---- @param other Box
---- @return boolean xWithin
---- @return boolean yWithin
+---@param other Box
+---@return boolean xWithin
+---@return boolean yWithin
 function Box:within(other)
   return self.pos.x >= other.pos.x and self.pos.x + self.size.x <= other.pos.x + other.size.x,
     self.pos.y >= other.pos.y and self.pos.y + self.size.y <= other.pos.y + other.size.y
 end
 
---- @param other Box
---- @return number xOverlap Percentage
---- @return number yOverlap Percentage
+---@param other Box
+---@return number xOverlap Percentage
+---@return number yOverlap Percentage
 function Box:overlaps(other)
   return math.min(self.pos.x + self.size.x - other.pos.x, other.pos.x + other.size.x - self.pos.x),
     math.min(self.pos.y + self.size.y - other.pos.y, other.pos.y + other.size.y - self.pos.y)
 end
 
---- @param prev Box Previous frame's box
---- @param current Box Current frame's box
---- @param alpha number Interpolation factor (0=prev, 1=current)
---- @return Box self This box (for chaining)
+---@param prev Box Previous frame's box
+---@param current Box Current frame's box
+---@param alpha number Interpolation factor (0=prev, 1=current)
+---@return Box self This box (for chaining)
 function Box:lerp(prev, current, alpha)
   self.pos = prev.pos:lerp(current.pos, alpha)
   self.size = prev.size:lerp(current.size, alpha)
@@ -138,9 +138,9 @@ function Box:lerp(prev, current, alpha)
   return self
 end
 
---- @param source Box
---- @param velocity Vec2
---- @return boolean
+---@param source Box
+---@param velocity Vec2
+---@return boolean
 function Box:paddleOnCollision(source, velocity)
   local x_overlap, y_overlap = self:overlaps(source)
 
@@ -179,23 +179,23 @@ function Box:paddleOnCollision(source, velocity)
   return true
 end
 
---- @param starting_origin? Vec2
+---@param starting_origin? Vec2
 function Box:setPos(pos, starting_origin)
   self.pos = pos - self.size * (starting_origin or Origin.TOP_LEFT)
 end
 
---- @param origin Vec2
---- @return Vec2
+---@param origin Vec2
+---@return Vec2
 function Box:getOriginPos(origin)
   return self.pos:clone() + self.size * origin
 end
 
---- @param value number
---- @param min number
---- @param max number
---- @param clampMin boolean
---- @param clampMax boolean
---- @return number, boolean
+---@param value number
+---@param min number
+---@param max number
+---@param clampMin boolean
+---@param clampMax boolean
+---@return number, boolean
 local function clampValue(value, min, max, clampMin, clampMax)
   if clampMin and value < min then
     return min, true
@@ -206,10 +206,10 @@ local function clampValue(value, min, max, clampMin, clampMax)
   return value, false
 end
 
---- @param other Box
---- @param left boolean
---- @param right boolean
---- @return boolean, boolean
+---@param other Box
+---@param left boolean
+---@param right boolean
+---@return boolean, boolean
 function Box:clampWithinX(other, left, right)
   local hitLeft = self.pos.x < other.pos.x
   local hitRight = self.pos.x > other.pos.x + other.size.x - self.size.x
@@ -219,10 +219,10 @@ function Box:clampWithinX(other, left, right)
   return hitLeft, hitRight
 end
 
---- @param other Box
---- @param top boolean
---- @param bottom boolean
---- @return boolean, boolean
+---@param other Box
+---@param top boolean
+---@param bottom boolean
+---@return boolean, boolean
 function Box:clampWithinY(other, top, bottom)
   local hitTop = self.pos.y < other.pos.y
   local hitBottom = self.pos.y > other.pos.y + other.size.y - self.size.y
@@ -232,22 +232,22 @@ function Box:clampWithinY(other, top, bottom)
   return hitTop, hitBottom
 end
 
---- @param other Box
---- @param top boolean
---- @param bottom boolean
---- @param left boolean
---- @param right boolean
---- @return boolean, boolean, boolean, boolean
+---@param other Box
+---@param top boolean
+---@param bottom boolean
+---@param left boolean
+---@param right boolean
+---@return boolean, boolean, boolean, boolean
 function Box:clampWithin(other, top, bottom, left, right)
   local top, bottom = self:clampWithinY(other, top, bottom)
   local left, right = self:clampWithinX(other, left, right)
   return top, bottom, left, right
 end
 
---- @param other Box
---- @param left boolean
---- @param right boolean
---- @return boolean, boolean
+---@param other Box
+---@param left boolean
+---@param right boolean
+---@return boolean, boolean
 function Box:clampOutsideX(other, left, right)
   local hitLeft = self.pos.x + self.size.x > other.pos.x and self.pos.x < other.pos.x
   local hitRight = self.pos.x < other.pos.x + other.size.x
@@ -263,10 +263,10 @@ function Box:clampOutsideX(other, left, right)
   return hitLeft, hitRight
 end
 
---- @param other Box
---- @param top boolean
---- @param bottom boolean
---- @return boolean, boolean
+---@param other Box
+---@param top boolean
+---@param bottom boolean
+---@return boolean, boolean
 function Box:clampOutsideY(other, top, bottom)
   local hitTop = self.pos.y + self.size.y > other.pos.y and self.pos.y < other.pos.y
   local hitBottom = self.pos.y < other.pos.y + other.size.y
@@ -282,12 +282,12 @@ function Box:clampOutsideY(other, top, bottom)
   return hitTop, hitBottom
 end
 
---- @param other Box
---- @param top boolean
---- @param bottom boolean
---- @param left boolean
---- @param right boolean
---- @return boolean, boolean, boolean, boolean
+---@param other Box
+---@param top boolean
+---@param bottom boolean
+---@param left boolean
+---@param right boolean
+---@return boolean, boolean, boolean, boolean
 function Box:clampOutside(other, top, bottom, left, right)
   local top, bottom = self:clampOutsideY(other, top, bottom)
   local left, right = self:clampOutsideX(other, left, right)
@@ -295,26 +295,26 @@ function Box:clampOutside(other, top, bottom, left, right)
 end
 
 --- Copies position and transform values from another box
---- @param source Box The box to copy values from
+---@param source Box The box to copy values from
 function Box:copy(source)
   self.pos:copy(source.pos)
   self.size:copy(source.size)
   self.rot = source.rot
 end
 
---- @class BoxStyle
---- @field mode? love.DrawMode
---- @field border_radius? Vec2
---- @field background? Color
+---@class BoxStyle
+---@field mode? love.DrawMode
+---@field border_radius? Vec2
+---@field background? Color
 
---- @param mode love.DrawMode
---- @param color? Color
+---@param mode love.DrawMode
+---@param color? Color
 function Box:draw(mode, color)
   love.graphics.setColor(color or Res.colors.RESET)
   love.graphics.rectangle(mode, self.pos.x, self.pos.y, self.size.x, self.size.y)
 end
 
---- @param opts BoxStyle
+---@param opts BoxStyle
 function Box:drawFrom(opts)
   opts.border_radius = opts.border_radius or empty_vec
   love.graphics.setColor(opts.background or Res.colors.RESET)
@@ -333,7 +333,7 @@ function Box:clone()
   return Box.new(self.pos:clone(), self.size:clone(), self.rot)
 end
 
---- @return string
+---@return string
 function Box:__tostring()
   return string.format('Box(%.3f, %.3f, %.3f, %.3f)', self.x, self.y, self.w, self.h)
 end

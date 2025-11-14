@@ -1,1 +1,1 @@
---- @alias Color {number, number, number, number?}
+---@alias Color {number, number, number, number?}

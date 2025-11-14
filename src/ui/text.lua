@@ -1,28 +1,28 @@
---- @alias ValidText string | number | integer
+---@alias ValidText string | number | integer
 
---- @param font love.Font
---- @param text ValidText
---- @return Vec2
+---@param font love.Font
+---@param text ValidText
+---@return Vec2
 local function getSize(font, text)
   return math.vec2.new(font:getWidth(text), font:getHeight())
 end
 
 local EMPTY = ''
 
---- @class Text
---- @field _text ValidText
---- @field _box Box
---- @field _font love.Font
+---@class Text
+---@field _text ValidText
+---@field _box Box
+---@field _font love.Font
 local Text = {}
 Text.__index = Text
 
---- @class TextOpts
---- @field text? ValidText
---- @field font? love.Font
---- @field pos? Vec2
+---@class TextOpts
+---@field text? ValidText
+---@field font? love.Font
+---@field pos? Vec2
 
---- @param opts TextOpts
---- @return Text
+---@param opts TextOpts
+---@return Text
 function Text.new(opts)
   local font = opts.font or Res.fonts.PRSTART
   local text = opts.text or EMPTY
@@ -33,9 +33,9 @@ function Text.new(opts)
   }, Text)
 end
 
---- @return UiDrawable
+---@return UiDrawable
 function Text:ui()
-  --- @type UiDrawable
+  ---@type UiDrawable
   return {
     box = self._box,
     updatePos = function() end,
@@ -49,23 +49,23 @@ function Text:_mutated()
   self._box.size = getSize(self._font, self._text)
 end
 
---- @param text? ValidText
---- @return Text
+---@param text? ValidText
+---@return Text
 function Text:setText(text)
   self._text = text or EMPTY
   self:_mutated()
   return self
 end
 
---- @param font love.Font
---- @return Text
+---@param font love.Font
+---@return Text
 function Text:setFont(font)
   self._font = font
   self:_mutated()
   return self
 end
 
---- @param color? Color
+---@param color? Color
 function Text:draw(color)
   if self._text ~= EMPTY then
     love.graphics.setFont(self._font)

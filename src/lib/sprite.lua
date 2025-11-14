@@ -1,28 +1,28 @@
---- @class SpriteState
---- @field box Box
---- @field data Sprite
---- @field style SpriteStyle
+---@class SpriteState
+---@field box Box
+---@field data Sprite
+---@field style SpriteStyle
 local SpriteState = {}
 SpriteState.__index = SpriteState
 
---- @class Sprite
---- @field image love.Image
---- @field cell_size Vec2
---- @field cells love.Quad[]
+---@class Sprite
+---@field image love.Image
+---@field cell_size Vec2
+---@field cells love.Quad[]
 local Sprite = {}
 Sprite.__index = Sprite
 
---- @param image_path string
---- @param split_x? number
---- @param split_y? number
---- @return Sprite
+---@param image_path string
+---@param split_x? number
+---@param split_y? number
+---@return Sprite
 function Sprite.new(image_path, split_x, split_y)
   local image = love.graphics.newImage(image_path)
   image:setFilter('nearest', 'nearest')
 
   local w, h = image:getDimensions()
 
-  --- @type love.Quad[]
+  ---@type love.Quad[]
   local cells = {}
 
   split_x = math.max(split_x or 1, 1)
@@ -43,37 +43,37 @@ function Sprite.new(image_path, split_x, split_y)
   }, Sprite)
 end
 
---- @return number
+---@return number
 function Sprite:getWidth()
   return self.cell_size.x
 end
 
---- @return number
+---@return number
 function Sprite:getHeight()
   return self.cell_size.y
 end
 
---- @return Vec2
+---@return Vec2
 function Sprite:getDimensions()
   return self.cell_size
 end
 
---- @class SpriteStyle
---- @field frame_idx? number
---- @field flip_x? boolean
---- @field flip_y? boolean
---- @field color? Color
+---@class SpriteStyle
+---@field frame_idx? number
+---@field flip_x? boolean
+---@field flip_y? boolean
+---@field color? Color
 
---- @class SpriteStateOpts: SpriteStyle
---- @field pos? Vec2
---- @field size? Vec2
---- @field starting_origin? Vec2
---- @field rot? number
+---@class SpriteStateOpts: SpriteStyle
+---@field pos? Vec2
+---@field size? Vec2
+---@field starting_origin? Vec2
+---@field rot? number
 
---- Stores render data directly on the sprite by extending
---- a reference to the original sprite and holding its own render parameters.
---- @param opts? SpriteStateOpts
---- @return SpriteState
+--- Stores render data directly on the sprite by
+--- referencing to the original sprite
+---@param opts? SpriteStateOpts
+---@return SpriteState
 function Sprite:state(opts)
   opts = opts or {}
 
@@ -93,7 +93,7 @@ function Sprite:state(opts)
   }, SpriteState)
 end
 
---- @param prev_box Box
+---@param prev_box Box
 function SpriteState:drawLerp(prev_box)
   self.data:drawFrom(prev_box:lerp(prev_box, self.box, S.alpha), self.style)
 end
@@ -102,10 +102,10 @@ function SpriteState:draw()
   self.data:drawFrom(self.box, self.style)
 end
 
---- @param x? number
---- @param y? number
---- @param rot? number
---- @param opts? SpriteStyle
+---@param x? number
+---@param y? number
+---@param rot? number
+---@param opts? SpriteStyle
 function Sprite:draw(x, y, rot, opts)
   opts = opts or {}
   love.graphics.setColor(opts.color or Res.colors.RESET)
@@ -126,8 +126,8 @@ function Sprite:draw(x, y, rot, opts)
   )
 end
 
---- @param box Box
---- @param opts SpriteStyle
+---@param box Box
+---@param opts SpriteStyle
 function Sprite:drawFrom(box, opts)
   love.graphics.setColor(opts.color or Res.colors.RESET)
 

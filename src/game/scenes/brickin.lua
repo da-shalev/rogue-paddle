@@ -152,7 +152,7 @@ return function()
     end
   end
 
-  --- @param ctx StatusCtx
+  ---@param ctx StatusCtx
   state.removeLife = function(ctx)
     lives = lives - 1
     ball.sprite.box:setPos(getBallOnPaddlePos(), Origin.BOTTOM_CENTER)

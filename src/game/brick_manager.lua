@@ -1,19 +1,19 @@
 local BORDER_COLOR = Res.colors.REGULAR0
 
 -- types
---- @alias BrickLayout integer[][]
---- @alias BrickRow Brick[]
---- @alias BrickGrid BrickRow[]
---- @alias BrickVariants BrickVariant[]
+---@alias BrickLayout integer[][]
+---@alias BrickRow Brick[]
+---@alias BrickGrid BrickRow[]
+---@alias BrickVariants BrickVariant[]
 
 -- events
---- @class BrickEvent
---- @field bricks BrickManager
---- @field cancel boolean
+---@class BrickEvent
+---@field bricks BrickManager
+---@field cancel boolean
 local BrickEvent = {}
 BrickEvent.__index = BrickEvent
 
---- @param bricks BrickManager
+---@param bricks BrickManager
 function BrickEvent:new(bricks)
   return setmetatable({
     bricks = bricks,
@@ -21,54 +21,49 @@ function BrickEvent:new(bricks)
   }, self)
 end
 
+---@class BrickEvents
 --- triggers when a new brick is being generated
---- @alias BrickGenerateEvent fun(brick: Brick)
---- triggers when a new brick has been spawned
--- --- @alias BrickSpawnEvent fun(e: BrickEvent, brick: Brick)
---- triggers when a new brick has been removed
---- @alias BrickRemoveEvent fun(e: BrickEvent, brick: Brick)
+---@field onGenerate? fun(brick: Brick)
+--- triggers when a brick is being removed
+---@field onRemove? fun(e: BrickEvent, brick: Brick)
 --- triggers when there are no bricks left
---- @alias BrickResetEvent fun(e: BrickEvent)
+---@field onReset? fun(e: BrickEvent)
 
---- @class BrickEvents
---- @field onGenerate? BrickGenerateEvent
--- --- @field onSpawn? BrickSpawnEvent
---- @field onRemove? BrickRemoveEvent
---- @field onReset? BrickResetEvent
-
---- @class BrickVariant
+---@class BrickVariant
 
 -- meta
---- @class Brick
---- @field x integer
---- @field y integer
---- @field idx integer
---- @field box Box
---- @field color? Color
---- @field variant BrickVariant
 
---- @class BrickGridData
---- @field grid BrickGrid
---- @field cols integer
---- @field rows integer
---- @field count integer
---- @field timer Timer
+---@class Brick
+---@field x integer
+---@field y integer
+---@field idx integer
+---@field box Box
+---@field color? Color
+---@field variant BrickVariant
+
+---@class BrickGridData
+---@field grid BrickGrid
+---@field cols integer
+---@field rows integer
+---@field count integer
+---@field timer Timer
 
 -- manager
---- @class BrickManager
---- @field _data BrickGridData
---- @field opts BrickManagerOpts
+
+---@class BrickManager
+---@field _data BrickGridData
+---@field opts BrickManagerOpts
 local BrickManager = {}
 BrickManager.__index = BrickManager
 
---- @class BrickManagerOpts : BrickEvents
---- @field layout BrickLayout
---- @field viewTransitionSpeed? number
---- @field variants? BrickVariants
---- @field colors? Color[]
+---@class BrickManagerOpts : BrickEvents
+---@field layout BrickLayout
+---@field viewTransitionSpeed? number
+---@field variants? BrickVariants
+---@field colors? Color[]
 
---- @param opts BrickManagerOpts
---- @return BrickManager
+---@param opts BrickManagerOpts
+---@return BrickManager
 function BrickManager.new(opts)
   return setmetatable({
     _data = BrickManager.generate(opts),
@@ -76,8 +71,8 @@ function BrickManager.new(opts)
   }, BrickManager)
 end
 
---- @param opts BrickManagerOpts
---- @return BrickGridData
+---@param opts BrickManagerOpts
+---@return BrickGridData
 function BrickManager.generate(opts)
   local grid = {}
   local rows = #opts.layout
@@ -99,7 +94,7 @@ function BrickManager.generate(opts)
       if idx ~= 0 then
         row_has_brick = true
 
-        --- @type Brick
+        ---@type Brick
         local brick = {
           x = x,
           y = y,
@@ -153,17 +148,17 @@ function BrickManager:draw()
   end
 end
 
---- @param grid_x integer
---- @param grid_y integer
---- @return Brick? brick
+---@param grid_x integer
+---@param grid_y integer
+---@return Brick? brick
 function BrickManager:gridAt(grid_x, grid_y)
   return self._data.grid[grid_y] and self._data.grid[grid_y][grid_x]
 end
 
---- @param world_x number
---- @param world_y number
---- @return integer grid_x
---- @return integer grid_y
+---@param world_x number
+---@param world_y number
+---@return integer grid_x
+---@return integer grid_y
 function BrickManager:gridCellCoords(world_x, world_y)
   local cell_w = S.camera.box.w / self._data.cols
   local cell_h = S.camera.box.h / self._data.rows
@@ -172,22 +167,22 @@ function BrickManager:gridCellCoords(world_x, world_y)
   return grid_x, grid_y
 end
 
---- @param world_x number
---- @param world_y number
---- @return Brick? brick
+---@param world_x number
+---@param world_y number
+---@return Brick? brick
 function BrickManager:gridWorldAt(world_x, world_y)
   local gx, gy = self:gridCellCoords(world_x, world_y)
   return self:gridAt(gx, gy)
 end
 
---- @class CollisionResult
---- @field top? Brick
---- @field bottom? Brick
---- @field left? Brick
---- @field right? Brick
+---@class CollisionResult
+---@field top? Brick
+---@field bottom? Brick
+---@field left? Brick
+---@field right? Brick
 
---- @param source Box
---- @return CollisionResult result
+---@param source Box
+---@return CollisionResult result
 function BrickManager:boxCollision(source)
   if not self._data.timer.finished then
     return {}
@@ -203,8 +198,8 @@ function BrickManager:boxCollision(source)
 end
 
 --- checks and applies collision logic to any moving box
---- @param source Box
---- @param velocity Vec2
+---@param source Box
+---@param velocity Vec2
 function BrickManager:removeOnCollision(source, velocity)
   local col = self:boxCollision(source)
   local hit = nil
@@ -233,7 +228,7 @@ function BrickManager:removeOnCollision(source, velocity)
   end
 end
 
---- @param brick Brick
+---@param brick Brick
 function BrickManager:remove(brick)
   if self._data.count == 1 then
     self:reset()
@@ -253,17 +248,17 @@ function BrickManager:remove(brick)
   self._data.count = self._data.count - 1
 end
 
---- @return number
+---@return number
 function BrickManager:getCount()
   return self._data.count
 end
 
---- @return number
+---@return number
 function BrickManager:getCols()
   return self._data.cols
 end
 
---- @return number
+---@return number
 function BrickManager:getRows()
   return self._data.rows
 end
@@ -282,7 +277,7 @@ function BrickManager:reset()
   self._data = self.generate(self.opts)
 end
 
---- @param layout BrickLayout
+---@param layout BrickLayout
 function BrickManager:setNewLayout(layout)
   self.opts.layout = layout
 end
