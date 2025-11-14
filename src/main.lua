@@ -84,8 +84,8 @@ function love.draw()
   love.graphics.setCanvas(canvas)
   love.graphics.push()
 
-  love.graphics.scale(canvas_w / state.camera.vbox.w, canvas_h / state.camera.vbox.h)
-  love.graphics.translate(state.camera.vbox.x, state.camera.vbox.y)
+  love.graphics.scale(canvas_w / state.camera.box.w, canvas_h / state.camera.box.h)
+  love.graphics.translate(state.camera.box.x, state.camera.box.y)
   love.graphics.clear(Res.colors.BACKGROUND)
 
   if current_scene then
@@ -127,14 +127,26 @@ function love.keyboard.isAnyReleased()
   return next(keys_released) ~= nil
 end
 
----@param key love.KeyConstant
-function love.keyboard.isPressed(key)
-  return keys_pressed[key]
+local function any(t, keys)
+  for i = 1, #keys do
+    if t[keys[i]] then
+      return true
+    end
+  end
 end
 
----@param key love.KeyConstant
-function love.keyboard.isReleased(key)
-  return keys_released[key]
+--- @param key love.KeyConstant
+--- @param ... love.KeyConstant
+--- @return boolean
+function love.keyboard.isPressed(key, ...)
+  return any(keys_pressed, { key, ... }) or false
+end
+
+--- @param key love.KeyConstant
+--- @param ... love.KeyConstant
+--- @return boolean
+function love.keyboard.isReleased(key, ...)
+  return any(keys_released, { key, ... }) or false
 end
 
 ---@param key love.KeyConstant
@@ -148,5 +160,5 @@ function love.keyreleased(key)
 end
 
 love.mouse.getPosition = function()
-  return tlfres.getMousePosition(S.camera.vbox.w, S.camera.vbox.h)
+  return tlfres.getMousePosition(S.camera.box.w, S.camera.box.h)
 end

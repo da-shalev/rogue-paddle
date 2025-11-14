@@ -88,7 +88,7 @@ function BrickManager.generate(opts)
     assert(#row == cols, ('row %d width mismatch (expected %d, got %d)'):format(y, cols, #row))
   end
 
-  local size = math.vec2.new(S.camera.vbox.w / cols, S.camera.vbox.h / rows)
+  local size = math.vec2.new(S.camera.box.w / cols, S.camera.box.h / rows)
   local color_y = 1
 
   for y, y_rows in ipairs(opts.layout) do
@@ -107,7 +107,7 @@ function BrickManager.generate(opts)
           color = opts.colors[color_y],
           variant = opts.variants[love.math.random(#opts.variants)],
           box = math.box.new(
-            math.vec2.new((x - 1) * size.x, ((y - 1) * size.y - S.camera.vbox.h)),
+            math.vec2.new((x - 1) * size.x, ((y - 1) * size.y - S.camera.box.h)),
             size
           ),
         }
@@ -140,7 +140,7 @@ function BrickManager:draw()
     for y, row in ipairs(self._data.grid) do
       for _, brick in pairs(row) do
         local to = (y - 1) * brick.box.h
-        brick.box.y = math.lerp(to - S.camera.vbox.h, to, timer.alpha)
+        brick.box.y = math.lerp(to - S.camera.box.h, to, timer.alpha)
       end
     end
   end
@@ -165,8 +165,8 @@ end
 --- @return integer grid_x
 --- @return integer grid_y
 function BrickManager:gridCellCoords(world_x, world_y)
-  local cell_w = S.camera.vbox.w / self._data.cols
-  local cell_h = S.camera.vbox.h / self._data.rows
+  local cell_w = S.camera.box.w / self._data.cols
+  local cell_h = S.camera.box.h / self._data.rows
   local grid_x = math.floor(world_x / cell_w) + 1
   local grid_y = math.floor(world_y / cell_h) + 1
   return grid_x, grid_y

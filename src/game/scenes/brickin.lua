@@ -1,25 +1,25 @@
 local UI_INSET = 3
 local Text = require('ui.text')
-return Scene.build(function()
+return function()
   local state = {}
   local points = 0
 
   local points_text = Text.new {
     text = points,
-    pos = S.camera.vbox:getOriginPos(Origin.TOP_CENTER) + math.vec2.new(0, UI_INSET),
+    pos = S.camera.box:getOriginPos(Origin.TOP_CENTER) + math.vec2.new(0, UI_INSET),
     render_origin = Origin.TOP_CENTER,
   }
 
   local info_text = Text.new {
     text = string.format('Press %s to begin', Res.keybinds.CONFIRM),
-    pos = S.camera.vbox:getOriginPos(Origin.CENTER),
+    pos = S.camera.box:getOriginPos(Origin.CENTER),
     render_origin = Origin.CENTER,
   }
 
   local lives = 3
 
   local paddle = require('game.entities.paddle') {
-    pos = math.vec2.new(S.camera.vbox.w / 2, S.camera.vbox.h - 20),
+    pos = math.vec2.new(S.camera.box.w / 2, S.camera.box.h - 20),
     starting_origin = Origin.BOTTOM_CENTER,
   }
 
@@ -99,19 +99,19 @@ return Scene.build(function()
       ball.prev_box:copy(ball.sprite.box)
 
       paddle.sprite.box.x = paddle.sprite.box.x + paddle.input_x * dt * paddle.speed
-      paddle.sprite.box:clampWithin(S.camera.vbox, true, true, true, true)
+      paddle.sprite.box:clampWithin(S.camera.box, true, true, true, true)
 
       ball.sprite.box.pos = ball.sprite.box.pos + ball.velocity * dt * ball.speed
 
-      local x_within, y_within = ball.sprite.box:within(S.camera.vbox)
+      local x_within, y_within = ball.sprite.box:within(S.camera.box)
 
       if not x_within then
         ball.velocity.x = -ball.velocity.x
-        ball.sprite.box:clampWithinX(S.camera.vbox, true, true)
+        ball.sprite.box:clampWithinX(S.camera.box, true, true)
       end
 
       if not y_within then
-        local top, bottom = ball.sprite.box:clampWithinY(S.camera.vbox, true, false)
+        local top, bottom = ball.sprite.box:clampWithinY(S.camera.box, true, false)
 
         if top then
           ball.velocity.y = 1
@@ -160,14 +160,16 @@ return Scene.build(function()
     info_text:setText(string.format('Press %s to continue', Res.keybinds.CONFIRM))
 
     if lives == 0 then
-      ctx:setOverlay(require('game.overlays.gameover')())
+      ctx:setOverlay(require('game.overlays.gameover'))
     else
       ctx:setStatus(state.ATTACHED)
     end
   end
 
   state.updateCheats = function()
-    if love.keyboard.isPressed('r') then
+    if love.keyboard.isDown('lshift') and love.keyboard.isPressed('r') then
+      S.scene_queue.setNext(require('game.scenes.brickin'))
+    elseif love.keyboard.isPressed('r') then
       bricks:reset()
     end
 
@@ -183,9 +185,9 @@ return Scene.build(function()
         if ctx:hasOverlay() then
           ctx:popOverlay()
         else
-          ctx:setOverlay(require('game.overlays.pause')())
+          ctx:setOverlay(require('game.overlays.pause'))
         end
       end
     end,
   }
-end)
+end

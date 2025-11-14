@@ -29,7 +29,7 @@ local S = {
     -- desired aspect ratio for the display
     aspect_ratio = aspect_ratio,
     -- the games viewport/camera
-    vbox = math.box.new(
+    box = math.box.new(
       math.vec2.zero(),
       -- how tall the virtual screen is in virtual units
       -- divide width by the aspect ratio so a 16:9 screen gets a height of 135

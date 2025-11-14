@@ -13,27 +13,36 @@ local EMPTY = ''
 --- @field _text ValidText
 --- @field _box Box
 --- @field _font love.Font
---- @field _render_origin Vec2
 local Text = {}
 Text.__index = Text
 
 --- @class TextOpts
 --- @field text? ValidText
 --- @field font? love.Font
---- @field pos Vec2
---- @field render_origin? Vec2
+--- @field pos? Vec2
 
 --- @param opts TextOpts
+--- @return Text
 function Text.new(opts)
   local font = opts.font or Res.fonts.PRSTART
-  local origin = opts.render_origin or Origin.TOP_LEFT
   local text = opts.text or EMPTY
   return setmetatable({
     _text = text,
-    _box = math.box.new(opts.pos, getSize(font, text)),
+    _box = math.box.new(opts.pos or math.vec2.zero(), getSize(font, text)),
     _font = font,
-    _render_origin = origin,
   }, Text)
+end
+
+--- @return UiDrawable
+function Text:ui()
+  --- @type UiDrawable
+  return {
+    box = self._box,
+    updatePos = function() end,
+    draw = function()
+      self:draw()
+    end,
+  }
 end
 
 function Text:_mutated()
@@ -56,23 +65,12 @@ function Text:setFont(font)
   return self
 end
 
---- @param origin Vec2
---- @return Text
-function Text:setOrigin(origin)
-  self._render_origin = origin
-  return self
-end
-
 --- @param color? Color
 function Text:draw(color)
   if self._text ~= EMPTY then
     love.graphics.setFont(self._font)
     love.graphics.setColor(color or Res.colors.RESET)
-    love.graphics.print(
-      self._text,
-      self._box.pos.x - self._box.size.x * self._render_origin.x,
-      self._box.pos.y - self._box.size.y * self._render_origin.y
-    )
+    love.graphics.print(self._text, self._box.pos.x, self._box.pos.y)
   end
 end
 

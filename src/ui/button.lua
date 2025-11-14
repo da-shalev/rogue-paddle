@@ -1,82 +1,109 @@
 local Text = require('ui.text')
 
---- @class ButtonColors
+--- @class ButtonStyle
 --- @field background? Color
 --- @field foreground? Color
 --- @field outline? Color
 --- @field outline_hover? Color
 --- @field background_hover? Color
 --- @field foreground_hover? Color
+--- @field extend? Vec2
 
 --- @class Button
---- @field box Box
---- @field colors ButtonColors
---- @field hover boolean
+--- @field _box Box
+--- @field style ButtonStyle
+--- @field hover? boolean
 --- @field text Text
---- @field on_click? fun()
+--- @field onClick? fun()
 local Button = {}
 Button.__index = Button
 
 --- @class ButtonOpts
 --- @field text string
---- @field box BoxOpts
---- @field colors? ButtonColors
---- @field on_click? fun()
+--- @field pos? Vec2
+--- @field style? ButtonStyle
+--- @field onClick? fun()
 
 --- @param opts ButtonOpts
 --- @return Button
 function Button.new(opts)
-  local box = math.box.from(opts.box)
+  opts.style = opts.style or {}
+  opts.style.extend = opts.style.extend or math.vec2.zero()
+
+  local text = Text.new {
+    pos = opts.pos,
+    text = opts.text,
+    render_origin = Origin.CENTER,
+  }
+
   return setmetatable({
-    box = box,
-    colors = opts.colors or {},
-    text = Text.new({
-      text = opts.text,
-      pos = box:getOriginPos(Origin.CENTER),
-      render_origin = Origin.CENTER,
-    }),
-    hover = false,
-    on_click = opts.on_click or function() end,
+    _box = text._box:clone():extend(opts.style.extend),
+    style = opts.style or {},
+    text = text,
+    hover = nil,
+    onClick = opts.onClick or function() end,
   }, Button)
 end
 
 function Button:draw()
-  if self.colors.background_hover and self.hover then
-    self.box:draw('fill', self.colors.background_hover)
-  elseif self.colors.background then
-    self.box:draw('fill', self.colors.background)
+  if self.style.background_hover and self.hover then
+    self._box:draw('fill', self.style.background_hover)
+  elseif self.style.background then
+    self._box:draw('fill', self.style.background)
   end
 
-  if self.colors.outline_hover and self.hover then
-    self.box:draw('line', self.colors.outline_hover)
-  elseif self.colors.outline then
-    self.box:draw('line', self.colors.outline)
+  if self.style.outline_hover and self.hover then
+    self._box:draw('line', self.style.outline_hover)
+  elseif self.style.outline then
+    self._box:draw('line', self.style.outline)
   end
 
-  if self.colors.foreground_hover and self.hover then
-    self.text:draw(self.colors.foreground_hover)
+  if self.style.foreground_hover and self.hover then
+    self.text:draw(self.style.foreground_hover)
   else
-    self.text:draw(self.colors.foreground or Res.colors.RESET)
+    self.text:draw(self.style.foreground or Res.colors.RESET)
   end
 end
 
-function Button:update()
-  local x, y = S.cursor:within(self.box)
+function Button:updateHover()
+  local x, y = S.cursor:within(self._box)
   local hover = x and y
 
   if self.hover ~= hover then
-    self.hover = hover
-    if self.hover then
+    if hover then
       love.mouse.setCursor(love.mouse.getSystemCursor('hand'))
     else
       love.mouse.setCursor(love.mouse.getSystemCursor('arrow'))
     end
-  end
 
-  if love.mouse.isDown(1) and hover then
-    self:on_click()
+    self.hover = hover
+  end
+end
+
+function Button:update()
+  self:updateHover()
+
+  if love.mouse.isDown(1) and self.hover then
+    self:onClick()
     love.mouse.setCursor(love.mouse.getSystemCursor('arrow'))
   end
+end
+
+--- @return UiDrawable
+function Button:ui()
+  --- @type UiDrawable
+  return {
+    box = self._box,
+    updatePos = function()
+      self.text._box = self._box:clone():extend(-self.style.extend)
+    end,
+    draw = function()
+      self:draw()
+    end,
+    update = function()
+      self:update()
+    end,
+  }
 end
 
 return Button

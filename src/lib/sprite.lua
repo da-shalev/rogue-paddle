@@ -1,7 +1,7 @@
 --- @class SpriteState
 --- @field box Box
 --- @field data Sprite
---- @field render SpriteRenderOpts
+--- @field style SpriteStyle
 local SpriteState = {}
 SpriteState.__index = SpriteState
 
@@ -58,13 +58,13 @@ function Sprite:getDimensions()
   return self.cell_size
 end
 
---- @class SpriteRenderOpts
+--- @class SpriteStyle
 --- @field frame_idx? number
 --- @field flip_x? boolean
 --- @field flip_y? boolean
 --- @field color? Color
 
---- @class SpriteStateOpts: SpriteRenderOpts
+--- @class SpriteStateOpts: SpriteStyle
 --- @field pos? Vec2
 --- @field size? Vec2
 --- @field starting_origin? Vec2
@@ -85,7 +85,7 @@ function Sprite:state(opts)
       opts.rot or 0,
       opts.starting_origin or Origin.TOP_LEFT
     ),
-    render = {
+    style = {
       frame_idx = opts.frame_idx or 1,
       flip_x = opts.flip_x or false,
       flip_y = opts.flip_y or false,
@@ -95,17 +95,17 @@ end
 
 --- @param prev_box Box
 function SpriteState:drawLerp(prev_box)
-  self.data:drawBox(prev_box:lerp(prev_box, self.box, S.alpha), self.render)
+  self.data:drawFrom(prev_box:lerp(prev_box, self.box, S.alpha), self.style)
 end
 
 function SpriteState:draw()
-  self.data:drawBox(self.box, self.render)
+  self.data:drawFrom(self.box, self.style)
 end
 
 --- @param x? number
 --- @param y? number
 --- @param rot? number
---- @param opts? SpriteRenderOpts
+--- @param opts? SpriteStyle
 function Sprite:draw(x, y, rot, opts)
   opts = opts or {}
   love.graphics.setColor(opts.color or Res.colors.RESET)
@@ -127,8 +127,8 @@ function Sprite:draw(x, y, rot, opts)
 end
 
 --- @param box Box
---- @param opts SpriteRenderOpts
-function Sprite:drawBox(box, opts)
+--- @param opts SpriteStyle
+function Sprite:drawFrom(box, opts)
   love.graphics.setColor(opts.color or Res.colors.RESET)
 
   local quad = self.cells[opts.frame_idx]

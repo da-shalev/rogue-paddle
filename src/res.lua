@@ -23,6 +23,7 @@ local colors = {
   REGULAR6 = { 0.408, 0.616, 0.416, 1.0 }, -- #689d6a green
   REGULAR7 = { 0.659, 0.600, 0.518, 1.0 }, -- #a89984 beige/tan
 }
+
 local Res = {
   sprites = {
     PLAYER = Sprite.new('res/sprites/player.png'),
@@ -48,29 +49,19 @@ local Res = {
   },
 
   ui = {
-    BUTTON_SPACING = math.vec2.new(0, 0.125),
-    BUTTON_SIZE = math.vec2.new(80, 18),
-
-    --- @type ButtonColors
+    --- @type ButtonStyle
     BUTTON_STYLE = {
+      -- background = colors.REGULAR0,
       outline_hover = colors.RESET,
+      extend = math.vec2.new(5, 3),
     },
 
-    --- @type ButtonColors
+    --- @type ButtonStyle
     BUTTON_QUIT_STYLE = {
+      -- background = colors.REGULAR0,
       outline_hover = colors.REGULAR1,
+      extend = math.vec2.new(5, 3),
     },
-
-    --- @param gap number
-    --- @param offset number
-    offset = function(gap, offset)
-      local offset = math.vec2.new(0, offset)
-      if gap then
-        return S.camera.vbox:getOriginPos(Origin.CENTER + Res.ui.BUTTON_SPACING * gap) + offset
-      else
-        return S.camera.vbox:getOriginPos(Origin.CENTER) + offset
-      end
-    end,
   },
 
   cheats = true,

@@ -91,12 +91,4 @@ function Scene.new(events)
   return setmetatable(scene, Scene)
 end
 
---- @alias SceneBuilder fun(): Scene?
---- @param constructor SceneBuilder
-Scene.build = function(constructor)
-  return function()
-    return constructor()
-  end
-end
-
 return Scene

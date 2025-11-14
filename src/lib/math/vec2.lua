@@ -1,6 +1,7 @@
 --- @class Vec2
 --- @field x number The x-component
 --- @field y number The y-component
+--- @operator unm: Vec2
 local Vec2 = {}
 Vec2.__index = Vec2
 
@@ -46,6 +47,12 @@ function Vec2:normalize()
 end
 
 --- @param a Vec2
+--- @return Vec2
+function Vec2.__unm(a)
+  return Vec2.new(-a.x, -a.y)
+end
+
+--- @param a Vec2
 --- @param b Vec2
 --- @return Vec2
 function Vec2.__add(a, b)
@@ -69,6 +76,18 @@ function Vec2.__mul(a, b)
     return Vec2.new(a * b.x, a * b.y)
   else
     return Vec2.new(a.x * b.x, a.y * b.y)
+  end
+end
+--- @param a Vec2 | number
+--- @param b Vec2 | number
+--- @return Vec2
+function Vec2.__div(a, b)
+  if type(b) == 'number' then
+    return Vec2.new(a.x / b, a.y / b)
+  elseif type(a) == 'number' then
+    return Vec2.new(a / b.x, a / b.y)
+  else
+    return Vec2.new(a.x / b.x, a.y / b.y)
   end
 end
 

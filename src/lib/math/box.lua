@@ -33,6 +33,8 @@ local alias = {
   },
 }
 
+local empty_vec = math.vec2.zero()
+
 --- @class Box
 --- @field x number -- alias to pos.x
 --- @field y number -- alias to pos.y
@@ -89,6 +91,16 @@ end
 
 function Box.zero()
   return Box.new(math.vec2.zero(), math.vec2.zero(), 0, math.vec2.zero())
+end
+
+--- @param extend Vec2
+--- @return Box
+function Box:extend(extend)
+  self.x = self.x - extend.x
+  self.y = self.y - extend.y
+  self.w = self.w + extend.x * 2
+  self.h = self.h + extend.y * 2
+  return self
 end
 
 --- @param other Box
@@ -290,16 +302,31 @@ function Box:copy(source)
   self.rot = source.rot
 end
 
+--- @class BoxStyle
+--- @field mode? love.DrawMode
+--- @field border_radius? Vec2
+--- @field background? Color
+
 --- @param mode love.DrawMode
 --- @param color? Color
 function Box:draw(mode, color)
   love.graphics.setColor(color or Res.colors.RESET)
-  assert(
-    mode == 'fill' or mode == 'line',
-    ('Did not specifiy valid mode to Box:draw, got %s'):format(mode)
-  )
-
   love.graphics.rectangle(mode, self.pos.x, self.pos.y, self.size.x, self.size.y)
+end
+
+--- @param opts BoxStyle
+function Box:drawFrom(opts)
+  opts.border_radius = opts.border_radius or empty_vec
+  love.graphics.setColor(opts.background or Res.colors.RESET)
+  love.graphics.rectangle(
+    opts.mode or 'fill',
+    self.pos.x,
+    self.pos.y,
+    self.size.x,
+    self.size.y,
+    opts.border_radius.x,
+    opts.border_radius.y
+  )
 end
 
 function Box:clone()
