@@ -40,3 +40,8 @@ For development, use the following extensions:
 
 - [Lua Language Server](https://marketplace.visualstudio.com/items?itemName=sumneko.lua)
 - [StyLua](https://marketplace.visualstudio.com/items?itemName=JohnnyMorganz.stylua)
+
+
+### Attribution:
+
+* [https://leo-red.itch.io/lucid-icon-pack](https://leo-red.itch.io/lucid-icon-pack) (icons)

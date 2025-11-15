@@ -8,6 +8,7 @@ Origin = require('lib.origin')
 Sprite = require('lib.sprite')
 Scene = require('lib.scene')
 Status = require('lib.status')
+UiElement = require('ui.element')
 S = require('state')
 
 -- define current scene

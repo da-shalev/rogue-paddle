@@ -91,13 +91,19 @@ function Box.zero()
   return Box.new(Vec2.zero(), Vec2.zero(), 0, Vec2.zero())
 end
 
----@param extend Vec2
+---@param extend BoxDirection
 ---@return Box
 function Box:extend(extend)
-  self.x = self.x - extend.x
-  self.y = self.y - extend.y
-  self.w = self.w + extend.x * 2
-  self.h = self.h + extend.y * 2
+  local l = extend.left or 0
+  local r = extend.right or 0
+  local t = extend.top or 0
+  local b = extend.bottom or 0
+
+  self.x = self.x - l
+  self.y = self.y - t
+  self.w = self.w + l + r
+  self.h = self.h + t + b
+
   return self
 end
 
@@ -128,7 +134,7 @@ end
 ---@param prev Box Previous frame's box
 ---@param current Box Current frame's box
 ---@param alpha number Interpolation factor (0=prev, 1=current)
----@return Box self This box (for chaining)
+---@return Box self
 function Box:lerp(prev, current, alpha)
   self.pos = prev.pos:lerp(current.pos, alpha)
   self.size = prev.size:lerp(current.size, alpha)
@@ -300,12 +306,7 @@ function Box:copy(source)
   self.rot = source.rot
 end
 
----@class BoxStyle
----@field outline? BoxThickness
----@field background? Color
-
----@class BoxThickness
----@field color? Color
+---@class BoxDirection
 ---@field top? number
 ---@field left? number
 ---@field bottom? number
@@ -318,24 +319,14 @@ function Box:draw(mode, color)
   love.graphics.rectangle(mode, self.pos.x, self.pos.y, self.size.x, self.size.y)
 end
 
----@param opts BoxStyle
-function Box:drawFrom(opts)
-  if opts.background then
-    love.graphics.setColor(opts.background)
-    love.graphics.rectangle('fill', self.pos.x, self.pos.y, self.size.x, self.size.y)
-  end
-
-  if opts.outline then
-    self:outline(opts.outline)
-  end
-end
-
----@param o BoxThickness
-function Box:outline(o)
-  if o.color == nil then
+---@param o BoxDirection
+---@param color Color
+function Box:outline(o, color)
+  if color == nil then
     return
   end
-  love.graphics.setColor(o.color)
+
+  love.graphics.setColor(color)
 
   if o.top and o.top > 0 then
     love.graphics.setLineWidth(o.top)

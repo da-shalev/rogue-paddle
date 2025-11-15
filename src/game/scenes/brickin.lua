@@ -7,13 +7,11 @@ return function()
   local points_text = Text.new {
     text = points,
     pos = S.camera.box:getOriginPos(Origin.TOP_CENTER) + Vec2.new(0, UI_INSET),
-    render_origin = Origin.TOP_CENTER,
   }
 
   local info_text = Text.new {
     text = string.format('Press %s to begin', Res.keybinds.CONFIRM),
     pos = S.camera.box:getOriginPos(Origin.CENTER),
-    render_origin = Origin.CENTER,
   }
 
   local lives = 3

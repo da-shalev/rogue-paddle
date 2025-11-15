@@ -20,7 +20,7 @@ function BrickEvent:new(bricks)
   return setmetatable({
     bricks = bricks,
     cancel = false,
-  }, self)
+  }, BrickEvent)
 end
 
 ---@class BrickEvents
@@ -103,10 +103,7 @@ function BrickManager.generate(opts)
           idx = idx,
           color = opts.colors[color_y],
           variant = opts.variants[love.math.random(#opts.variants)],
-          box = Box.new(
-            Vec2.new((x - 1) * size.x, ((y - 1) * size.y - S.camera.box.h)),
-            size
-          ),
+          box = Box.new(Vec2.new((x - 1) * size.x, ((y - 1) * size.y - S.camera.box.h)), size),
         }
 
         opts.onGenerate(brick)

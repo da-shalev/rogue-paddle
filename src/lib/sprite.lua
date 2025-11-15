@@ -64,6 +64,18 @@ end
 ---@field flip_y? boolean
 ---@field color? Color
 
+---@param opts SpriteStyle
+---@return UiElement
+function Sprite:ui(opts)
+  local box = Box.new(Vec2.zero(), self:getDimensions())
+  return UiElement.new({
+    box = box,
+    draw = function()
+      self:drawFrom(box, opts)
+    end,
+  })
+end
+
 ---@class SpriteStateOpts: SpriteStyle
 ---@field pos? Vec2
 ---@field size? Vec2

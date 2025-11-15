@@ -29,6 +29,7 @@ local Res = {
     PLAYER = Sprite.new('res/sprites/player.png'),
     BALL = Sprite.new('res/sprites/ball.png'),
     HEART = Sprite.new('res/sprites/heart.png'),
+    ICONS = Sprite.new('res/sprites/lucid/IconsShadow-16.png', 10, 10),
   },
 
   fonts = {
@@ -49,11 +50,11 @@ local Res = {
   },
 
   styles = {
-    ---@type BoxStyle
+    ---@type FlexStyle
     OVERLAY = {
-      background = colors.BACKGROUND,
+      background_color = colors.BACKGROUND,
+      outline_color = colors.RESET,
       outline = {
-        color = colors.RESET,
         top = 1.0,
         left = 1.0,
         right = 1.0,
@@ -61,24 +62,28 @@ local Res = {
       },
     },
 
-    ---@type ButtonStyle
+    ---@type FlexStyle
     BUTTON = {
-      -- background = colors.REGULAR0,
-      outline_hover = {
+      outline_hover_color = {
         color = colors.RESET,
         bottom = 1.0,
       },
-      extend = Vec2.new(5, 3),
+      extend = {
+        top = 3,
+        bottom = 3,
+      },
     },
 
-    ---@type ButtonStyle
+    ---@type FlexStyle
     BUTTON_QUIT = {
-      -- background = colors.REGULAR0,
-      outline_hover = {
+      outline_hover_color = {
         color = colors.REGULAR1,
         bottom = 1.0,
       },
-      extend = Vec2.new(5, 3),
+      extend = {
+        top = 3,
+        bottom = 3,
+      },
     },
   },
 

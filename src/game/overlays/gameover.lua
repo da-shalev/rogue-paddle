@@ -1,4 +1,4 @@
-local Button = require('ui.button')
+-- local Button = require('ui.button')
 local Text = require('ui.text')
 local Fbox = require('ui.flexbox')
 
@@ -11,11 +11,11 @@ local flexbox = Fbox.new({
   flex = {
     dir = 'col',
     align_items = 'center',
-    justify_items = 'center',
+    justify_content = 'center',
     gap = 3,
   },
   style = Res.styles.OVERLAY,
-  drawables = {
+  children = {
     Text.new {
       text = 'GAME OVER',
       font = Res.fonts.IBM,

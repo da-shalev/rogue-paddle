@@ -33,12 +33,10 @@ function Text.new(opts)
   }, Text)
 end
 
----@return UiDrawable
+---@return UiElement
 function Text:ui()
-  ---@type UiDrawable
-  return {
+  return UiElement.new {
     box = self._box,
-    updatePos = function() end,
     draw = function()
       self:draw()
     end,
