@@ -85,7 +85,7 @@ function BrickManager.generate(opts)
     assert(#row == cols, ('row %d width mismatch (expected %d, got %d)'):format(y, cols, #row))
   end
 
-  local size = S.camera.box.size / math.vec2.new(cols, rows)
+  local size = S.camera.box.size / Vec2.new(cols, rows)
   local color_y = 1
 
   for y, y_rows in ipairs(opts.layout) do
@@ -103,8 +103,8 @@ function BrickManager.generate(opts)
           idx = idx,
           color = opts.colors[color_y],
           variant = opts.variants[love.math.random(#opts.variants)],
-          box = math.box.new(
-            math.vec2.new((x - 1) * size.x, ((y - 1) * size.y - S.camera.box.h)),
+          box = Box.new(
+            Vec2.new((x - 1) * size.x, ((y - 1) * size.y - S.camera.box.h)),
             size
           ),
         }

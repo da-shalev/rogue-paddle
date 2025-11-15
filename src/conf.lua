@@ -2,6 +2,8 @@
 require('lib.math')
 Help = require('lib.help')
 Timer = require('lib.timer')
+Vec2 = require('lib.vec2')
+Box = require('lib.box')
 Origin = require('lib.origin')
 Sprite = require('lib.sprite')
 Scene = require('lib.scene')

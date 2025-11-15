@@ -30,7 +30,7 @@ function Button.new(opts)
   opts.style = opts.style or {}
   opts.style.outline = opts.style.outline or {}
   opts.style.outline_hover = opts.style.outline_hover or {}
-  opts.style.extend = opts.style.extend or math.vec2.zero()
+  opts.style.extend = opts.style.extend or Vec2.zero()
 
   ---@type Text
   local text = Text.new {

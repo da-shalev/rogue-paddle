@@ -6,7 +6,7 @@ return function()
 
   local points_text = Text.new {
     text = points,
-    pos = S.camera.box:getOriginPos(Origin.TOP_CENTER) + math.vec2.new(0, UI_INSET),
+    pos = S.camera.box:getOriginPos(Origin.TOP_CENTER) + Vec2.new(0, UI_INSET),
     render_origin = Origin.TOP_CENTER,
   }
 
@@ -19,7 +19,7 @@ return function()
   local lives = 3
 
   local paddle = require('game.entities.paddle') {
-    pos = math.vec2.new(S.camera.box.w / 2, S.camera.box.h - 20),
+    pos = Vec2.new(S.camera.box.w / 2, S.camera.box.h - 20),
     starting_origin = Origin.BOTTOM_CENTER,
   }
 

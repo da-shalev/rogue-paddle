@@ -4,7 +4,7 @@
 ---@param text ValidText
 ---@return Vec2
 local function getSize(font, text)
-  return math.vec2.new(font:getWidth(text), font:getHeight())
+  return Vec2.new(font:getWidth(text), font:getHeight())
 end
 
 local EMPTY = ''
@@ -28,7 +28,7 @@ function Text.new(opts)
   local text = opts.text or EMPTY
   return setmetatable({
     _text = text,
-    _box = math.box.new(opts.pos or math.vec2.zero(), getSize(font, text)),
+    _box = Box.new(opts.pos or Vec2.zero(), getSize(font, text)),
     _font = font,
   }, Text)
 end

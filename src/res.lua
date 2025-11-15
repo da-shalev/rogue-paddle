@@ -68,7 +68,7 @@ local Res = {
         color = colors.RESET,
         bottom = 1.0,
       },
-      extend = math.vec2.new(5, 3),
+      extend = Vec2.new(5, 3),
     },
 
     ---@type ButtonStyle
@@ -78,7 +78,7 @@ local Res = {
         color = colors.REGULAR1,
         bottom = 1.0,
       },
-      extend = math.vec2.new(5, 3),
+      extend = Vec2.new(5, 3),
     },
   },
 

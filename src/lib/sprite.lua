@@ -38,7 +38,7 @@ function Sprite.new(image_path, split_x, split_y)
 
   return setmetatable({
     image = image,
-    cell_size = math.vec2.new(cw, ch),
+    cell_size = Vec2.new(cw, ch),
     cells = cells,
   }, Sprite)
 end
@@ -79,8 +79,8 @@ function Sprite:state(opts)
 
   return setmetatable({
     data = self,
-    box = math.box.new(
-      opts.pos or math.vec2.zero(),
+    box = Box.new(
+      opts.pos or Vec2.zero(),
       opts.size or self.cell_size,
       opts.rot or 0,
       opts.starting_origin or Origin.TOP_LEFT

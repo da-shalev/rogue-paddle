@@ -5,7 +5,7 @@ local Fbox = require('ui.flexbox')
 local flexbox = Fbox.new({
   box = {
     pos = S.camera.box:getOriginPos(Origin.CENTER),
-    size = S.camera.box.size / math.vec2.new(2.8, 1.5),
+    size = S.camera.box.size / Vec2.new(2.8, 1.5),
     starting_origin = Origin.CENTER,
   },
   flex = {

@@ -40,7 +40,7 @@ function Flexbox.new(opts)
 
   ---@type Flexbox
   local flex = {
-    box = math.box.from(opts.box),
+    box = Box.from(opts.box),
     dir = opts.flex.dir or 'row',
     justify_items = opts.flex.justify_items or 'start',
     align_items = opts.flex.align_items or 'start',

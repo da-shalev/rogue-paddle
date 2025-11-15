@@ -33,8 +33,6 @@ local alias = {
   },
 }
 
-local empty_vec = math.vec2.zero()
-
 ---@class Box
 ---@field x number -- alias to pos.x
 ---@field y number -- alias to pos.y
@@ -90,7 +88,7 @@ function Box.new(pos, size, rot, starting_origin)
 end
 
 function Box.zero()
-  return Box.new(math.vec2.zero(), math.vec2.zero(), 0, math.vec2.zero())
+  return Box.new(Vec2.zero(), Vec2.zero(), 0, Vec2.zero())
 end
 
 ---@param extend Vec2
