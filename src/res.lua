@@ -54,18 +54,8 @@ local Res = {
     OVERLAY = {
       background_color = colors.BACKGROUND,
       outline_color = colors.RESET,
-      outline = {
-        top = 1.0,
-        left = 1.0,
-        right = 1.0,
-        bottom = 1.0,
-      },
-      extend = {
-        top = 4.0,
-        left = 4.0,
-        right = 4.0,
-        bottom = 4.0,
-      },
+      outline = BoxDir.new(1),
+      extend = BoxDir.new(4),
     },
 
     ---@type UiStyle

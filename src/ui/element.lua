@@ -16,13 +16,13 @@ local UiElement = {}
 UiElement.__index = UiElement
 
 ---@class UiStyle
----@field outline? BoxDirection
+---@field outline? BoxDir
 ---@field outline_color? Color
----@field outline_hover? BoxDirection
----@field outline_hover_color? BoxDirection
+---@field outline_hover? BoxDir
+---@field outline_hover_color? BoxDir
 ---@field background_color? Color
 ---@field background_hover_color? Color
----@field extend? BoxDirection
+---@field extend? BoxDir
 
 ---@class UiElementOpts : UiEvents
 ---@field box Box

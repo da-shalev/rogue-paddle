@@ -91,7 +91,7 @@ function Box.zero()
   return Box.new(Vec2.zero(), Vec2.zero(), 0, Vec2.zero())
 end
 
----@param extend BoxDirection
+---@param extend BoxDir
 ---@return Box
 function Box:extend(extend)
   local l = extend.left or 0
@@ -306,20 +306,22 @@ function Box:copy(source)
   self.rot = source.rot
 end
 
----@class BoxDirection
----@field top? number
----@field left? number
----@field bottom? number
----@field right? number
-
 ---@param mode love.DrawMode
 ---@param color? Color
-function Box:draw(mode, color)
+---@param extend? BoxDir
+function Box:draw(mode, color, extend)
+  extend = extend or BoxDir.zero
   love.graphics.setColor(color or Res.colors.RESET)
-  love.graphics.rectangle(mode, self.pos.x, self.pos.y, self.size.x, self.size.y)
+  love.graphics.rectangle(
+    mode,
+    self.pos.x - (extend.top or 0),
+    self.pos.y - (extend.bottom or 0),
+    self.size.x - (extend.left or 0),
+    self.size.y - (extend.right or 0)
+  )
 end
 
----@param o BoxDirection
+---@param o BoxDir
 ---@param color Color
 function Box:outline(o, color)
   if color == nil then
