@@ -5,10 +5,8 @@
 ---@field align_items FlexAlignItems
 ---@field gap number
 ---@field children (UiElement)[]
----@field style? UiStyle
 ---@field screen? boolean
 ---@field name? string
----@field hover boolean
 local Flexbox = {}
 Flexbox.__index = Flexbox
 
@@ -25,10 +23,11 @@ Flexbox.__index = Flexbox
 
 ---@class FlexboxOpts
 ---@field flex? FlexOpts
----@field style? UiStyle
 ---@field screen? boolean
 ---@field children (UiElement)[]
 ---@field name? string
+---@field style? UiStyle
+---@field actions? UiActions
 
 --- a simple 'nowrap' flexbox
 ---@param opts FlexboxOpts
@@ -45,27 +44,26 @@ function Flexbox.new(opts)
     align_items = opts.flex.align_items or 'start',
     gap = opts.flex.gap or 0,
     children = opts.children or {},
-    style = opts.style or {},
     screen = opts.screen,
-    hover = false,
   }
 
   Flexbox.apply(flex)
   local flexbox = setmetatable(flex, Flexbox)
 
-  return {
+  return UiElement.new {
     box = flexbox.box,
     update = function(dt)
       flexbox:update(dt)
     end,
-    apply = function()
+    layout = function()
       Flexbox.apply(flexbox)
       print(flexbox.name)
     end,
     draw = function()
       flexbox:draw()
     end,
-    actions = {},
+    style = opts.style,
+    actions = opts.actions,
   }
 end
 
@@ -79,18 +77,6 @@ function Flexbox:update(dt)
 end
 
 function Flexbox:draw()
-  if self.style.background_hover_color and self.hover then
-    self.box:draw('fill', self.style.background_hover_color)
-  elseif self.style.background_color then
-    self.box:draw('fill', self.style.background_color)
-  end
-
-  if self.style.outline_hover and self.style.outline_color and self.hover then
-    self.box:outline(self.style.outline_hover, self.style.outline_color)
-  elseif self.style.outline and self.style.outline_hover_color and self.style.outline then
-    self.box:outline(self.style.outline, self.style.outline_hover_color)
-  end
-
   for _, child in ipairs(self.children) do
     child:draw()
   end
@@ -186,9 +172,7 @@ Flexbox.apply = function(flex)
       child.box.y = child.box.y + offset
     end
 
-    if child.apply then
-      child.apply()
-    end
+    child:layout()
   end
 end
 

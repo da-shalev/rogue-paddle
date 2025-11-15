@@ -50,7 +50,7 @@ local Res = {
   },
 
   styles = {
-    ---@type FlexStyle
+    ---@type UiStyle
     OVERLAY = {
       background_color = colors.BACKGROUND,
       outline_color = colors.RESET,
@@ -60,26 +60,36 @@ local Res = {
         right = 1.0,
         bottom = 1.0,
       },
+      extend = {
+        top = 4.0,
+        left = 4.0,
+        right = 4.0,
+        bottom = 4.0,
+      },
     },
 
-    ---@type FlexStyle
+    ---@type UiStyle
     BUTTON = {
-      outline_hover_color = {
-        color = colors.RESET,
+      outline_hover = {
         bottom = 1.0,
       },
+
+      outline_hover_color = colors.RESET,
+
       extend = {
         top = 3,
         bottom = 3,
       },
     },
 
-    ---@type FlexStyle
+    ---@type UiStyle
     BUTTON_QUIT = {
-      outline_hover_color = {
-        color = colors.REGULAR1,
+      outline_hover = {
         bottom = 1.0,
       },
+
+      outline_hover_color = colors.REGULAR1,
+
       extend = {
         top = 3,
         bottom = 3,

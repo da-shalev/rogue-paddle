@@ -12,27 +12,40 @@ local icons = FBox.new {
   },
   children = {
     Res.sprites.ICONS
-      :ui({
+      :ui {
         -- restart arrow
         frame_idx = 90,
-      })
-      :actions({
+      }
+      :setActions {
         onClick = function()
           S.scene_queue.setNext(require('game.scenes.brickin'))
         end,
-      }),
-    Res.sprites.ICONS:ui({
-      -- power off
-      frame_idx = 88,
-    }),
-    Res.sprites.ICONS:ui({
-      -- settings
-      frame_idx = 86,
-    }),
-    Res.sprites.ICONS:ui({
+      }
+      :setStyle(Res.styles.BUTTON),
+
+    Res.sprites.ICONS
+      :ui {
+        -- power off
+        frame_idx = 88,
+      }
+      :setActions {
+        onClick = function()
+          love.event.quit(0)
+        end,
+      }
+      :setStyle(Res.styles.BUTTON_QUIT),
+
+    Res.sprites.ICONS
+      :ui {
+        -- settings
+        frame_idx = 86,
+      }
+      :setStyle(Res.styles.BUTTON),
+
+    Res.sprites.ICONS:ui {
       -- timer
       frame_idx = 76,
-    }),
+    },
   },
 }
 
@@ -98,9 +111,9 @@ local flexbox = FBox.new {
 
 return Status.new {
   update = function(_, dt)
-    flexbox.update(dt)
+    flexbox:update(dt)
   end,
   draw = function()
-    flexbox.draw()
+    flexbox:draw()
   end,
 }
