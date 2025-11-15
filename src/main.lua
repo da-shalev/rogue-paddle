@@ -14,8 +14,7 @@ local current_time = love.timer.getTime()
 local current_scene
 
 function love.load()
-  -- All resources are loaded and accessed from the global 'Res'
-  -- In fashion, you will not be able to accces anything loaded here before love.load executes
+  -- you will not be able to accces anything loaded here before love.load executes
   Res = require('res')
   love.resize()
 end
@@ -159,6 +158,7 @@ function love.keyreleased(key)
   keys_released[key] = true
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 love.mouse.getPosition = function()
   return tlfres.getMousePosition(S.camera.box.w, S.camera.box.h)
 end

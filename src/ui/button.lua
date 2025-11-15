@@ -3,8 +3,8 @@ local Text = require('ui.text')
 ---@class ButtonStyle
 ---@field background? Color
 ---@field foreground? Color
----@field outline? Color
----@field outline_hover? Color
+---@field outline? BoxThickness
+---@field outline_hover? BoxThickness
 ---@field background_hover? Color
 ---@field foreground_hover? Color
 ---@field extend? Vec2
@@ -28,21 +28,27 @@ Button.__index = Button
 ---@return Button
 function Button.new(opts)
   opts.style = opts.style or {}
+  opts.style.outline = opts.style.outline or {}
+  opts.style.outline_hover = opts.style.outline_hover or {}
   opts.style.extend = opts.style.extend or math.vec2.zero()
 
+  ---@type Text
   local text = Text.new {
     pos = opts.pos,
     text = opts.text,
     render_origin = Origin.CENTER,
   }
 
-  return setmetatable({
+  ---@type Button
+  local button = {
     _box = text._box:clone():extend(opts.style.extend),
     style = opts.style or {},
     text = text,
     hover = nil,
     onClick = opts.onClick or function() end,
-  }, Button)
+  }
+
+  return setmetatable(button, Button)
 end
 
 function Button:draw()
@@ -53,9 +59,9 @@ function Button:draw()
   end
 
   if self.style.outline_hover and self.hover then
-    self._box:draw('line', self.style.outline_hover)
+    self._box:outline(self.style.outline_hover)
   elseif self.style.outline then
-    self._box:draw('line', self.style.outline)
+    self._box:outline(self.style.outline)
   end
 
   if self.style.foreground_hover and self.hover then

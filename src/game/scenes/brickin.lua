@@ -167,9 +167,7 @@ return function()
   end
 
   state.updateCheats = function()
-    if love.keyboard.isDown('lshift') and love.keyboard.isPressed('r') then
-      S.scene_queue.setNext(require('game.scenes.brickin'))
-    elseif love.keyboard.isPressed('r') then
+    if love.keyboard.isPressed('r') then
       bricks:reset()
     end
 

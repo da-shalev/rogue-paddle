@@ -5,7 +5,7 @@ local Fbox = require('ui.flexbox')
 local flexbox = Fbox.new({
   box = {
     pos = S.camera.box:getOriginPos(Origin.CENTER),
-    size = S.camera.box.size / math.vec2.new(3, 1.5),
+    size = S.camera.box.size / math.vec2.new(2.8, 1.5),
     starting_origin = Origin.CENTER,
   },
   flex = {
@@ -14,10 +14,7 @@ local flexbox = Fbox.new({
     justify_items = 'center',
     gap = 3,
   },
-  style = {
-    background = Res.colors.REGULAR0,
-    border_radius = math.vec2.splat(5),
-  },
+  style = Res.styles.OVERLAY,
   drawables = {
     Text.new {
       text = 'PAUSE',
@@ -25,22 +22,22 @@ local flexbox = Fbox.new({
     }:ui(),
     Button.new {
       text = 'Restart',
-      style = Res.ui.BUTTON_STYLE,
+      style = Res.styles.BUTTON,
       onClick = function()
         S.scene_queue.setNext(require('game.scenes.brickin'))
       end,
     }:ui(),
     Button.new {
       text = 'Scores',
-      style = Res.ui.BUTTON_STYLE,
+      style = Res.styles.BUTTON,
     }:ui(),
     Button.new {
       text = 'Settings',
-      style = Res.ui.BUTTON_STYLE,
+      style = Res.styles.BUTTON,
     }:ui(),
     Button.new {
       text = 'Quit',
-      style = Res.ui.BUTTON_QUIT_STYLE,
+      style = Res.styles.BUTTON_QUIT,
       onClick = function()
         love.event.quit(0)
       end,

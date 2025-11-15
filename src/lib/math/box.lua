@@ -303,9 +303,15 @@ function Box:copy(source)
 end
 
 ---@class BoxStyle
----@field mode? love.DrawMode
----@field border_radius? Vec2
+---@field outline? BoxThickness
 ---@field background? Color
+
+---@class BoxThickness
+---@field color? Color
+---@field top? number
+---@field left? number
+---@field bottom? number
+---@field right? number
 
 ---@param mode love.DrawMode
 ---@param color? Color
@@ -316,17 +322,52 @@ end
 
 ---@param opts BoxStyle
 function Box:drawFrom(opts)
-  opts.border_radius = opts.border_radius or empty_vec
-  love.graphics.setColor(opts.background or Res.colors.RESET)
-  love.graphics.rectangle(
-    opts.mode or 'fill',
-    self.pos.x,
-    self.pos.y,
-    self.size.x,
-    self.size.y,
-    opts.border_radius.x,
-    opts.border_radius.y
-  )
+  if opts.background then
+    love.graphics.setColor(opts.background)
+    love.graphics.rectangle('fill', self.pos.x, self.pos.y, self.size.x, self.size.y)
+  end
+
+  if opts.outline then
+    self:outline(opts.outline)
+  end
+end
+
+---@param o BoxThickness
+function Box:outline(o)
+  if o.color == nil then
+    return
+  end
+  love.graphics.setColor(o.color)
+
+  if o.top and o.top > 0 then
+    love.graphics.setLineWidth(o.top)
+    love.graphics.line(self.pos.x, self.pos.y, self.pos.x + self.size.x, self.pos.y)
+  end
+
+  if o.left and o.left > 0 then
+    love.graphics.setLineWidth(o.left)
+    love.graphics.line(self.pos.x, self.pos.y, self.pos.x, self.pos.y + self.size.y)
+  end
+
+  if o.right and o.right > 0 then
+    love.graphics.setLineWidth(o.right)
+    love.graphics.line(
+      self.pos.x + self.size.x,
+      self.pos.y,
+      self.pos.x + self.size.x,
+      self.pos.y + self.size.y
+    )
+  end
+
+  if o.bottom and o.bottom > 0 then
+    love.graphics.setLineWidth(o.bottom)
+    love.graphics.line(
+      self.pos.x,
+      self.pos.y + self.size.y,
+      self.pos.x + self.size.x,
+      self.pos.y + self.size.y
+    )
+  end
 end
 
 function Box:clone()

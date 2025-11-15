@@ -119,12 +119,12 @@ Flexbox.apply = function(flex)
   size = size - flex.gap
 
   local offset = 0
-  local axis_size = is_row and flex.box.size.x or flex.box.size.y
+  local axis_size = is_row and flex.box.size.x - size or flex.box.size.y - size
 
   if flex.justify_items == 'center' then
-    offset = (axis_size - size) / 2
+    offset = axis_size / 2
   elseif flex.justify_items == 'end' then
-    offset = axis_size - size
+    offset = axis_size
   end
 
   for _, draw in ipairs(flex.drawables) do

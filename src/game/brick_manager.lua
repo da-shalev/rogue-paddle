@@ -1,12 +1,14 @@
 local BORDER_COLOR = Res.colors.REGULAR0
 
 -- types
+
 ---@alias BrickLayout integer[][]
 ---@alias BrickRow Brick[]
 ---@alias BrickGrid BrickRow[]
 ---@alias BrickVariants BrickVariant[]
 
 -- events
+
 ---@class BrickEvent
 ---@field bricks BrickManager
 ---@field cancel boolean
@@ -83,7 +85,7 @@ function BrickManager.generate(opts)
     assert(#row == cols, ('row %d width mismatch (expected %d, got %d)'):format(y, cols, #row))
   end
 
-  local size = math.vec2.new(S.camera.box.w / cols, S.camera.box.h / rows)
+  local size = S.camera.box.size / math.vec2.new(cols, rows)
   local color_y = 1
 
   for y, y_rows in ipairs(opts.layout) do
@@ -278,7 +280,7 @@ function BrickManager:reset()
 end
 
 ---@param layout BrickLayout
-function BrickManager:setNewLayout(layout)
+function BrickManager:setLayout(layout)
   self.opts.layout = layout
 end
 

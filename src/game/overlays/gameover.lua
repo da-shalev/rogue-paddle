@@ -1,11 +1,11 @@
 local Button = require('ui.button')
 local Text = require('ui.text')
-local Flex = require('ui.flexbox')
+local Fbox = require('ui.flexbox')
 
-local flexbox = Flex.new({
+local flexbox = Fbox.new({
   box = {
     pos = S.camera.box:getOriginPos(Origin.CENTER),
-    size = S.camera.box.size / math.vec2.new(3, 2),
+    size = S.camera.box.size / math.vec2.new(2.5, 2),
     starting_origin = Origin.CENTER,
   },
   flex = {
@@ -14,10 +14,7 @@ local flexbox = Flex.new({
     justify_items = 'center',
     gap = 3,
   },
-  style = {
-    background = Res.colors.REGULAR0,
-    border_radius = math.vec2.splat(5),
-  },
+  style = Res.styles.OVERLAY,
   drawables = {
     Text.new {
       text = 'GAME OVER',
@@ -25,18 +22,18 @@ local flexbox = Flex.new({
     }:ui(),
     Button.new {
       text = 'Restart',
-      style = Res.ui.BUTTON_STYLE,
+      style = Res.styles.BUTTON,
       onClick = function()
         S.scene_queue.setNext(require('game.scenes.brickin'))
       end,
     }:ui(),
     Button.new {
       text = 'Scores',
-      style = Res.ui.BUTTON_STYLE,
+      style = Res.styles.BUTTON,
     }:ui(),
     Button.new {
       text = 'Quit',
-      style = Res.ui.BUTTON_QUIT_STYLE,
+      style = Res.styles.BUTTON_QUIT,
       onClick = function()
         love.event.quit(0)
       end,

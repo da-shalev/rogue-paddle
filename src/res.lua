@@ -48,18 +48,36 @@ local Res = {
     PAUSE = 'escape',
   },
 
-  ui = {
+  styles = {
+    ---@type BoxStyle
+    OVERLAY = {
+      background = colors.BACKGROUND,
+      outline = {
+        color = colors.RESET,
+        top = 1.0,
+        left = 1.0,
+        right = 1.0,
+        bottom = 1.0,
+      },
+    },
+
     ---@type ButtonStyle
-    BUTTON_STYLE = {
+    BUTTON = {
       -- background = colors.REGULAR0,
-      outline_hover = colors.RESET,
+      outline_hover = {
+        color = colors.RESET,
+        bottom = 1.0,
+      },
       extend = math.vec2.new(5, 3),
     },
 
     ---@type ButtonStyle
-    BUTTON_QUIT_STYLE = {
+    BUTTON_QUIT = {
       -- background = colors.REGULAR0,
-      outline_hover = colors.REGULAR1,
+      outline_hover = {
+        color = colors.REGULAR1,
+        bottom = 1.0,
+      },
       extend = math.vec2.new(5, 3),
     },
   },
