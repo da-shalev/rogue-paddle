@@ -1,47 +1,43 @@
+local UiStyle = require('ui.style')
+
 ---@class UiActions
 ---@field onClick? fun()
 
 ---@class UiEvents
----@field layout? fun()
+---@field updateLayout? fun(self: UiElement)
 ---@field update? fun(dt: number)
----@field draw fun()
+---@field draw fun(self: UiElement)
 
 ---@class UiElement
+---@field parent? UiElement
 ---@field box Box
 ---@field hover boolean
 ---@field events UiEvents
----@field _style? UiStyle
----@field _actions? UiActions
+---@field style? ComputedUiStyle
+---@field actions? UiActions
+---@field name? string
 local UiElement = {}
 UiElement.__index = UiElement
 
----@class UiStyle
----@field outline? BoxDir
----@field outline_color? Color
----@field outline_hover? BoxDir
----@field outline_hover_color? BoxDir
----@field background_color? Color
----@field background_hover_color? Color
----@field extend? BoxDir
-
 ---@class UiElementOpts : UiEvents
 ---@field box Box
----@field actions? UiActions
 ---@field style? UiStyle
+---@field actions? UiActions
 
 ---@param opts UiElementOpts
 UiElement.new = function(opts)
   ---@type UiElement
   local drawable = {
+    parent = nil,
     box = opts.box,
     hover = false,
     events = {
       draw = opts.draw,
       update = opts.update,
-      layout = opts.layout,
+      updateLayout = opts.updateLayout,
     },
-    _actions = opts.actions or {},
-    _style = opts.style or {},
+    style = UiStyle.new(opts.style),
+    actions = opts.actions or {},
   }
 
   return setmetatable(drawable, UiElement)
@@ -56,10 +52,9 @@ function UiElement:update(dt)
     self.hover = hover
   end
 
-  if self._actions.onClick then
+  if self.actions.onClick then
     if love.mouse.isDown(1) and self.hover then
-      self._actions.onClick()
-      -- love.mouse.setCursor(love.mouse.getSystemCursor('arrow'))
+      self.actions.onClick()
     end
   end
 
@@ -71,38 +66,64 @@ end
 ---@param actions UiActions
 ---@return UiElement
 function UiElement:setActions(actions)
-  self._actions = actions
+  self.actions = actions
   return self
 end
 
 ---@param style UiStyle
 ---@return UiElement
 function UiElement:setStyle(style)
-  self._style = style
+  self.style = UiStyle.new(style)
   return self
 end
 
+---@return ComputedUiStyle
+function UiElement:getStyle()
+  return self.style
+end
+
+---@param name string
+---@return UiElement
+function UiElement:setName(name)
+  self.name = name
+  return self
+end
+
+---@return string
+function UiElement:getName()
+  return self.name
+end
+
 function UiElement:draw()
-  if self._style.background_hover_color and self.hover then
-    self.box:draw('fill', self._style.background_hover_color)
-  elseif self._style.background_color then
-    self.box:draw('fill', self._style.background_color)
+  if self.style.background_hover_color and self.hover then
+    self.box:draw('fill', self.style.background_hover_color)
+  elseif self.style.background_color then
+    self.box:draw('fill', self.style.background_color)
   end
 
-  if self._style.outline_hover and self._style.outline_hover_color and self.hover then
-    self.box:outline(self._style.outline_hover, self._style.outline_hover_color)
-  elseif self._style.outline and self._style.outline_color then
-    self.box:outline(self._style.outline, self._style.outline_color)
+  if self.style.outline_hover and self.style.outline_hover_color and self.hover then
+    self.box:outline(self.style.outline_hover, self.style.outline_hover_color)
+  elseif self.style.outline and self.style.outline_color then
+    self.box:outline(self.style.outline, self.style.outline_color)
   end
 
   if self.events.draw then
-    self.events.draw()
+    self.events.draw(self)
   end
 end
 
-function UiElement:layout()
-  if self.events.layout then
-    self.events.layout()
+--- @param parent UiElement
+function UiElement:updateLayout(parent)
+  self.parent = parent
+
+  if parent ~= nil then
+    print(self:getName(), parent:getName())
+  elseif self:getName() ~= nil then
+    print(self:getName())
+  end
+
+  if self.events.updateLayout then
+    self.events.updateLayout(self)
   end
 end
 

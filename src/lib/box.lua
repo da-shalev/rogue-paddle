@@ -1,3 +1,49 @@
+---@class Box
+---@field x number -- alias to pos.x
+---@field y number -- alias to pos.y
+---@field w number -- alias to size.x
+---@field h number -- alias to size.y
+---@field pos Vec2
+---@field size Vec2
+---@field rot number
+local Box = {}
+
+---@class Extend
+---@field a? number -- top (or all)
+---@field b? number -- right/left (or horizontal)
+---@field c? number -- bottom
+---@field d? number -- left
+
+---@class ComputedExtend
+---@field top number
+---@field left number
+---@field bottom number
+---@field right number
+local Extend = {}
+Box.Extend = Extend
+
+---@param t ComputedExtend
+Box.debugComputedExtend = function(t)
+  return string.format(
+    'ComputedExtend(top=%s, left=%s, bottom=%s, right=%s)',
+    t.top,
+    t.left,
+    t.bottom,
+    t.right
+  )
+end
+
+--- @param opts number[]
+--- @return ComputedExtend
+function Extend.new(opts)
+  return {
+    top = opts[1] or 0,
+    right = opts[2] or opts[1] or 0,
+    bottom = opts[3] or opts[1] or 0,
+    left = opts[4] or opts[2] or opts[1] or 0,
+  }
+end
+
 local alias = {
   x = {
     get = function(b)
@@ -33,15 +79,6 @@ local alias = {
   },
 }
 
----@class Box
----@field x number -- alias to pos.x
----@field y number -- alias to pos.y
----@field w number -- alias to size.x
----@field h number -- alias to size.y
----@field pos Vec2
----@field size Vec2
----@field rot number
-local Box = {}
 Box.__index = function(t, k)
   local a = alias[k]
   if a then
@@ -89,22 +126,6 @@ end
 
 function Box.zero()
   return Box.new(Vec2.zero(), Vec2.zero(), 0, Vec2.zero())
-end
-
----@param extend BoxDir
----@return Box
-function Box:extend(extend)
-  local l = extend.left or 0
-  local r = extend.right or 0
-  local t = extend.top or 0
-  local b = extend.bottom or 0
-
-  self.x = self.x - l
-  self.y = self.y - t
-  self.w = self.w + l + r
-  self.h = self.h + t + b
-
-  return self
 end
 
 ---@param other Box
@@ -308,20 +329,12 @@ end
 
 ---@param mode love.DrawMode
 ---@param color? Color
----@param extend? BoxDir
-function Box:draw(mode, color, extend)
-  extend = extend or BoxDir.zero
+function Box:draw(mode, color)
   love.graphics.setColor(color or Res.colors.RESET)
-  love.graphics.rectangle(
-    mode,
-    self.pos.x - (extend.top or 0),
-    self.pos.y - (extend.bottom or 0),
-    self.size.x - (extend.left or 0),
-    self.size.y - (extend.right or 0)
-  )
+  love.graphics.rectangle(mode, self.pos.x, self.pos.y, self.size.x, self.size.y)
 end
 
----@param o BoxDir
+---@param o ComputedExtend
 ---@param color Color
 function Box:outline(o, color)
   if color == nil then

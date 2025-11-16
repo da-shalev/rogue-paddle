@@ -1,35 +1,33 @@
 ---@class Flexbox
 ---@field box Box
 ---@field dir FlexDirection
----@field justify_content FlexJustifyItems
+---@field justify_content FlexJustifyContent
 ---@field align_items FlexAlignItems
 ---@field gap number
 ---@field children (UiElement)[]
 ---@field screen? boolean
----@field name? string
 local Flexbox = {}
 Flexbox.__index = Flexbox
 
 ---@alias FlexDirection "row" | "col" | "row-reverse" | "col-reverse"
----@alias FlexItemOpts "start" | "end" | "center"
----@alias FlexJustifyItems FlexItemOpts
----@alias FlexAlignItems FlexItemOpts
+---@alias FlexJustifyContent "start" | "center" | "end"
+---@alias FlexAlignItems "start" | "center" | "end"
 
 ---@class FlexOpts
 ---@field dir? FlexDirection
----@field justify_content? FlexJustifyItems
+---@field justify_content? FlexJustifyContent
 ---@field align_items? FlexAlignItems
 ---@field gap? number
 
 ---@class FlexboxOpts
 ---@field flex? FlexOpts
----@field screen? boolean
 ---@field children (UiElement)[]
 ---@field name? string
 ---@field style? UiStyle
 ---@field actions? UiActions
+---@field screen? boolean
 
---- a simple 'nowrap' flexbox
+---A simple 'nowrap' flexbox
 ---@param opts FlexboxOpts
 ---@return UiElement
 function Flexbox.new(opts)
@@ -37,8 +35,7 @@ function Flexbox.new(opts)
 
   ---@type Flexbox
   local flex = {
-    name = opts.name,
-    box = opts.screen and S.camera.box:clone() or Box.zero(),
+    box = Box.zero(),
     dir = opts.flex.dir or 'row',
     justify_content = opts.flex.justify_content or 'start',
     align_items = opts.flex.align_items or 'start',
@@ -47,24 +44,25 @@ function Flexbox.new(opts)
     screen = opts.screen,
   }
 
-  Flexbox.apply(flex)
   local flexbox = setmetatable(flex, Flexbox)
-
-  return UiElement.new {
+  local e = UiElement.new {
     box = flexbox.box,
     update = function(dt)
       flexbox:update(dt)
     end,
-    layout = function()
-      Flexbox.apply(flexbox)
-      print(flexbox.name)
+    updateLayout = function(self)
+      flexbox:applyLayout(self)
     end,
     draw = function()
       flexbox:draw()
     end,
-    style = opts.style,
+    name = opts.name,
     actions = opts.actions,
-  }
+    style = opts.style,
+  }:setName(opts.name)
+
+  flexbox:applyLayout(e)
+  return e
 end
 
 ---@param dt number
@@ -82,97 +80,115 @@ function Flexbox:draw()
   end
 end
 
----@param flex Flexbox
-Flexbox.apply = function(flex)
-  local cx = flex.box.x
-  local cy = flex.box.y
-  local is_row = flex.dir == 'row' or flex.dir == 'row-reverse'
-  local is_col = flex.dir == 'col' or flex.dir == 'col-reverse'
-  local max_size = 0
+---@param e UiElement
+function Flexbox:applyLayout(e)
+  local style = e:getStyle()
 
+  -- Starting cursor for placing children
+  local cr_x = self.box.x + style.extend.left
+  local cr_y = self.box.y + style.extend.top
+
+  -- Determines which axis children flow along
+  local is_row = self.dir == 'row' or self.dir == 'row-reverse'
+  local is_col = self.dir == 'col' or self.dir == 'col-reverse'
+  local is_reverse = self.dir == 'row-reverse' or self.dir == 'col-reverse'
+
+  -- Determines iteration direction (normal or reversed)
   local start_i, end_i, step
-  if flex.dir == 'row-reverse' or flex.dir == 'col-reverse' then
-    start_i = #flex.children
+  if is_reverse then
+    start_i = #self.children
     end_i = 1
     step = -1
   else
     start_i = 1
-    end_i = #flex.children
+    end_i = #self.children
     step = 1
   end
 
-  local occupied_space_axis = 0
+  -- Tracks total axis usage and the largest cross-size
+  local current_axis_size = 0
+  local cross_axis_size = 0
 
+  -- First pass: place children
   for i = start_i, end_i, step do
-    local child = flex.children[i]
-    child.box.x = cx
-    child.box.y = cy
+    local child = self.children[i]
+    child.box.x = cr_x
+    child.box.y = cr_y
 
-    local add
     if is_row then
-      max_size = math.max(max_size, child.box.size.y)
-      add = child.box.w + flex.gap
-      cx = cx + add
+      cross_axis_size = math.max(cross_axis_size, child.box.h)
+      local add = child.box.w + self.gap
+      cr_x = cr_x + add
+      current_axis_size = current_axis_size + add
     elseif is_col then
-      max_size = math.max(max_size, child.box.size.x)
-      add = child.box.h + flex.gap
-      cy = cy + add
+      cross_axis_size = math.max(cross_axis_size, child.box.w)
+      local add = child.box.h + self.gap
+      cr_y = cr_y + add
+      current_axis_size = current_axis_size + add
     end
-
-    occupied_space_axis = occupied_space_axis + add
   end
 
-  occupied_space_axis = occupied_space_axis - flex.gap
+  current_axis_size = current_axis_size - self.gap
 
-  if is_row then
-    cx = cx - flex.gap
-    if not flex.screen then
-      flex.box.w = cx - flex.box.x
-      flex.box.h = max_size
+  -- Sets container size based on placed children
+  if not self.screen then
+    if is_row then
+      self.box.w = current_axis_size + style.extend.left + style.extend.right
+      self.box.h = cross_axis_size + style.extend.top + style.extend.bottom
+    elseif is_col then
+      self.box.w = cross_axis_size + style.extend.left + style.extend.right
+      self.box.h = current_axis_size + style.extend.top + style.extend.bottom
     end
   else
-    cy = cy - flex.gap
-    if not flex.screen then
-      flex.box.w = max_size
-      flex.box.h = cy - flex.box.y
-    end
+    self.box = S.camera.box:clone()
   end
 
-  local offset = 0
-  local axis_size
-
+  -- Computes spare space for justify-content
+  local justify_offset = 0
+  local justify_space
   if is_row then
-    axis_size = flex.box.w - occupied_space_axis
+    justify_space = self.box.w - style.extend.left - style.extend.right - current_axis_size
   elseif is_col then
-    axis_size = flex.box.h - occupied_space_axis
+    justify_space = self.box.h - style.extend.top - style.extend.bottom - current_axis_size
   end
 
-  if flex.justify_content == 'center' then
-    offset = axis_size / 2
-  elseif flex.justify_content == 'end' then
-    offset = axis_size
+  if self.justify_content == 'center' then
+    justify_offset = justify_space / 2
+  elseif self.justify_content == 'end' then
+    justify_offset = justify_space
   end
 
-  for _, child in pairs(flex.children) do
+  -- Cache checks
+  local is_align_end = self.align_items == 'end'
+  local is_align_center = self.align_items == 'center'
+
+  -- Second pass: apply cross-axis alignment and offset
+  for _, child in pairs(self.children) do
     if is_row then
-      if flex.align_items == 'center' then
-        child.box.y = flex.box.y + (flex.box.h - child.box.h) / 2
-      elseif flex.align_items == 'end' then
-        child.box.y = flex.box.y + flex.box.h - child.box.h
+      local inner_h = self.box.h - style.extend.top - style.extend.bottom
+      local base_y = self.box.y + style.extend.top
+
+      if is_align_center then
+        child.box.y = base_y + (inner_h - child.box.h) / 2
+      elseif is_align_end then
+        child.box.y = base_y + (inner_h - child.box.h)
       end
 
-      child.box.x = child.box.x + offset
+      child.box.x = child.box.x + justify_offset
     elseif is_col then
-      if flex.align_items == 'center' then
-        child.box.x = flex.box.x + (flex.box.w - child.box.w) / 2
-      elseif flex.align_items == 'end' then
-        child.box.x = flex.box.x + flex.box.w - child.box.w
+      local inner_w = self.box.w - style.extend.left - style.extend.right
+      local base_x = self.box.x + style.extend.left
+
+      if is_align_center then
+        child.box.x = base_x + (inner_w - child.box.w) / 2
+      elseif is_align_end then
+        child.box.x = base_x + (inner_w - child.box.w)
       end
 
-      child.box.y = child.box.y + offset
+      child.box.y = child.box.y + justify_offset
     end
 
-    child:layout()
+    child:updateLayout(e)
   end
 end
 

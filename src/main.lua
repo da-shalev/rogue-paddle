@@ -126,26 +126,31 @@ function love.keyboard.isAnyReleased()
   return next(keys_released) ~= nil
 end
 
-local function any(t, keys)
-  for i = 1, #keys do
-    if t[keys[i]] then
+---@param map table<string, boolean>
+---@param ... love.KeyConstant
+---@return boolean
+local function anyKey(map, ...)
+  for i = 1, select('#', ...) do
+    if map[select(i, ...)] then
       return true
     end
   end
+
+  return false
 end
 
 ---@param key love.KeyConstant
 ---@param ... love.KeyConstant
 ---@return boolean
 function love.keyboard.isPressed(key, ...)
-  return any(keys_pressed, { key, ... }) or false
+  return anyKey(keys_pressed, key, ...) or false
 end
 
 ---@param key love.KeyConstant
 ---@param ... love.KeyConstant
 ---@return boolean
 function love.keyboard.isReleased(key, ...)
-  return any(keys_released, { key, ... }) or false
+  return anyKey(keys_released, key, ...) or false
 end
 
 ---@param key love.KeyConstant

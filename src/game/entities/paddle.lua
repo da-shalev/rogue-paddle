@@ -1,4 +1,4 @@
----@param opts SpriteStateOpts
+---@param opts SpriteState
 return function(opts)
   return {
     sprite = Res.sprites.PLAYER:state(opts),

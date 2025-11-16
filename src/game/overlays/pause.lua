@@ -10,6 +10,9 @@ local icons = FBox.new {
     justify_content = 'center',
     gap = 3,
   },
+  style = {
+    extend = { 0, 0, 1, 0 },
+  },
   children = {
     Res.sprites.ICONS
       :ui {
@@ -71,38 +74,6 @@ local flexbox = FBox.new {
           text = 'PAUSE',
           font = Res.fonts.IBM,
         }:ui(),
-
-        -- Button.new {
-        --   drawable = restart,
-        --   style = Res.styles.BUTTON,
-        --   onClick = function()
-        --     S.scene_queue.setNext(require('game.scenes.brickin'))
-        --   end,
-        -- }:ui(),
-        --
-        -- Button.new {
-        --   drawable = Text.new {
-        --     text = 'Scores',
-        --   }:ui(),
-        --   style = Res.styles.BUTTON,
-        -- }:ui(),
-        --
-        -- Button.new {
-        --   drawable = Text.new {
-        --     text = 'Settings',
-        --   }:ui(),
-        --   style = Res.styles.BUTTON,
-        -- }:ui(),
-        --
-        -- Button.new {
-        --   drawable = Text.new {
-        --     text = 'Quit',
-        --   }:ui(),
-        --   style = Res.styles.BUTTON_QUIT,
-        --   onClick = function()
-        --     love.event.quit(0)
-        --   end,
-        -- }:ui(),
         icons,
       },
     },
