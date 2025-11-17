@@ -4,9 +4,9 @@ local UiStyle = require('ui.style')
 ---@field onClick? fun()
 
 ---@class UiEvents
----@field updateLayout? fun(self: UiElement)
+---@field applyLayout? fun(self: UiElement)
 ---@field update? fun(dt: number)
----@field draw fun(self: UiElement)
+---@field draw fun()
 
 ---@class UiElement
 ---@field parent? UiElement
@@ -34,7 +34,7 @@ UiElement.new = function(opts)
     events = {
       draw = opts.draw,
       update = opts.update,
-      updateLayout = opts.updateLayout,
+      applyLayout = opts.applyLayout,
     },
     style = UiStyle.new(opts.style),
     actions = opts.actions or {},
@@ -96,19 +96,45 @@ end
 
 function UiElement:draw()
   if self.style.background_hover_color and self.hover then
-    self.box:draw('fill', self.style.background_hover_color)
+    love.graphics.setColor(self.style.background_hover_color or Res.colors.RESET)
+    love.graphics.rectangle(
+      'fill',
+      self.box.pos.x,
+      self.box.pos.y,
+      self.box.size.x,
+      self.box.size.y,
+      self.style.border_radius,
+      self.style.border_radius
+    )
   elseif self.style.background_color then
-    self.box:draw('fill', self.style.background_color)
+    love.graphics.setColor(self.style.background_color or Res.colors.RESET)
+    love.graphics.rectangle(
+      'fill',
+      self.box.pos.x,
+      self.box.pos.y,
+      self.box.size.x,
+      self.box.size.y,
+      self.style.border_radius,
+      self.style.border_radius
+    )
   end
 
-  if self.style.outline_hover and self.style.outline_hover_color and self.hover then
-    self.box:outline(self.style.outline_hover, self.style.outline_hover_color)
-  elseif self.style.outline and self.style.outline_color then
-    self.box:outline(self.style.outline, self.style.outline_color)
+  if self.style.border and self.style.border_color then
+    love.graphics.setColor(self.style.border_color or Res.colors.RESET)
+    love.graphics.setLineWidth(self.style.border)
+    love.graphics.rectangle(
+      'line',
+      self.box.pos.x + self.style.border / 2,
+      self.box.pos.y + self.style.border / 2,
+      self.box.size.x - self.style.border,
+      self.box.size.y - self.style.border,
+      self.style.border_radius,
+      self.style.border_radius
+    )
   end
 
   if self.events.draw then
-    self.events.draw(self)
+    self.events.draw()
   end
 end
 
@@ -116,14 +142,14 @@ end
 function UiElement:updateLayout(parent)
   self.parent = parent
 
-  if parent ~= nil then
-    print(self:getName(), parent:getName())
-  elseif self:getName() ~= nil then
-    print(self:getName())
-  end
+  -- if parent ~= nil then
+  --   print(self:getName(), parent:getName())
+  -- elseif self:getName() ~= nil then
+  --   print(self:getName())
+  -- end
 
-  if self.events.updateLayout then
-    self.events.updateLayout(self)
+  if self.events.applyLayout then
+    self.events.applyLayout(self)
   end
 end
 

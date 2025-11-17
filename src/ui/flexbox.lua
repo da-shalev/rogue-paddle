@@ -1,4 +1,4 @@
----@class Flexbox
+---@class ComputedFlexbox
 ---@field box Box
 ---@field dir FlexDirection
 ---@field justify_content FlexJustifyContent
@@ -19,7 +19,7 @@ Flexbox.__index = Flexbox
 ---@field align_items? FlexAlignItems
 ---@field gap? number
 
----@class FlexboxOpts
+---@class Flexbox
 ---@field flex? FlexOpts
 ---@field children (UiElement)[]
 ---@field name? string
@@ -28,12 +28,12 @@ Flexbox.__index = Flexbox
 ---@field screen? boolean
 
 ---A simple 'nowrap' flexbox
----@param opts FlexboxOpts
+---@param opts Flexbox
 ---@return UiElement
 function Flexbox.new(opts)
   opts.flex = opts.flex or {}
 
-  ---@type Flexbox
+  ---@type ComputedFlexbox
   local flex = {
     box = Box.zero(),
     dir = opts.flex.dir or 'row',
@@ -50,7 +50,7 @@ function Flexbox.new(opts)
     update = function(dt)
       flexbox:update(dt)
     end,
-    updateLayout = function(self)
+    applyLayout = function(self)
       flexbox:applyLayout(self)
     end,
     draw = function()

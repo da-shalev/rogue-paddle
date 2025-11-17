@@ -1,19 +1,19 @@
 ---@class UiStyle
----@field outline? Extend
----@field outline_color? Color
----@field outline_hover? Extend
----@field outline_hover_color? Extend
+---@field border? number
+---@field border_color? Color
 ---@field background_color? Color
 ---@field background_hover_color? Color
+---@field border_radius? number
 ---@field extend Extend?
 
+---@class UiBorderStyle
+
 ---@class ComputedUiStyle
----@field outline? ComputedExtend
----@field outline_color? Color
----@field outline_hover? ComputedExtend
----@field outline_hover_color? ComputedExtend
+---@field border? number
+---@field border_color? Color
 ---@field background_color? Color
 ---@field background_hover_color? Color
+---@field border_radius number
 ---@field extend ComputedExtend
 
 local UiStyle = {}
@@ -23,14 +23,19 @@ local UiStyle = {}
 UiStyle.new = function(opts)
   opts = opts or {}
 
+  local extend = Box.Extend.new(opts.extend or opts.border or 0)
+  if opts.border then
+    Box.Extend.add(extend, opts.border)
+  end
+
+  ---@type ComputedUiStyle
   return {
-    outline = opts.outline and Box.Extend.new(opts.outline) or nil,
-    outline_color = opts.outline_color,
-    outline_hover = opts.outline_hover and Box.Extend.new(opts.outline_hover) or nil,
-    outline_hover_color = opts.outline_hover_color,
+    border = opts.border,
+    border_color = opts.border_color,
+    border_radius = opts.border_radius or 0,
     background_color = opts.background_color,
     background_hover_color = opts.background_hover_color,
-    extend = Box.Extend.new(opts.extend or {}),
+    extend = extend,
   }
 end
 

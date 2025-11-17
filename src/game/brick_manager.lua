@@ -139,10 +139,25 @@ function BrickManager:draw()
     end
   end
 
+  love.graphics.setLineWidth(1)
   for _, row in ipairs(self._data.grid) do
     for _, brick in pairs(row) do
-      brick.box:draw('fill', brick.color or Res.colors.RESET)
-      brick.box:draw('line', BORDER_COLOR)
+      love.graphics.setColor(brick.color or Res.colors.RESET)
+      love.graphics.rectangle(
+        'fill',
+        brick.box.pos.x,
+        brick.box.pos.y,
+        brick.box.size.x,
+        brick.box.size.y
+      )
+      love.graphics.setColor(BORDER_COLOR)
+      love.graphics.rectangle(
+        'line',
+        brick.box.pos.x,
+        brick.box.pos.y,
+        brick.box.size.x,
+        brick.box.size.y
+      )
     end
   end
 end

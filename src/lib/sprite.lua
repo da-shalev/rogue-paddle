@@ -1,7 +1,7 @@
----@class SpriteState
+---@class ComputedSpriteState
 ---@field box Box
 ---@field data Sprite
----@field style ComputedSpriteState
+---@field style SpriteRenderState
 local SpriteState = {}
 SpriteState.__index = SpriteState
 
@@ -58,13 +58,13 @@ function Sprite:getDimensions()
   return self.cell_size
 end
 
----@class ComputedSpriteState
+---@class SpriteRenderState
 ---@field frame_idx? number
 ---@field flip_x? boolean
 ---@field flip_y? boolean
 ---@field color? Color
 
----@param opts ComputedSpriteState
+---@param opts SpriteRenderState
 ---@return UiElement
 function Sprite:ui(opts)
   local box = Box.new(Vec2.zero(), self:getDimensions())
@@ -76,7 +76,7 @@ function Sprite:ui(opts)
   })
 end
 
----@class SpriteState: ComputedSpriteState
+---@class SpriteState: SpriteRenderState
 ---@field pos? Vec2
 ---@field size? Vec2
 ---@field starting_origin? Vec2
@@ -85,7 +85,7 @@ end
 --- Stores render data directly on the sprite by
 --- referencing to the original sprite
 ---@param opts? SpriteState
----@return SpriteState
+---@return ComputedSpriteState
 function Sprite:state(opts)
   opts = opts or {}
 
@@ -117,7 +117,7 @@ end
 ---@param x? number
 ---@param y? number
 ---@param rot? number
----@param opts? ComputedSpriteState
+---@param opts? SpriteRenderState
 function Sprite:draw(x, y, rot, opts)
   opts = opts or {}
   love.graphics.setColor(opts.color or Res.colors.RESET)
@@ -139,7 +139,7 @@ function Sprite:draw(x, y, rot, opts)
 end
 
 ---@param box Box
----@param opts ComputedSpriteState
+---@param opts SpriteRenderState
 function Sprite:drawFrom(box, opts)
   love.graphics.setColor(opts.color or Res.colors.RESET)
 

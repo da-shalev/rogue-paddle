@@ -8,12 +8,6 @@
 ---@field rot number
 local Box = {}
 
----@class Extend
----@field a? number -- top (or all)
----@field b? number -- right/left (or horizontal)
----@field c? number -- bottom
----@field d? number -- left
-
 ---@class ComputedExtend
 ---@field top number
 ---@field left number
@@ -23,7 +17,7 @@ local Extend = {}
 Box.Extend = Extend
 
 ---@param t ComputedExtend
-Box.debugComputedExtend = function(t)
+Extend.debugExtend = function(t)
   return string.format(
     'ComputedExtend(top=%s, left=%s, bottom=%s, right=%s)',
     t.top,
@@ -33,15 +27,42 @@ Box.debugComputedExtend = function(t)
   )
 end
 
---- @param opts number[]
---- @return ComputedExtend
-function Extend.new(opts)
-  return {
-    top = opts[1] or 0,
-    right = opts[2] or opts[1] or 0,
-    bottom = opts[3] or opts[1] or 0,
-    left = opts[4] or opts[2] or opts[1] or 0,
-  }
+---@class ExtendBasis
+---@field [1]? number  -- top (or all)
+---@field [2]? number  -- right/left (or horizontal)
+---@field [3]? number  -- bottom
+---@field [4]? number  -- left
+
+---@alias Extend ExtendBasis|number
+
+---@param extend Extend
+---@return ComputedExtend
+function Extend.new(extend)
+  if type(extend) == 'number' then
+    return {
+      top = extend,
+      right = extend,
+      bottom = extend,
+      left = extend,
+    }
+  else
+    return {
+      top = extend[1] or 0,
+      right = extend[2] or extend[1] or 0,
+      bottom = extend[3] or extend[1] or 0,
+      left = extend[4] or extend[2] or extend[1] or 0,
+    }
+  end
+end
+
+---@param extend ComputedExtend
+---@param e Extend
+function Extend.add(extend, e)
+  local e = Extend.new(e)
+  extend.top = extend.top + e.top
+  extend.left = extend.left + e.left
+  extend.right = extend.right + e.right
+  extend.bottom = extend.bottom + e.bottom
 end
 
 local alias = {
@@ -325,53 +346,6 @@ function Box:copy(source)
   self.pos:copy(source.pos)
   self.size:copy(source.size)
   self.rot = source.rot
-end
-
----@param mode love.DrawMode
----@param color? Color
-function Box:draw(mode, color)
-  love.graphics.setColor(color or Res.colors.RESET)
-  love.graphics.rectangle(mode, self.pos.x, self.pos.y, self.size.x, self.size.y)
-end
-
----@param o ComputedExtend
----@param color Color
-function Box:outline(o, color)
-  if color == nil then
-    return
-  end
-
-  love.graphics.setColor(color)
-
-  if o.top and o.top > 0 then
-    love.graphics.setLineWidth(o.top)
-    love.graphics.line(self.pos.x, self.pos.y, self.pos.x + self.size.x, self.pos.y)
-  end
-
-  if o.left and o.left > 0 then
-    love.graphics.setLineWidth(o.left)
-    love.graphics.line(self.pos.x, self.pos.y, self.pos.x, self.pos.y + self.size.y)
-  end
-
-  if o.right and o.right > 0 then
-    love.graphics.setLineWidth(o.right)
-    love.graphics.line(
-      self.pos.x + self.size.x,
-      self.pos.y,
-      self.pos.x + self.size.x,
-      self.pos.y + self.size.y
-    )
-  end
-
-  if o.bottom and o.bottom > 0 then
-    love.graphics.setLineWidth(o.bottom)
-    love.graphics.line(
-      self.pos.x,
-      self.pos.y + self.size.y,
-      self.pos.x + self.size.x,
-      self.pos.y + self.size.y
-    )
-  end
 end
 
 function Box:clone()

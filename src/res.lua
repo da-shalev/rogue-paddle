@@ -53,22 +53,19 @@ local Res = {
     ---@type UiStyle
     OVERLAY = {
       background_color = colors.BACKGROUND,
-      outline_color = colors.RESET,
-      outline = { 1 },
+      border_color = colors.RESET,
+      border = 1,
+      border_radius = 3,
       extend = { 10 },
     },
 
     ---@type UiStyle
     BUTTON = {
-      outline_hover = { 0, 0, 1, 0 },
-      outline_hover_color = colors.RESET,
       extend = { 10, 0, 10, 0 },
     },
 
     ---@type UiStyle
     BUTTON_QUIT = {
-      outline_hover = { 0, 0, 1, 0 },
-      outline_hover_color = colors.REGULAR1,
       extend = { 3, 0, 3, 0 },
     },
   },
