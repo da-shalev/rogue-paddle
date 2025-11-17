@@ -24,7 +24,7 @@ Text.__index = Text
 ---@param opts TextOpts
 ---@return Text
 function Text.new(opts)
-  local font = opts.font or Res.fonts.PRSTART
+  local font = opts.font or love.graphics.getFont()
   local text = opts.text or EMPTY
   return setmetatable({
     _text = text,
@@ -35,10 +35,21 @@ end
 
 ---@return UiElement
 function Text:ui()
+  local color
   return UiElement.new {
     box = self._box,
+    applyLayout = function(e)
+      color = e.style.content_color
+    end,
+    onHover = function(e)
+      if e.hover then
+        color = e.style.content_hover_color
+      else
+        color = e.style.content_color
+      end
+    end,
     draw = function()
-      self:draw()
+      self:draw(color)
     end,
   }
 end
@@ -63,12 +74,19 @@ function Text:setFont(font)
   return self
 end
 
+---@param align? love.AlignMode
 ---@param color? Color
-function Text:draw(color)
+function Text:draw(align, color)
   if self._text ~= EMPTY then
-    love.graphics.setFont(self._font)
-    love.graphics.setColor(color or Res.colors.RESET)
-    love.graphics.print(self._text, self._box.pos.x, self._box.pos.y)
+    love.graphics.setColor(color or Color.RESET)
+    love.graphics.printf(
+      self._text,
+      self._font,
+      self._box.pos.x,
+      self._box.pos.y,
+      self._box.size.x,
+      align or 'left'
+    )
   end
 end
 

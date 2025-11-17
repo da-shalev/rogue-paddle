@@ -85,7 +85,7 @@ function love.draw()
 
   love.graphics.scale(canvas_w / state.camera.box.w, canvas_h / state.camera.box.h)
   love.graphics.translate(state.camera.box.x, state.camera.box.y)
-  love.graphics.clear(Res.colors.BACKGROUND)
+  love.graphics.clear(Color.BACKGROUND)
 
   if current_scene then
     current_scene:draw()
@@ -93,12 +93,8 @@ function love.draw()
 
   love.graphics.pop()
   love.graphics.setCanvas()
-
   tlfres.beginRendering(canvas_w, canvas_h)
-
-  love.graphics.setColor(Res.colors.RESET)
-  love.graphics.draw(canvas, 0, 0)
-
+  love.graphics.draw(canvas)
   tlfres.endRendering()
 end
 

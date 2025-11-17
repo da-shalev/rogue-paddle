@@ -46,9 +46,8 @@ function TLfres.getScale(width, height)
 end
 
 -- Zooms and centers to fit width×height into the current window.
--- 0,0 is at the top-left of the canvas, or the middle if centered is true.
 -- Use love.graphics.push before this and love.graphics.pop after done rendering
-function TLfres.beginRendering(width, height, centered)
+function TLfres.beginRendering(width, height)
   if currentlyRendering then
     error('Must call tlfres.endRendering before calling beginRendering.')
     return
@@ -60,9 +59,6 @@ function TLfres.beginRendering(width, height, centered)
   local scale = min(w / width, h / height)
   lgTranslate((w - width * scale) * 0.5, (h - height * scale) * 0.5)
   lgScale(scale)
-  if centered then
-    lgTranslate(0.5 * width, 0.5 * height)
-  end
   return scale
 end
 

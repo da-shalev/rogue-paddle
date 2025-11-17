@@ -15,9 +15,8 @@ function StatusCtx:setStatus(status)
 end
 
 function StatusCtx:popOverlay()
-  -- reset cursor state in case a button or other
-  -- was hovered
-  love.mouse.setCursor(love.mouse.getSystemCursor('arrow'))
+  -- reset cursor state in case a button or other was hovered
+  love.mouse.setCursor()
   self._overlay = nil
 end
 

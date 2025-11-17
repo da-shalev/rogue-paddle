@@ -1,4 +1,4 @@
-local BORDER_COLOR = Res.colors.REGULAR0
+local BORDER_COLOR = Color.REGULAR0
 
 -- types
 
@@ -142,7 +142,7 @@ function BrickManager:draw()
   love.graphics.setLineWidth(1)
   for _, row in ipairs(self._data.grid) do
     for _, brick in pairs(row) do
-      love.graphics.setColor(brick.color or Res.colors.RESET)
+      love.graphics.setColor(brick.color or Color.RESET)
       love.graphics.rectangle(
         'fill',
         brick.box.pos.x,

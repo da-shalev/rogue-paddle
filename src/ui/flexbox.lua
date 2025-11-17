@@ -1,3 +1,5 @@
+local UiStyle = require('ui.style')
+
 ---@class ComputedFlexbox
 ---@field box Box
 ---@field dir FlexDirection
@@ -5,7 +7,6 @@
 ---@field align_items FlexAlignItems
 ---@field gap number
 ---@field children (UiElement)[]
----@field screen? boolean
 local Flexbox = {}
 Flexbox.__index = Flexbox
 
@@ -23,9 +24,8 @@ Flexbox.__index = Flexbox
 ---@field flex? FlexOpts
 ---@field children (UiElement)[]
 ---@field name? string
----@field style? UiStyle
+---@field style? UiStyles
 ---@field actions? UiActions
----@field screen? boolean
 
 ---A simple 'nowrap' flexbox
 ---@param opts Flexbox
@@ -41,7 +41,6 @@ function Flexbox.new(opts)
     align_items = opts.flex.align_items or 'start',
     gap = opts.flex.gap or 0,
     children = opts.children or {},
-    screen = opts.screen,
   }
 
   local flexbox = setmetatable(flex, Flexbox)
@@ -93,7 +92,7 @@ function Flexbox:applyLayout(e)
   local is_col = self.dir == 'col' or self.dir == 'col-reverse'
   local is_reverse = self.dir == 'row-reverse' or self.dir == 'col-reverse'
 
-  -- Determines iteration direction (normal or reversed)
+  -- Determines iteration direction
   local start_i, end_i, step
   if is_reverse then
     start_i = #self.children
@@ -130,17 +129,16 @@ function Flexbox:applyLayout(e)
 
   current_axis_size = current_axis_size - self.gap
 
+  local w = UiStyle.calculateUnit(style.width)
+  local h = UiStyle.calculateUnit(style.height)
+
   -- Sets container size based on placed children
-  if not self.screen then
-    if is_row then
-      self.box.w = current_axis_size + style.extend.left + style.extend.right
-      self.box.h = cross_axis_size + style.extend.top + style.extend.bottom
-    elseif is_col then
-      self.box.w = cross_axis_size + style.extend.left + style.extend.right
-      self.box.h = current_axis_size + style.extend.top + style.extend.bottom
-    end
-  else
-    self.box = S.camera.box:clone()
+  if is_row then
+    self.box.w = w or (current_axis_size + style.extend.left + style.extend.right)
+    self.box.h = h or (cross_axis_size + style.extend.top + style.extend.bottom)
+  elseif is_col then
+    self.box.w = w or (cross_axis_size + style.extend.left + style.extend.right)
+    self.box.h = h or (current_axis_size + style.extend.top + style.extend.bottom)
   end
 
   -- Computes spare space for justify-content

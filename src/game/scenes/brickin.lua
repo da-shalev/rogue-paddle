@@ -7,11 +7,13 @@ return function()
   local points_text = Text.new {
     text = points,
     pos = S.camera.box:getOriginPos(Origin.TOP_CENTER) + Vec2.new(0, UI_INSET),
+    font = Res.fonts.DEFAULT,
   }
 
   local info_text = Text.new {
     text = string.format('Press %s to begin', Res.keybinds.CONFIRM),
     pos = S.camera.box:getOriginPos(Origin.CENTER),
+    font = Res.fonts.DEFAULT,
   }
 
   local lives = 3
@@ -32,10 +34,10 @@ return function()
 
   local bricks = require('game.brick_manager').new {
     colors = {
-      Res.colors.REGULAR1,
-      Res.colors.REGULAR3,
-      Res.colors.REGULAR2,
-      Res.colors.REGULAR4,
+      Color.REGULAR1,
+      Color.REGULAR3,
+      Color.REGULAR2,
+      Color.REGULAR4,
     },
     layout = Res.layouts.DEFAULT,
     variants = {},
@@ -62,7 +64,7 @@ return function()
 
     draw = function(ctx)
       state.drawLevel()
-      info_text:draw()
+      info_text:draw('center')
     end,
   }
 
@@ -146,7 +148,7 @@ return function()
 
     -- points ui
     if points > 0 then
-      points_text:draw()
+      points_text:draw('center')
     end
   end
 

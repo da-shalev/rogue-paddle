@@ -70,7 +70,17 @@ function Sprite:ui(opts)
   local box = Box.new(Vec2.zero(), self:getDimensions())
   return UiElement.new({
     box = box,
-    draw = function()
+    applyLayout = function(e)
+      opts.color = e.style.content_color
+    end,
+    onHover = function(e)
+      if e.hover then
+        opts.color = e.style.content_hover_color
+      else
+        opts.color = e.style.content_color
+      end
+    end,
+    draw = function(e)
       self:drawFrom(box, opts)
     end,
   })
@@ -120,7 +130,7 @@ end
 ---@param opts? SpriteRenderState
 function Sprite:draw(x, y, rot, opts)
   opts = opts or {}
-  love.graphics.setColor(opts.color or Res.colors.RESET)
+  love.graphics.setColor(opts.color or Color.RESET)
 
   local quad = self.cells[opts.frame_idx or 1]
   local _, _, w, h = quad:getViewport()
@@ -141,7 +151,7 @@ end
 ---@param box Box
 ---@param opts SpriteRenderState
 function Sprite:drawFrom(box, opts)
-  love.graphics.setColor(opts.color or Res.colors.RESET)
+  love.graphics.setColor(opts.color or Color.RESET)
 
   local quad = self.cells[opts.frame_idx]
   local _, _, w, h = quad:getViewport()

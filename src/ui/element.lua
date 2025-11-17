@@ -4,14 +4,15 @@ local UiStyle = require('ui.style')
 ---@field onClick? fun()
 
 ---@class UiEvents
----@field applyLayout? fun(self: UiElement)
+---@field applyLayout? fun(e: UiElement)
 ---@field update? fun(dt: number)
----@field draw fun()
+---@field draw fun(e: UiElement)
+---@field onHover? fun(e: UiElement)
 
 ---@class UiElement
 ---@field parent? UiElement
 ---@field box Box
----@field hover boolean
+---@field hover? boolean
 ---@field events UiEvents
 ---@field style? ComputedUiStyle
 ---@field actions? UiActions
@@ -21,7 +22,7 @@ UiElement.__index = UiElement
 
 ---@class UiElementOpts : UiEvents
 ---@field box Box
----@field style? UiStyle
+---@field style? UiStyles
 ---@field actions? UiActions
 
 ---@param opts UiElementOpts
@@ -30,13 +31,14 @@ UiElement.new = function(opts)
   local drawable = {
     parent = nil,
     box = opts.box,
-    hover = false,
+    hover = nil,
     events = {
       draw = opts.draw,
       update = opts.update,
       applyLayout = opts.applyLayout,
+      onHover = opts.onHover,
     },
-    style = UiStyle.new(opts.style),
+    style = UiStyle.normalize(opts.style),
     actions = opts.actions or {},
   }
 
@@ -46,16 +48,26 @@ end
 ---@param dt number
 function UiElement:update(dt)
   local x, y = S.cursor:within(self.box)
-
   local hover = x and y
+
   if self.hover ~= hover then
+    if self.style.hover_cursor then
+      if hover then
+        love.mouse.setCursor(self.style.hover_cursor)
+      else
+        love.mouse.setCursor()
+      end
+    end
+
+    if self.events.onHover then
+      self.events.onHover(self)
+    end
+
     self.hover = hover
   end
 
-  if self.actions.onClick then
-    if love.mouse.isDown(1) and self.hover then
-      self.actions.onClick()
-    end
+  if love.mouse.isDown(1) and self.hover and self.actions.onClick then
+    self.actions.onClick()
   end
 
   if self.events.update then
@@ -70,10 +82,10 @@ function UiElement:setActions(actions)
   return self
 end
 
----@param style UiStyle
+---@param ... UiStyle
 ---@return UiElement
-function UiElement:setStyle(style)
-  self.style = UiStyle.new(style)
+function UiElement:setStyle(...)
+  self.style = UiStyle.new(...)
   return self
 end
 
@@ -96,31 +108,31 @@ end
 
 function UiElement:draw()
   if self.style.background_hover_color and self.hover then
-    love.graphics.setColor(self.style.background_hover_color or Res.colors.RESET)
+    love.graphics.setColor(self.style.background_hover_color)
     love.graphics.rectangle(
       'fill',
-      self.box.pos.x,
-      self.box.pos.y,
-      self.box.size.x,
-      self.box.size.y,
+      self.box.pos.x + self.style.border / 2,
+      self.box.pos.y + self.style.border / 2,
+      self.box.size.x - self.style.border,
+      self.box.size.y - self.style.border,
       self.style.border_radius,
       self.style.border_radius
     )
   elseif self.style.background_color then
-    love.graphics.setColor(self.style.background_color or Res.colors.RESET)
+    love.graphics.setColor(self.style.background_color)
     love.graphics.rectangle(
       'fill',
-      self.box.pos.x,
-      self.box.pos.y,
-      self.box.size.x,
-      self.box.size.y,
+      self.box.pos.x + self.style.border / 2,
+      self.box.pos.y + self.style.border / 2,
+      self.box.size.x - self.style.border,
+      self.box.size.y - self.style.border,
       self.style.border_radius,
       self.style.border_radius
     )
   end
 
   if self.style.border and self.style.border_color then
-    love.graphics.setColor(self.style.border_color or Res.colors.RESET)
+    love.graphics.setColor(self.style.border_color)
     love.graphics.setLineWidth(self.style.border)
     love.graphics.rectangle(
       'line',
@@ -132,9 +144,8 @@ function UiElement:draw()
       self.style.border_radius
     )
   end
-
   if self.events.draw then
-    self.events.draw()
+    self.events.draw(self)
   end
 end
 

@@ -1,41 +1,128 @@
 ---@class UiStyle
 ---@field border? number
 ---@field border_color? Color
+---@field content_color? Color
+---@field content_hover_color? Color
 ---@field background_color? Color
 ---@field background_hover_color? Color
 ---@field border_radius? number
 ---@field extend Extend?
-
----@class UiBorderStyle
+---@field hover_cursor? love.Cursor
+---@field align_text? love.AlignMode
+---@field width? string
+---@field height? string
 
 ---@class ComputedUiStyle
 ---@field border? number
 ---@field border_color? Color
+---@field content_color? Color
+---@field content_hover_color? Color
 ---@field background_color? Color
 ---@field background_hover_color? Color
 ---@field border_radius number
 ---@field extend ComputedExtend
+---@field hover_cursor? love.Cursor
+---@field align_text love.AlignMode
+---@field width? Unit
+---@field height? Unit
 
 local UiStyle = {}
 
----@param opts UiStyle?
----@return ComputedUiStyle
-UiStyle.new = function(opts)
-  opts = opts or {}
+---@alias UiStyles UiStyle|(UiStyle)[]
 
-  local extend = Box.Extend.new(opts.extend or opts.border or 0)
-  if opts.border then
-    Box.Extend.add(extend, opts.border)
+---@class Unit
+---@field value number
+---@field ext? string
+
+---@param str string
+---@return Unit?
+UiStyle.parse = function(str)
+  if type(str) ~= 'string' then
+    print(string.format('expected string, got %s', type(str)))
+    return nil
+  end
+
+  local num, unit = str:match('^([%d%.]+)%s*(%%?%a*)$')
+  if not num then
+    print(string.format("invalid format: '%s'", str))
+    return nil
+  end
+
+  local n = tonumber(num)
+  if not n then
+    print(string.format("invalid number: '%s'", num))
+    return nil
+  end
+
+  if unit == '' then
+    unit = nil
+  end
+
+  return {
+    value = n,
+    ext = unit,
+  }
+end
+
+---@param st UiStyles
+---@return ComputedUiStyle
+function UiStyle.normalize(st)
+  if not st then
+    return UiStyle.new()
+  end
+
+  if st[1] ~= nil then
+    return UiStyle.new(unpack(st))
+  end
+
+  return UiStyle.new(st)
+end
+
+---@param unit? Unit
+---@return number?
+function UiStyle.calculateUnit(unit)
+  if not unit then
+    return nil
+  elseif not unit.ext then
+    return unit.value
+  -- elseif unit.ext == '%' then
+  --   return S.camera.box.w * (unit.value / 100)
+  elseif unit.ext == 'vw' then
+    return S.camera.box.w * (unit.value / 100)
+  elseif unit.ext == 'vh' then
+    return S.camera.box.h * (unit.value / 100)
+  end
+
+  return unit.value
+end
+
+---@param ... UiStyles
+---@return ComputedUiStyle
+UiStyle.new = function(...)
+  ---@type UiStyle
+  local s = {}
+  for _, style in ipairs({ ... }) do
+    if style then
+      for k, v in pairs(style) do
+        s[k] = v
+      end
+    end
   end
 
   ---@type ComputedUiStyle
   return {
-    border = opts.border,
-    border_color = opts.border_color,
-    border_radius = opts.border_radius or 0,
-    background_color = opts.background_color,
-    background_hover_color = opts.background_hover_color,
-    extend = extend,
+    border = s.border,
+    border_color = s.border_color,
+    border_radius = s.border_radius or 0,
+    background_color = s.background_color,
+    content_color = s.content_color,
+    content_hover_color = s.content_hover_color,
+    background_hover_color = s.background_hover_color,
+    extend = Box.Extend.new(s.extend or 0),
+    hover_cursor = s.hover_cursor,
+    align_text = s.align_text or 'left',
+    width = UiStyle.parse(s.width),
+    height = UiStyle.parse(s.height),
   }
 end
 
