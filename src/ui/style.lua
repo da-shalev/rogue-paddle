@@ -8,37 +8,37 @@
 ---@field border_radius? number
 ---@field extend Extend?
 ---@field hover_cursor? love.Cursor
----@field align_text? love.AlignMode
 ---@field width? string
 ---@field height? string
+
+---@class ComputedUiColor
+---@field color Color
+---@field base_color Color
+---@field hover_color Color
 
 ---@class ComputedUiStyle
 ---@field border? number
 ---@field border_color? Color
----@field content_color? Color
----@field content_hover_color? Color
----@field background_color? Color
----@field background_hover_color? Color
+---@field content ComputedUiColor
+---@field background ComputedUiColor
 ---@field border_radius number
 ---@field extend ComputedExtend
 ---@field hover_cursor? love.Cursor
----@field align_text love.AlignMode
----@field width? Unit
----@field height? Unit
+---@field width? UiUnit
+---@field height? UiUnit
 
 local UiStyle = {}
 
 ---@alias UiStyles UiStyle|(UiStyle)[]
 
----@class Unit
----@field value number
+---@class UiUnit
+---@field val number
 ---@field ext? string
 
 ---@param str string
----@return Unit?
+---@return UiUnit?
 UiStyle.parse = function(str)
   if type(str) ~= 'string' then
-    print(string.format('expected string, got %s', type(str)))
     return nil
   end
 
@@ -59,7 +59,7 @@ UiStyle.parse = function(str)
   end
 
   return {
-    value = n,
+    val = n,
     ext = unit,
   }
 end
@@ -78,22 +78,22 @@ function UiStyle.normalize(st)
   return UiStyle.new(st)
 end
 
----@param unit? Unit
+---@param unit? UiUnit
 ---@return number?
 function UiStyle.calculateUnit(unit)
   if not unit then
     return nil
   elseif not unit.ext then
-    return unit.value
+    return unit.val
   -- elseif unit.ext == '%' then
-  --   return S.camera.box.w * (unit.value / 100)
+  --   return S.camera.box.w * (unit.val / 100)
   elseif unit.ext == 'vw' then
-    return S.camera.box.w * (unit.value / 100)
+    return S.camera.box.w * (unit.val / 100)
   elseif unit.ext == 'vh' then
-    return S.camera.box.h * (unit.value / 100)
+    return S.camera.box.h * (unit.val / 100)
   end
 
-  return unit.value
+  return unit.val
 end
 
 ---@param ... UiStyles
@@ -114,13 +114,18 @@ UiStyle.new = function(...)
     border = s.border,
     border_color = s.border_color,
     border_radius = s.border_radius or 0,
-    background_color = s.background_color,
-    content_color = s.content_color,
-    content_hover_color = s.content_hover_color,
-    background_hover_color = s.background_hover_color,
+    background = {
+      color = s.background_color,
+      base_color = s.background_color,
+      hover_color = s.background_hover_color,
+    },
+    content = {
+      color = s.content_color,
+      base_color = s.content_color,
+      hover_color = s.content_hover_color,
+    },
     extend = Box.Extend.new(s.extend or 0),
     hover_cursor = s.hover_cursor,
-    align_text = s.align_text or 'left',
     width = UiStyle.parse(s.width),
     height = UiStyle.parse(s.height),
   }

@@ -1,20 +1,14 @@
-local UI_INSET = 3
-local Text = require('ui.text')
+local UI_INSET = 0
+local Text = require 'ui.text'
 return function()
   local state = {}
-  local points = 0
+  local hud = require 'game.hud'
 
-  local points_text = Text.new {
-    text = points,
-    pos = S.camera.box:getOriginPos(Origin.TOP_CENTER) + Vec2.new(0, UI_INSET),
-    font = Res.fonts.DEFAULT,
-  }
-
-  local info_text = Text.new {
-    text = string.format('Press %s to begin', Res.keybinds.CONFIRM),
-    pos = S.camera.box:getOriginPos(Origin.CENTER),
-    font = Res.fonts.DEFAULT,
-  }
+  -- local info_text = Text.new {
+  --   value = string.format('Press %s to begin', Res.keybinds.CONFIRM),
+  --   pos = S.camera.box:getOriginPos(Origin.CENTER),
+  --   font = Res.fonts.BASE,
+  -- }
 
   local lives = 3
 
@@ -43,12 +37,10 @@ return function()
     variants = {},
     onGenerate = function(brick) end,
     onReset = function(e)
-      points = points + 100
-      points_text:setText(points)
+      hud.score.val = hud.score.val + 100
     end,
     onRemove = function(e, brick)
-      points = points + 10
-      points_text:setText(points)
+      hud.score.val = hud.score.val + 10
     end,
     onSpawn = function(e, brick) end,
     viewTransitionSpeed = 1.0,
@@ -64,7 +56,6 @@ return function()
 
     draw = function(ctx)
       state.drawLevel()
-      info_text:draw('center')
     end,
   }
 
@@ -73,6 +64,8 @@ return function()
       if ctx:hasOverlay() then
         return
       end
+
+      hud.update()
 
       paddle.input_x = 0
 
@@ -146,10 +139,7 @@ return function()
       )
     end
 
-    -- points ui
-    if points > 0 then
-      points_text:draw('center')
-    end
+    hud.draw()
   end
 
   ---@param ctx StatusCtx
@@ -157,7 +147,7 @@ return function()
     lives = lives - 1
     ball.sprite.box:setPos(getBallOnPaddlePos(), Origin.BOTTOM_CENTER)
     ball.prev_box:copy(ball.sprite.box)
-    info_text:setText(string.format('Press %s to continue', Res.keybinds.CONFIRM))
+    -- info_text:setText(string.format('Press %s to continue', Res.keybinds.CONFIRM))
 
     if lives == 0 then
       ctx:setOverlay(require('game.overlays.gameover'))

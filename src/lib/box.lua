@@ -1,11 +1,15 @@
 ---@class Box
----@field x number -- alias to pos.x
----@field y number -- alias to pos.y
----@field w number -- alias to size.x
----@field h number -- alias to size.y
+--- aliases are slower perf wise
+--- but makes the code easier to reason about
+---@field x? number -- alias to pos.x
+---@field y? number -- alias to pos.y
+---@field w? number -- alias to size.x
+---@field h? number -- alias to size.y
 ---@field pos Vec2
 ---@field size Vec2
 ---@field rot number
+--- internal usage
+---@field _dirty boolean
 local Box = {}
 
 ---@class ComputedExtend
@@ -138,11 +142,15 @@ end
 function Box.new(pos, size, rot, starting_origin)
   pos = pos - (size * (starting_origin or Origin.TOP_LEFT))
 
-  return setmetatable({
+  ---@type Box
+  local box = {
     pos = pos,
     size = size,
     rot = rot or 0,
-  }, Box)
+    _dirty = false,
+  }
+
+  return setmetatable(box, Box)
 end
 
 function Box.zero()

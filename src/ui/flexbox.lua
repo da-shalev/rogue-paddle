@@ -156,19 +156,15 @@ function Flexbox:applyLayout(e)
     justify_offset = justify_space
   end
 
-  -- Cache checks
-  local is_align_end = self.align_items == 'end'
-  local is_align_center = self.align_items == 'center'
-
   -- Second pass: apply cross-axis alignment and offset
   for _, child in pairs(self.children) do
     if is_row then
       local inner_h = self.box.h - style.extend.top - style.extend.bottom
       local base_y = self.box.y + style.extend.top
 
-      if is_align_center then
+      if self.align_items == 'center' then
         child.box.y = base_y + (inner_h - child.box.h) / 2
-      elseif is_align_end then
+      elseif self.align_items == 'end' then
         child.box.y = base_y + (inner_h - child.box.h)
       end
 
@@ -177,9 +173,9 @@ function Flexbox:applyLayout(e)
       local inner_w = self.box.w - style.extend.left - style.extend.right
       local base_x = self.box.x + style.extend.left
 
-      if is_align_center then
+      if self.align_items == 'center' then
         child.box.x = base_x + (inner_w - child.box.w) / 2
-      elseif is_align_end then
+      elseif self.align_items == 'end' then
         child.box.x = base_x + (inner_w - child.box.w)
       end
 

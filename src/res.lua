@@ -15,7 +15,7 @@ local Res = {
 
   fonts = {
     -- default font
-    DEFAULT = love.graphics.newFont('res/fonts/Px437_IBM_CGA.ttf', 8),
+    BASE = love.graphics.newFont('res/fonts/Px437_IBM_CGA.ttf', 8),
     IBM = love.graphics.newFont('res/fonts/Px437_IBM_BIOS-2y.ttf', 16),
   },
 
@@ -35,21 +35,15 @@ local Res = {
       -- border_color = Color.RESET,
       border_color = Color.RESET,
       border = 1,
-      -- border_radius = 1,
+      border_radius = 3,
       extend = { 8 },
-    },
-
-    TEXT = {
-      -- content_color = Color.FOREGROUND,
-      -- content_hover_color = Color.FOREGROUND,
-      -- extend = { 10 },
     },
 
     ---@type UiStyle
     BUTTON = {
-      -- extend = { 10, 0, 10, 0 },
+      content_color = Color.FOREGROUND,
+      content_hover_color = Color.BRIGHT0,
       hover_cursor = cursors.hand,
-      -- content_hover_color = Color.FOREGROUND,
     },
   },
 

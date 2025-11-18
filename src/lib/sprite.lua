@@ -70,15 +70,8 @@ function Sprite:ui(opts)
   local box = Box.new(Vec2.zero(), self:getDimensions())
   return UiElement.new({
     box = box,
-    applyLayout = function(e)
-      opts.color = e.style.content_color
-    end,
     onHover = function(e)
-      if e.hover then
-        opts.color = e.style.content_hover_color
-      else
-        opts.color = e.style.content_color
-      end
+      -- opts.color = e.style.content.color
     end,
     draw = function(e)
       self:drawFrom(box, opts)

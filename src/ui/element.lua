@@ -10,6 +10,7 @@ local UiStyle = require('ui.style')
 ---@field onHover? fun(e: UiElement)
 
 ---@class UiElement
+---@field root? UiElement
 ---@field parent? UiElement
 ---@field box Box
 ---@field hover? boolean
@@ -28,9 +29,10 @@ UiElement.__index = UiElement
 ---@param opts UiElementOpts
 UiElement.new = function(opts)
   ---@type UiElement
-  local drawable = {
+  local e = {
     parent = nil,
     box = opts.box,
+    root = nil,
     hover = nil,
     events = {
       draw = opts.draw,
@@ -42,7 +44,10 @@ UiElement.new = function(opts)
     actions = opts.actions or {},
   }
 
-  return setmetatable(drawable, UiElement)
+  local e = setmetatable(e, UiElement)
+
+  e:updateLayout()
+  return e
 end
 
 ---@param dt number
@@ -54,8 +59,12 @@ function UiElement:update(dt)
     if self.style.hover_cursor then
       if hover then
         love.mouse.setCursor(self.style.hover_cursor)
+        self.style.content.color = self.style.content.hover_color
+        self.style.background.color = self.style.background.hover_color
       else
         love.mouse.setCursor()
+        self.style.content.color = self.style.content.base_color
+        self.style.background.color = self.style.background.base_color
       end
     end
 
@@ -107,19 +116,16 @@ function UiElement:getName()
 end
 
 function UiElement:draw()
-  if self.style.background_hover_color and self.hover then
-    love.graphics.setColor(self.style.background_hover_color)
-    love.graphics.rectangle(
-      'fill',
-      self.box.pos.x + self.style.border / 2,
-      self.box.pos.y + self.style.border / 2,
-      self.box.size.x - self.style.border,
-      self.box.size.y - self.style.border,
-      self.style.border_radius,
-      self.style.border_radius
-    )
-  elseif self.style.background_color then
-    love.graphics.setColor(self.style.background_color)
+  if self.box._dirty then
+    self.box._dirty = false
+
+    if self.root then
+      self.root:updateLayout()
+    end
+  end
+
+  if self.style.background.color then
+    love.graphics.setColor(self.style.background.color)
     love.graphics.rectangle(
       'fill',
       self.box.pos.x + self.style.border / 2,
@@ -144,14 +150,22 @@ function UiElement:draw()
       self.style.border_radius
     )
   end
+
   if self.events.draw then
+    love.graphics.setColor(self.style.content.color or Color.RESET)
     self.events.draw(self)
   end
 end
 
---- @param parent UiElement
+--- If no parent is passed, it is assumed self is root!
+--- @param parent? UiElement
 function UiElement:updateLayout(parent)
-  self.parent = parent
+  if parent then
+    self.parent = parent
+    self.root = parent.root
+  else
+    self.root = self
+  end
 
   -- if parent ~= nil then
   --   print(self:getName(), parent:getName())

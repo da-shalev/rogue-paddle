@@ -46,6 +46,8 @@ function Vec2:normalize()
   return self
 end
 
+-- massively inefficent shorthands
+
 ---@param a Vec2
 ---@return Vec2
 function Vec2.__unm(a)

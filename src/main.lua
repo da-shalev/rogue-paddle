@@ -72,6 +72,8 @@ function love.update(dt)
       current_scene:exit()
     end
 
+    love.mouse.setCursor()
+
     current_scene = scene
   end
 
@@ -93,7 +95,9 @@ function love.draw()
 
   love.graphics.pop()
   love.graphics.setCanvas()
+
   tlfres.beginRendering(canvas_w, canvas_h)
+  love.graphics.setColor(Color.RESET)
   love.graphics.draw(canvas)
   tlfres.endRendering()
 end

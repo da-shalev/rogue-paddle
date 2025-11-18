@@ -9,84 +9,55 @@ end
 
 local EMPTY = ''
 
----@class Text
----@field _text ValidText
+---@class ComputedText
+---@field val ValidText
+---@field font love.Font
 ---@field _box Box
----@field _font love.Font
 local Text = {}
-Text.__index = Text
 
----@class TextOpts
----@field text? ValidText
+---@param table ComputedText
+local data = Help.watchTable(Text, function(table, key, _)
+  -- only if val or font is mutated
+  if key == 'val' or key == 'font' then
+    table._box.size = getSize(table.font, table.val)
+    table._box._dirty = true
+  end
+end)
+
+---@class Text
+---@field val? ValidText
 ---@field font? love.Font
----@field pos? Vec2
 
----@param opts TextOpts
----@return Text
+---@param opts Text
+---@return ComputedText
 function Text.new(opts)
+  local self = setmetatable({}, Text)
   local font = opts.font or love.graphics.getFont()
-  local text = opts.text or EMPTY
-  return setmetatable({
-    _text = text,
-    _box = Box.new(opts.pos or Vec2.zero(), getSize(font, text)),
-    _font = font,
-  }, Text)
+  local val = opts.val or EMPTY
+
+  ---@type Text
+  data[self] = {
+    val = val,
+    font = font,
+    _box = Box.new(Vec2.zero(), getSize(font, val)),
+  }
+
+  return self
 end
 
 ---@return UiElement
 function Text:ui()
-  local color
   return UiElement.new {
     box = self._box,
-    applyLayout = function(e)
-      color = e.style.content_color
-    end,
-    onHover = function(e)
-      if e.hover then
-        color = e.style.content_hover_color
-      else
-        color = e.style.content_color
-      end
-    end,
     draw = function()
-      self:draw(color)
+      self:draw()
     end,
   }
 end
 
-function Text:_mutated()
-  self._box.size = getSize(self._font, self._text)
-end
-
----@param text? ValidText
----@return Text
-function Text:setText(text)
-  self._text = text or EMPTY
-  self:_mutated()
-  return self
-end
-
----@param font love.Font
----@return Text
-function Text:setFont(font)
-  self._font = font
-  self:_mutated()
-  return self
-end
-
----@param align? love.AlignMode
----@param color? Color
-function Text:draw(align, color)
-  if self._text ~= EMPTY then
-    love.graphics.setColor(color or Color.RESET)
-    love.graphics.printf(
-      self._text,
-      self._font,
-      self._box.pos.x,
-      self._box.pos.y,
-      self._box.size.x,
-      align or 'left'
-    )
+function Text:draw()
+  if self.val ~= EMPTY then
+    love.graphics.printf(self.val, self.font, self._box.pos.x, self._box.pos.y, self._box.size.x)
   end
 end
 
