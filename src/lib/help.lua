@@ -40,24 +40,18 @@ end
 
 --- Metamethod to watch a tables mutation, allows avoiding getters and setters
 --- by allowing internal tracking without abstractions
----@param metatable table
----@param onMutate fun(tbl: table, key: any, val: any)
----@return table data
-function Help.watchTable(metatable, onMutate)
-  local data = setmetatable({}, { __mode = 'k' })
-
-  metatable.__newindex = function(table, key, val)
-    data[table][key] = val
-    onMutate(table, key, val)
-  end
-  metatable.__index = function(table, key)
-    if data[table] and data[table][key] ~= nil then
-      return data[table][key]
-    end
-    return metatable[key]
-  end
-
-  return data
+---@generic T : table
+---@param init T
+---@param onMutate fun(tbl: T, key: any, val: any)
+---@return T
+function Help.proxy(init, onMutate)
+  return setmetatable({}, {
+    __index = init,
+    __newindex = function(_, k, v)
+      init[k] = v
+      onMutate(init, k, v)
+    end,
+  })
 end
 
 return Help

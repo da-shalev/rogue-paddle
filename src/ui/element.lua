@@ -45,7 +45,6 @@ UiElement.new = function(opts)
   }
 
   local e = setmetatable(e, UiElement)
-
   e:updateLayout()
   return e
 end

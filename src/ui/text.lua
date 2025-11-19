@@ -14,15 +14,7 @@ local EMPTY = ''
 ---@field font love.Font
 ---@field _box Box
 local Text = {}
-
----@param table ComputedText
-local data = Help.watchTable(Text, function(table, key, _)
-  -- only if val or font is mutated
-  if key == 'val' or key == 'font' then
-    table._box.size = getSize(table.font, table.val)
-    table._box._dirty = true
-  end
-end)
+Text.__index = Text
 
 ---@class Text
 ---@field val? ValidText
@@ -31,18 +23,23 @@ end)
 ---@param opts Text
 ---@return ComputedText
 function Text.new(opts)
-  local self = setmetatable({}, Text)
   local font = opts.font or love.graphics.getFont()
   local val = opts.val or EMPTY
 
-  ---@type Text
-  data[self] = {
-    val = val,
-    font = font,
-    _box = Box.new(Vec2.zero(), getSize(font, val)),
-  }
-
-  return self
+  return Help.proxy(
+    setmetatable({
+      val = val,
+      font = font,
+      _box = Box.new(Vec2.zero(), getSize(font, val)),
+    }, Text),
+    function(t, k)
+      if k == 'val' or k == 'font' then
+        print('hi')
+        t._box.size = getSize(t.font, t.val)
+        t._box._dirty = true
+      end
+    end
+  )
 end
 
 ---@return UiElement

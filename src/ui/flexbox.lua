@@ -79,6 +79,29 @@ function Flexbox:draw()
   end
 end
 
+---@param child UiElement
+---@param pos? integer
+function Flexbox:addChild(child, pos)
+  if pos then
+    table.insert(self.children, pos, child)
+  else
+    table.insert(self.children, child)
+  end
+end
+
+---@param child UiElement
+---@return boolean
+function Flexbox:removeChild(child)
+  for i, c in ipairs(self.children) do
+    if c == child then
+      table.remove(self.children, i)
+      return true
+    end
+  end
+
+  return false
+end
+
 ---@param e UiElement
 function Flexbox:applyLayout(e)
   local style = e:getStyle()

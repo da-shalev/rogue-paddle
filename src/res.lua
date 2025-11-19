@@ -6,6 +6,11 @@ local Res = {
   cheats = true,
   cursors = cursors,
 
+  -- configuration defaults for every new game
+  config = {
+    INITIAL_HEALTH = 3,
+  },
+
   sprites = {
     PLAYER = Sprite.new('res/sprites/player.png'),
     BALL = Sprite.new('res/sprites/ball.png'),

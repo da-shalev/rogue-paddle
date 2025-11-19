@@ -2,15 +2,13 @@ local UI_INSET = 0
 local Text = require 'ui.text'
 return function()
   local state = {}
-  local hud = require 'game.hud'
+  local hud = require('game.hud')()
 
   -- local info_text = Text.new {
   --   value = string.format('Press %s to begin', Res.keybinds.CONFIRM),
   --   pos = S.camera.box:getOriginPos(Origin.CENTER),
   --   font = Res.fonts.BASE,
   -- }
-
-  local lives = 3
 
   local paddle = require('game.entities.paddle') {
     pos = Vec2.new(S.camera.box.w / 2, S.camera.box.h - 20),
@@ -131,29 +129,30 @@ return function()
     bricks:draw()
 
     -- hearts ui
-    for live = 1, lives do
-      Res.sprites.HEART:draw(
-        UI_INSET + (live - 1) * (Res.sprites.HEART:getWidth() + 2),
-        UI_INSET,
-        0
-      )
-    end
+    -- for live = 1, lives do
+    --   Res.sprites.HEART:draw(
+    --     UI_INSET + (live - 1) * (Res.sprites.HEART:getWidth() + 2),
+    --     UI_INSET,
+    --     0
+    --   )
+    -- end
 
     hud.draw()
   end
 
   ---@param ctx StatusCtx
   state.removeLife = function(ctx)
-    lives = lives - 1
+    hud.lives.val = hud.lives.val - 1
+    -- lives = lives - 1
     ball.sprite.box:setPos(getBallOnPaddlePos(), Origin.BOTTOM_CENTER)
     ball.prev_box:copy(ball.sprite.box)
     -- info_text:setText(string.format('Press %s to continue', Res.keybinds.CONFIRM))
 
-    if lives == 0 then
-      ctx:setOverlay(require('game.overlays.gameover'))
-    else
+    -- if lives == 0 then
+    --   ctx:setOverlay(require('game.overlays.gameover'))
+    -- else
       ctx:setStatus(state.ATTACHED)
-    end
+    -- end
   end
 
   state.updateCheats = function()
@@ -169,7 +168,8 @@ return function()
   return Scene.new {
     status = state.ATTACHED,
     update = function(ctx)
-      if love.keyboard.isPressed(Res.keybinds.PAUSE) and lives ~= 0 then
+      -- and lives ~= 0
+      if love.keyboard.isPressed(Res.keybinds.PAUSE) then
         if ctx:hasOverlay() then
           ctx:popOverlay()
         else
