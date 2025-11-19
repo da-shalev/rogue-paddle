@@ -38,7 +38,7 @@ function Text.new(opts)
           val = nil
         end
 
-        self.flags.dirty = true
+        self.flags.queue_apply_layout = true
       end
     end
   )
@@ -59,7 +59,13 @@ function Text:ui(opts)
     end,
     draw = function(ui)
       if self.val then
-        love.graphics.printf(self.val, self.font, ui.box.pos.x, ui.box.pos.y, ui.box.size.x)
+        love.graphics.printf(
+          self.val,
+          self.font,
+          ui.box.pos.x + ui.style.extend.left,
+          ui.box.pos.y + ui.style.extend.top,
+          ui.box.size.x
+        )
       end
     end,
   })

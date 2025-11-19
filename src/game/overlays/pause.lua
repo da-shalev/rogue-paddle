@@ -9,13 +9,18 @@ local e = UiNode.new {
   },
   children = {
     UiNode.new {
-      style = Res.styles.OVERLAY,
+      style = { Res.styles.OVERLAY, {
+        extend = { 5 },
+      } },
       children = {
         Text.new({
           val = 'PAUSE',
           font = Res.fonts.IBM,
         }):ui {
-          style = { extend = { 50 } },
+          style = {
+            extend = { 10 },
+            background_hover_color = Color.BRIGHT3,
+          },
         },
 
         Text.new({

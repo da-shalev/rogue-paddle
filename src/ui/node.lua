@@ -1,7 +1,7 @@
 local UiStyle = require 'ui.style'
 
 ---@class UiFlags
----@field dirty boolean
+---@field queue_apply_layout boolean
 local Flags = {}
 
 ---@return UiFlags
@@ -74,23 +74,22 @@ function ComputedUiNode:update(dt)
   local hover = x and y
 
   if self.hover ~= hover then
-    if self.style.hover_cursor then
-      if hover then
-        love.mouse.setCursor(self.style.hover_cursor)
-        self.style.content.color = self.style.content.hover_color
-        self.style.background.color = self.style.background.hover_color
+    if hover then
+      self.style.content.color = self.style.content.hover_color or self.style.content.base_color
+      self.style.background.color = self.style.background.hover_color
+        or self.style.background.base_color
+      love.mouse.setCursor(self.style.hover_cursor)
 
-        if self.events.onHoverEnter then
-          self.events.onHoverEnter(self)
-        end
-      else
-        love.mouse.setCursor()
-        self.style.content.color = self.style.content.base_color
-        self.style.background.color = self.style.background.base_color
+      if self.events.onHoverEnter then
+        self.events.onHoverEnter(self)
+      end
+    else
+      self.style.content.color = self.style.content.base_color
+      self.style.background.color = self.style.background.base_color
+      love.mouse.setCursor()
 
-        if self.events.onHoverExit then
-          self.events.onHoverExit(self)
-        end
+      if self.events.onHoverExit then
+        self.events.onHoverExit(self)
       end
     end
 
@@ -131,8 +130,8 @@ function ComputedUiNode:children()
 end
 
 function ComputedUiNode:draw()
-  if self.events.flags.dirty then
-    self.events.flags.dirty = false
+  if self.events.flags.queue_apply_layout then
+    self.events.flags.queue_apply_layout = false
 
     local parent = UiRegistry:get(self.parent)
     if parent then
@@ -164,7 +163,7 @@ function ComputedUiNode:draw()
     )
   end
 
-  if self.style.border and self.style.border_color then
+  if self.style.border > 0 and self.style.border_color then
     love.graphics.setColor(self.style.border_color)
     love.graphics.setLineWidth(self.style.border)
     love.graphics.rectangle(
@@ -177,6 +176,21 @@ function ComputedUiNode:draw()
       self.style.border_radius
     )
   end
+
+  -- if self.style.extend and self.style.extend then
+  --   love.graphics.setColor(0, 255, 0, 0.5)
+  --   local e = self.style.extend.bottom
+  --   love.graphics.setLineWidth(e)
+  --   love.graphics.rectangle(
+  --     'line',
+  --     self.box.pos.x + e / 2,
+  --     self.box.pos.y + e / 2,
+  --     self.box.size.x - e,
+  --     self.box.size.y - e,
+  --     self.style.border_radius,
+  --     self.style.border_radius
+  --   )
+  -- end
 
   if self.events.draw then
     love.graphics.setColor(self.style.content.color or Color.RESET)
@@ -293,20 +307,24 @@ function ComputedUiNode:layout()
 
   -- Sets container size based on placed children
   if is_row then
-    self.box.w = w or (current_axis_size + style.extend.left + style.extend.right)
-    self.box.h = h or (cross_axis_size + style.extend.top + style.extend.bottom)
+    self.box.w = (w or current_axis_size) + style.extend.left + style.extend.right
+    self.box.h = (h or cross_axis_size) + style.extend.top + style.extend.bottom
   elseif is_col then
-    self.box.w = w or (cross_axis_size + style.extend.left + style.extend.right)
-    self.box.h = h or (current_axis_size + style.extend.top + style.extend.bottom)
+    self.box.w = (w or cross_axis_size) + style.extend.left + style.extend.right
+    self.box.h = (h or current_axis_size) + style.extend.top + style.extend.bottom
   end
 
   -- Computes spare space for justify-content
   local justify_offset = 0
   local justify_space
   if is_row then
-    justify_space = self.box.w - style.extend.left - style.extend.right - current_axis_size
+    justify_space = (self.box.w - style.extend.left - style.extend.right) - current_axis_size
   elseif is_col then
-    justify_space = self.box.h - style.extend.top - style.extend.bottom - current_axis_size
+    justify_space = (self.box.h - style.extend.top - style.extend.bottom) - current_axis_size
+  end
+
+  if justify_space < 0 then
+    justify_space = 0
   end
 
   --- TODO: IMPLEMENT WRAPPING HERE
@@ -326,23 +344,21 @@ function ComputedUiNode:layout()
 
     if is_row then
       local inner_h = self.box.h - style.extend.top - style.extend.bottom
-      local base_y = self.box.y + style.extend.top
 
       if style.align_items == 'center' then
-        child.box.y = base_y + (inner_h - child.box.h) / 2
+        child.box.y = child.box.y + (inner_h - child.box.h) / 2
       elseif style.align_items == 'end' then
-        child.box.y = base_y + (inner_h - child.box.h)
+        child.box.y = child.box.y + (inner_h - child.box.h)
       end
 
       child.box.x = child.box.x + justify_offset
     elseif is_col then
       local inner_w = self.box.w - style.extend.left - style.extend.right
-      local base_x = self.box.x + style.extend.left
 
       if style.align_items == 'center' then
-        child.box.x = base_x + (inner_w - child.box.w) / 2
+        child.box.x = child.box.x + (inner_w - child.box.w) / 2
       elseif style.align_items == 'end' then
-        child.box.x = base_x + (inner_w - child.box.w)
+        child.box.x = child.box.x + (inner_w - child.box.w)
       end
 
       child.box.y = child.box.y + justify_offset

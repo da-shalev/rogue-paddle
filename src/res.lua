@@ -1,5 +1,5 @@
 local cursors = {
-  hand = love.mouse.getSystemCursor('hand'),
+  hand = love.mouse.getSystemCursor 'hand',
 }
 
 local Res = {
@@ -7,9 +7,9 @@ local Res = {
   cursors = cursors,
 
   sprites = {
-    PLAYER = Sprite.new('res/sprites/player.png'),
-    BALL = Sprite.new('res/sprites/ball.png'),
-    HEART = Sprite.new('res/sprites/heart.png'),
+    PLAYER = Sprite.new 'res/sprites/player.png',
+    BALL = Sprite.new 'res/sprites/ball.png',
+    HEART = Sprite.new 'res/sprites/heart.png',
     ICONS = Sprite.new('res/sprites/lucid/IconsShadow-16.png', 10, 10),
   },
 
@@ -31,7 +31,6 @@ local Res = {
     ---@type UiStyle
     OVERLAY = {
       background_color = Color.BACKGROUND,
-      -- border_color = Color.RESET,
       border_color = Color.RESET,
       border = 1,
       border_radius = 3,

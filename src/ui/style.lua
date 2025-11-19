@@ -12,8 +12,8 @@
 ---@field border_radius? number
 ---@field extend Extend?
 ---@field hover_cursor? love.Cursor
----@field width? string
----@field height? string
+---@field width? string|number
+---@field height? string|number
 ---@field flex_dir? FlexDirection
 ---@field justify_content? FlexJustifyContent
 ---@field align_items? FlexAlignItems
@@ -25,7 +25,7 @@
 ---@field hover_color Color
 
 ---@class ComputedUiStyle
----@field border? number
+---@field border number
 ---@field border_color? Color
 ---@field content ComputedUiColor
 ---@field background ComputedUiColor
@@ -124,7 +124,7 @@ UiStyle.new = function(...)
 
   ---@type ComputedUiStyle
   return {
-    border = s.border,
+    border = s.border or 0,
     border_color = s.border_color,
     border_radius = s.border_radius or 0,
     background = {
