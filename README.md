@@ -1,4 +1,4 @@
-# unnamed-game-1
+# rouge-paddle
 
 A [LÖVE](https://love2d.org/) game developed for a college’s capstone project
 
