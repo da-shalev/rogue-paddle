@@ -44,9 +44,11 @@ function Text.new(opts)
   )
 end
 
----@return UiElement
-function Text:ui()
-  return UiElement.new {
+---@return UiIdx
+---@param opts? UiElement
+function Text:ui(opts)
+  opts = opts or {}
+  return UiElement.new(opts, {
     flags = self.flags,
     applyLayout = function(ui)
       if self.val then
@@ -60,7 +62,7 @@ function Text:ui()
         love.graphics.printf(self.val, self.font, ui.box.pos.x, ui.box.pos.y, ui.box.size.x)
       end
     end,
-  }
+  })
 end
 
 return Text

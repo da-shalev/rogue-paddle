@@ -14,58 +14,63 @@ end
 ---@class UiActions
 ---@field onClick? fun()
 
----@class UiEvents
----@field applyLayout? fun(e: UiElement)
----@field draw? fun(e: UiElement)
----@field onHoverEnter? fun(e: UiElement)
----@field onHoverExit? fun(e: UiElement)
+---@alias UiIdx integer
+---@alias UiChildren UiIdx[]
 
----@class UiElement
----@field root? UiElement
----@field parent? UiElement
+---@class UiEvents
+---@field flags? UiFlags
+---@field applyLayout? fun(e: ComputedUiElement)
+---@field draw? fun(e: ComputedUiElement)
+---@field onHoverEnter? fun(e: ComputedUiElement)
+---@field onHoverExit? fun(e: ComputedUiElement)
+
+---@class ComputedUiElement : UiActions
+---@field root? UiIdx
+---@field parent? UiIdx
 ---@field box Box
 ---@field hover? boolean
 ---@field events UiEvents
----@field style? ComputedUiStyle
----@field actions? UiActions
+---@field style ComputedUiStyle
 ---@field name? string
----@field children (UiElement)[]
----@field flags UiFlags
-local UiElement = {}
-UiElement.__index = UiElement
+---@field _children UiChildren
+---@field _idx UiIdx
+local ComputedUiElement = {}
+ComputedUiElement.__index = ComputedUiElement
 
----@class UiElementOpts : UiEvents
+---@class UiElement : UiActions
 ---@field style? UiStyles
----@field flags? UiFlags
----@field actions? UiActions
----@field children? (UiElement)[]
+---@field children? UiChildren
 
----@param opts UiElementOpts
-UiElement.new = function(opts)
-  ---@type UiElement
+---@param opts UiElement
+---@param events? UiEvents
+---@return UiIdx
+ComputedUiElement.new = function(opts, events)
+  events = events or {}
+  opts.children = opts.children or {}
+  opts.style = opts.style or UiStyle.new()
+  events.flags = events.flags or Flags.default()
+
+  ---@type ComputedUiElement
   local e = {
     parent = nil,
     box = Box.zero(),
     root = nil,
     hover = nil,
-    events = {
-      draw = opts.draw,
-      applyLayout = opts.applyLayout,
-      onHoverEnter = opts.onHoverEnter,
-    },
     style = UiStyle.normalize(opts.style),
-    flags = opts.flags or Flags.default(),
-    actions = opts.actions or {},
-    children = opts.children or {},
+    _children = opts.children or {},
+    _idx = 0,
+    events = events,
+    onClick = opts.onClick,
   }
 
-  local e = setmetatable(e, UiElement)
-  e:updateLayout()
-  return e
+  local e = setmetatable(e, ComputedUiElement)
+
+  UiRegistry:add(e)
+  return e:getIdx()
 end
 
 ---@param dt number
-function UiElement:update(dt)
+function ComputedUiElement:update(dt)
   local x, y = S.cursor:within(self.box)
   local hover = x and y
 
@@ -93,56 +98,57 @@ function UiElement:update(dt)
     self.hover = hover
   end
 
-  if love.mouse.isDown(1) and self.hover and self.actions.onClick then
-    self.actions.onClick()
+  if love.mouse.isDown(1) and self.hover and self.onClick then
+    self.onClick()
   end
 
   if hover then
-    for _, child in ipairs(self.children) do
-      if child.update then
-        child:update(dt)
-      end
+    for _, child_idx in ipairs(self._children) do
+      UiRegistry:update(child_idx, dt)
     end
   end
 end
 
----@param actions UiActions
----@return UiElement
-function UiElement:setActions(actions)
-  self.actions = actions
-  return self
-end
-
----@param ... UiStyle
----@return UiElement
-function UiElement:setStyle(...)
-  self.style = UiStyle.new(...)
-  return self
-end
-
----@return ComputedUiStyle
-function UiElement:getStyle()
-  return self.style
+---@return UiIdx
+function ComputedUiElement:getIdx()
+  return self._idx
 end
 
 ---@param name string
----@return UiElement
-function UiElement:setName(name)
+---@return ComputedUiElement
+function ComputedUiElement:setName(name)
   self.name = name
   return self
 end
 
 ---@return string
-function UiElement:getName()
+function ComputedUiElement:getName()
   return self.name
 end
 
-function UiElement:draw()
-  if self.flags.dirty then
-    self.flags.dirty = false
-    self:updateLayout(self.parent)
-    if self.root ~= self then
-      self.root:updateLayout()
+---@return UiChildren
+function ComputedUiElement:children()
+  return self._children
+end
+
+function ComputedUiElement:draw()
+  if self.events.flags.dirty then
+    self.events.flags.dirty = false
+
+    local parent = UiRegistry:get(self.parent)
+    if parent then
+      self:updateLayout(parent)
+    else
+      self.parent = nil
+    end
+
+    local root = UiRegistry:get(self.root)
+    if root then
+      if root:getIdx() ~= self:getIdx() then
+        root:updateLayout()
+      end
+    else
+      self.root = self:getIdx()
     end
   end
 
@@ -178,19 +184,20 @@ function UiElement:draw()
     self.events.draw(self)
   end
 
-  for _, child in ipairs(self.children) do
-    child:draw()
+  for _, child_idx in ipairs(self._children) do
+    UiRegistry:draw(child_idx)
   end
 end
 
 --- If no parent is passed, it is assumed self is root!
---- @param parent? UiElement
-function UiElement:updateLayout(parent)
+--- @param parent? ComputedUiElement
+function ComputedUiElement:updateLayout(parent)
   if parent then
-    self.parent = parent
+    -- local parent =
+    self.parent = parent:getIdx()
     self.root = parent.root
   else
-    self.root = self
+    self.root = self:getIdx()
   end
 
   if self.events.applyLayout then
@@ -200,39 +207,35 @@ function UiElement:updateLayout(parent)
   self:layout()
 end
 
----@param child UiElement
----@param pos? integer
-function UiElement:addChild(child, pos)
-  if pos then
-    table.insert(self.children, pos, child)
-  else
-    table.insert(self.children, child)
-  end
+-- ---@param child UiIdx
+-- ---@param pos? integer
+-- function ComputedUiElement:addChild(child, pos)
+--   if pos then
+--     table.insert(self._children, pos, child)
+--   else
+--     table.insert(self._children, child)
+--   end
+--
+--   self:updateLayout()
+--   -- self.root:updateLayout()
+-- end
+--
+-- ---@param child UiElement
+-- ---@return boolean
+-- function ComputedUiElement:removeChild(child)
+--   for i, c in ipairs(self._children) do
+--     if c == child then
+--       table.remove(self._children, i)
+--       return true
+--     end
+--   end
+--
+--   return false
+-- end
 
-  self:updateLayout()
-  self.root:updateLayout()
-end
-
-function UiElement:clear()
-  self.children = {}
-end
-
----@param child UiElement
----@return boolean
-function UiElement:removeChild(child)
-  for i, c in ipairs(self.children) do
-    if c == child then
-      table.remove(self.children, i)
-      return true
-    end
-  end
-
-  return false
-end
-
--- -TODO: return boolean to know wheather a mutation happened to avoid recalculation
-function UiElement:layout()
-  local style = self:getStyle()
+-- TODO: return boolean to know whether a mutation happened to avoid recalculation
+function ComputedUiElement:layout()
+  local style = self.style
 
   -- Starting cursor for placing children
   local cr_x = self.box.x + style.extend.left
@@ -246,12 +249,12 @@ function UiElement:layout()
   -- Determines iteration direction
   local start_i, end_i, step
   if is_reverse then
-    start_i = #self.children
+    start_i = #self._children
     end_i = 1
     step = -1
   else
     start_i = 1
-    end_i = #self.children
+    end_i = #self._children
     step = 1
   end
 
@@ -263,7 +266,12 @@ function UiElement:layout()
   local h = UiStyle.calculateUnit(style.height)
 
   for i = start_i, end_i, step do
-    local child = self.children[i]
+    local child_idx = self._children[i]
+    local child = UiRegistry:get(child_idx)
+    if not child then
+      goto continue
+    end
+
     child.box.x = cr_x
     child.box.y = cr_y
 
@@ -278,6 +286,8 @@ function UiElement:layout()
       cr_y = cr_y + add
       current_axis_size = current_axis_size + add
     end
+
+    ::continue::
   end
 
   current_axis_size = current_axis_size - style.gap
@@ -309,7 +319,12 @@ function UiElement:layout()
   end
 
   -- Second pass: apply cross-axis alignment and offset
-  for _, child in pairs(self.children) do
+  for _, child_idx in pairs(self._children) do
+    local child = UiRegistry:get(child_idx)
+    if not child then
+      goto continue
+    end
+
     if is_row then
       local inner_h = self.box.h - style.extend.top - style.extend.bottom
       local base_y = self.box.y + style.extend.top
@@ -335,9 +350,10 @@ function UiElement:layout()
     end
 
     child:updateLayout(self)
+    ::continue::
   end
 end
 
-UiElement.Flags = Flags
+ComputedUiElement.Flags = Flags
 
-return UiElement
+return ComputedUiElement

@@ -19,26 +19,22 @@ local e = UiElement.new {
         Text.new {
           val = 'Restart',
           font = Res.fonts.BASE,
-        }
-          :ui()
-          :setActions({
-            onClick = function()
-              S.scene_queue.setNext(require('game.scenes.brickin'))
-            end,
-          })
-          :setStyle(Res.styles.BUTTON),
+        }:ui({
+          onClick = function()
+            S.scene_queue.setNext(require('game.scenes.brickin'))
+          end,
+          style = Res.styles.BUTTON,
+        }),
 
         Text.new {
           val = 'Quit',
           font = Res.fonts.BASE,
-        }
-          :ui()
-          :setActions({
-            onClick = function()
-              love.event.quit(0)
-            end,
-          })
-          :setStyle(Res.styles.BUTTON),
+        }:ui({
+          onClick = function()
+            love.event.quit(0)
+          end,
+          style = Res.styles.BUTTON,
+        }),
       },
     },
   },
@@ -46,9 +42,9 @@ local e = UiElement.new {
 
 return Status.new {
   update = function(_, dt)
-    e:update(dt)
+    UiRegistry:update(e, dt)
   end,
   draw = function()
-    e:draw()
+    UiRegistry:draw(e)
   end,
 }

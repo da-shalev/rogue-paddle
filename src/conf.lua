@@ -9,6 +9,7 @@ Sprite = require('lib.sprite')
 Scene = require('lib.scene')
 Status = require('lib.status')
 UiElement = require('ui.element')
+UiRegistry = require('ui.registry')
 Color = require('colors')
 S = require('state')
 

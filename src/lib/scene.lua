@@ -11,6 +11,10 @@ end
 
 ---@param status Status
 function StatusCtx:setStatus(status)
+  if status.init then
+    status.init(self)
+  end
+
   self._status = status
 end
 
@@ -22,6 +26,10 @@ end
 
 ---@param status Status
 function StatusCtx:setOverlay(status)
+  if status.init then
+    status.init(self)
+  end
+
   self._overlay = status
 end
 
@@ -86,6 +94,8 @@ function Scene.new(events)
       _overlay = events.overlay,
     },
   }
+
+  events.status.init(scene.ctx)
 
   return setmetatable(scene, Scene)
 end

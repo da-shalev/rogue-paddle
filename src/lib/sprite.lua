@@ -64,20 +64,20 @@ end
 ---@field flip_y? boolean
 ---@field color? Color
 
----@param opts SpriteRenderState
----@return UiElement
-function Sprite:ui(opts)
-  opts.frame_idx = opts.frame_idx or 1
-  return UiElement.new({
-    applyLayout = function(ui)
-      ui.style.width.val = self:getWidth()
-      ui.style.height.val = self:getHeight()
-    end,
-    draw = function(ui)
-      self:drawFrom(ui.box, opts)
-    end,
-  })
-end
+-- ---@param opts SpriteRenderState
+-- ---@return UiIdx
+-- function Sprite:ui(opts)
+--   opts.frame_idx = opts.frame_idx or 1
+--   return UiElement.new({
+--     applyLayout = function(ui)
+--       ui.style.width.val = self:getWidth()
+--       ui.style.height.val = self:getHeight()
+--     end,
+--     draw = function(ui)
+--       self:drawFrom(ui.box, opts)
+--     end,
+--   })
+-- end
 
 ---@class SpriteState: SpriteRenderState
 ---@field pos? Vec2
