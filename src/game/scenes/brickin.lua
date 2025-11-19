@@ -151,7 +151,7 @@ return function()
     -- if lives == 0 then
     --   ctx:setOverlay(require('game.overlays.gameover'))
     -- else
-      ctx:setStatus(state.ATTACHED)
+    ctx:setStatus(state.ATTACHED)
     -- end
   end
 

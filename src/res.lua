@@ -42,6 +42,10 @@ local Res = {
       border = 1,
       border_radius = 3,
       extend = { 8 },
+      flex_dir = 'col',
+      align_items = 'center',
+      justify_content = 'center',
+      gap = 8,
     },
 
     ---@type UiStyle

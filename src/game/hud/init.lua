@@ -1,5 +1,4 @@
 local Text = require 'ui.text'
-local FBox = require 'ui.flexbox'
 
 return function()
   local Hud = {}
@@ -25,13 +24,11 @@ return function()
     print('hi')
   end)
 
-  ui.score = FBox.new {
-    flex = {
-      justify_content = 'center',
-    },
+  ui.score = UiElement.new {
     style = {
       {
         width = '100vw',
+        justify_content = 'center',
       },
       indent,
     },
@@ -40,7 +37,7 @@ return function()
     },
   }
 
-  ui.lives = FBox.new {
+  ui.lives = UiElement.new {
     children = {},
   }
 

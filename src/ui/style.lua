@@ -1,3 +1,7 @@
+---@alias FlexDirection "row" | "col" | "row-reverse" | "col-reverse"
+---@alias FlexJustifyContent "start" | "center" | "end"
+---@alias FlexAlignItems "start" | "center" | "end"
+
 ---@class UiStyle
 ---@field border? number
 ---@field border_color? Color
@@ -10,6 +14,10 @@
 ---@field hover_cursor? love.Cursor
 ---@field width? string
 ---@field height? string
+---@field flex_dir? FlexDirection
+---@field justify_content? FlexJustifyContent
+---@field align_items? FlexAlignItems
+---@field gap? number
 
 ---@class ComputedUiColor
 ---@field color Color
@@ -24,8 +32,12 @@
 ---@field border_radius number
 ---@field extend ComputedExtend
 ---@field hover_cursor? love.Cursor
----@field width? UiUnit
----@field height? UiUnit
+---@field width UiUnit
+---@field height UiUnit
+---@field flex_dir FlexDirection
+---@field justify_content FlexJustifyContent
+---@field align_items FlexAlignItems
+---@field gap number
 
 local UiStyle = {}
 
@@ -42,7 +54,7 @@ UiStyle.parse = function(str)
     return nil
   end
 
-  local num, unit = str:match('^([%d%.]+)%s*(%%?%a*)$')
+  local num, unit = str:match('^(%d+%.?%d*)(%D.*)$')
   if not num then
     print(string.format("invalid format: '%s'", str))
     return nil
@@ -84,9 +96,9 @@ function UiStyle.calculateUnit(unit)
   if not unit then
     return nil
   elseif not unit.ext then
+    return nil
+  elseif unit.ext == 'px' then
     return unit.val
-  -- elseif unit.ext == '%' then
-  --   return S.camera.box.w * (unit.val / 100)
   elseif unit.ext == 'vw' then
     return S.camera.box.w * (unit.val / 100)
   elseif unit.ext == 'vh' then
@@ -126,8 +138,18 @@ UiStyle.new = function(...)
     },
     extend = Box.Extend.new(s.extend or 0),
     hover_cursor = s.hover_cursor,
-    width = UiStyle.parse(s.width),
-    height = UiStyle.parse(s.height),
+    width = UiStyle.parse(s.width) or {
+      val = 0,
+      ext = nil,
+    },
+    height = UiStyle.parse(s.height) or {
+      val = 0,
+      ext = nil,
+    },
+    flex_dir = s.flex_dir or 'row',
+    justify_content = s.justify_content or 'start',
+    align_items = s.align_items or 'start',
+    gap = s.gap or 0,
   }
 end
 

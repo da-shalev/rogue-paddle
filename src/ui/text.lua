@@ -34,7 +34,6 @@ function Text.new(opts)
     }, Text),
     function(t, k)
       if k == 'val' or k == 'font' then
-        print('hi')
         t._box.size = getSize(t.font, t.val)
         t._box._dirty = true
       end
@@ -46,6 +45,15 @@ end
 function Text:ui()
   return UiElement.new {
     box = self._box,
+    applyLayout = function(ui)
+      ui.style.width.val = self._box.w
+      ui.style.width.ext = 'px'
+      ui.style.height.val = self._box.h
+      ui.style.height.ext = 'px'
+    end,
+    update = function()
+      -- print(self._box.w, self.val)
+    end,
     draw = function()
       self:draw()
     end,

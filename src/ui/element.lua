@@ -6,7 +6,7 @@ local UiStyle = require('ui.style')
 ---@class UiEvents
 ---@field applyLayout? fun(e: UiElement)
 ---@field update? fun(dt: number)
----@field draw fun(e: UiElement)
+---@field draw? fun(e: UiElement)
 ---@field onHover? fun(e: UiElement)
 
 ---@class UiElement
@@ -18,20 +18,22 @@ local UiStyle = require('ui.style')
 ---@field style? ComputedUiStyle
 ---@field actions? UiActions
 ---@field name? string
+---@field children (UiElement)[]
 local UiElement = {}
 UiElement.__index = UiElement
 
 ---@class UiElementOpts : UiEvents
----@field box Box
+---@field box? Box
 ---@field style? UiStyles
 ---@field actions? UiActions
+---@field children? (UiElement)[]
 
 ---@param opts UiElementOpts
 UiElement.new = function(opts)
   ---@type UiElement
   local e = {
     parent = nil,
-    box = opts.box,
+    box = opts.box or Box.zero(),
     root = nil,
     hover = nil,
     events = {
@@ -42,6 +44,7 @@ UiElement.new = function(opts)
     },
     style = UiStyle.normalize(opts.style),
     actions = opts.actions or {},
+    children = opts.children or {},
   }
 
   local e = setmetatable(e, UiElement)
@@ -80,6 +83,12 @@ function UiElement:update(dt)
 
   if self.events.update then
     self.events.update(dt)
+  end
+
+  for _, child in ipairs(self.children) do
+    if child.update then
+      child:update(dt)
+    end
   end
 end
 
@@ -154,6 +163,10 @@ function UiElement:draw()
     love.graphics.setColor(self.style.content.color or Color.RESET)
     self.events.draw(self)
   end
+
+  for _, child in ipairs(self.children) do
+    child:draw()
+  end
 end
 
 --- If no parent is passed, it is assumed self is root!
@@ -166,14 +179,148 @@ function UiElement:updateLayout(parent)
     self.root = self
   end
 
+  if self.events.applyLayout then
+    self.events.applyLayout(self)
+  end
+
+  self:layout()
+  -- for _, child in pairs(self.children) do
+  --   child:updateLayout(self)
+  -- end
+
   -- if parent ~= nil then
   --   print(self:getName(), parent:getName())
   -- elseif self:getName() ~= nil then
   --   print(self:getName())
   -- end
+end
 
-  if self.events.applyLayout then
-    self.events.applyLayout(self)
+---@param child UiElement
+---@param pos? integer
+function UiElement:addChild(child, pos)
+  if pos then
+    table.insert(self.children, pos, child)
+  else
+    table.insert(self.children, child)
+  end
+end
+
+---@param child UiElement
+---@return boolean
+function UiElement:removeChild(child)
+  for i, c in ipairs(self.children) do
+    if c == child then
+      table.remove(self.children, i)
+      return true
+    end
+  end
+
+  return false
+end
+
+function UiElement:layout()
+  local style = self:getStyle()
+
+  -- Starting cursor for placing children
+  local cr_x = self.box.x + style.extend.left
+  local cr_y = self.box.y + style.extend.top
+
+  -- Determines which axis children flow along
+  local is_row = style.flex_dir == 'row' or style.flex_dir == 'row-reverse'
+  local is_col = style.flex_dir == 'col' or style.flex_dir == 'col-reverse'
+  local is_reverse = style.flex_dir == 'row-reverse' or style.flex_dir == 'col-reverse'
+
+  -- Determines iteration direction
+  local start_i, end_i, step
+  if is_reverse then
+    start_i = #self.children
+    end_i = 1
+    step = -1
+  else
+    start_i = 1
+    end_i = #self.children
+    step = 1
+  end
+
+  -- Tracks total axis usage and the largest cross-size
+  local current_axis_size = 0
+  local cross_axis_size = 0
+
+  -- First pass: place children
+  for i = start_i, end_i, step do
+    local child = self.children[i]
+    child.box.x = cr_x
+    child.box.y = cr_y
+
+    if is_row then
+      cross_axis_size = math.max(cross_axis_size, child.box.h)
+      local add = child.box.w + style.gap
+      cr_x = cr_x + add
+      current_axis_size = current_axis_size + add
+    elseif is_col then
+      cross_axis_size = math.max(cross_axis_size, child.box.w)
+      local add = child.box.h + style.gap
+      cr_y = cr_y + add
+      current_axis_size = current_axis_size + add
+    end
+  end
+
+  current_axis_size = current_axis_size - style.gap
+
+  local w = UiStyle.calculateUnit(style.width)
+  local h = UiStyle.calculateUnit(style.height)
+
+  -- Sets container size based on placed children
+  if is_row then
+    self.box.w = w or (current_axis_size + style.extend.left + style.extend.right)
+    self.box.h = h or (cross_axis_size + style.extend.top + style.extend.bottom)
+  elseif is_col then
+    self.box.w = w or (cross_axis_size + style.extend.left + style.extend.right)
+    self.box.h = h or (current_axis_size + style.extend.top + style.extend.bottom)
+  end
+
+  -- Computes spare space for justify-content
+  local justify_offset = 0
+  local justify_space
+  if is_row then
+    justify_space = self.box.w - style.extend.left - style.extend.right - current_axis_size
+  elseif is_col then
+    justify_space = self.box.h - style.extend.top - style.extend.bottom - current_axis_size
+  end
+
+  if style.justify_content == 'center' then
+    justify_offset = justify_space / 2
+  elseif style.justify_content == 'end' then
+    justify_offset = justify_space
+  end
+
+  -- Second pass: apply cross-axis alignment and offset
+  for _, child in pairs(self.children) do
+    if is_row then
+      local inner_h = self.box.h - style.extend.top - style.extend.bottom
+      local base_y = self.box.y + style.extend.top
+
+      if style.align_items == 'center' then
+        child.box.y = base_y + (inner_h - child.box.h) / 2
+      elseif style.align_items == 'end' then
+        child.box.y = base_y + (inner_h - child.box.h)
+      end
+
+      child.box.x = child.box.x + justify_offset
+    elseif is_col then
+      local inner_w = self.box.w - style.extend.left - style.extend.right
+      local base_x = self.box.x + style.extend.left
+
+      if style.align_items == 'center' then
+        child.box.x = base_x + (inner_w - child.box.w) / 2
+      elseif style.align_items == 'end' then
+        child.box.x = base_x + (inner_w - child.box.w)
+      end
+
+      child.box.y = child.box.y + justify_offset
+    end
+
+    child:updateLayout(self)
   end
 end
 

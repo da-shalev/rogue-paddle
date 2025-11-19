@@ -1,23 +1,14 @@
 local Text = require('ui.text')
-local FBox = require('ui.flexbox')
 
-local flexbox = FBox.new {
+local flexbox = UiElement.new {
   style = {
     width = '100vw',
     height = '100vh',
-  },
-  flex = {
     align_items = 'center',
     justify_content = 'center',
   },
   children = {
-    FBox.new {
-      flex = {
-        dir = 'col',
-        align_items = 'center',
-        justify_content = 'center',
-        gap = 8,
-      },
+    UiElement.new {
       style = Res.styles.OVERLAY,
       children = {
         Text.new {
