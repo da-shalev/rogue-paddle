@@ -32,8 +32,8 @@
 ---@field border_radius number
 ---@field extend ComputedExtend
 ---@field hover_cursor? love.Cursor
----@field width UiUnit
----@field height UiUnit
+---@field width? UiUnit
+---@field height? UiUnit
 ---@field flex_dir FlexDirection
 ---@field justify_content FlexJustifyContent
 ---@field align_items FlexAlignItems
@@ -47,23 +47,25 @@ local UiStyle = {}
 ---@field val number
 ---@field ext? string
 
----@param str string
----@return UiUnit?
-UiStyle.parse = function(str)
-  if type(str) ~= 'string' then
-    return nil
+---@param v string|number
+---@return UiUnit
+UiStyle.parse = function(v)
+  if type(v) == 'number' then
+    return { val = v, ext = nil }
+  elseif type(v) ~= 'string' then
+    return { val = nil, ext = nil }
   end
 
-  local num, unit = str:match('^(%d+%.?%d*)(%D.*)$')
+  local num, unit = v:match('^(%d+%.?%d*)(%D.*)$')
   if not num then
-    print(string.format("invalid format: '%s'", str))
-    return nil
+    print(string.format("invalid format: '%s'", v))
+    return { val = nil, ext = nil }
   end
 
   local n = tonumber(num)
   if not n then
     print(string.format("invalid number: '%s'", num))
-    return nil
+    return { val = nil, ext = nil }
   end
 
   if unit == '' then
@@ -90,14 +92,12 @@ function UiStyle.normalize(st)
   return UiStyle.new(st)
 end
 
----@param unit? UiUnit
+---@param unit UiUnit
 ---@return number?
 function UiStyle.calculateUnit(unit)
-  if not unit then
+  if unit.val == nil then
     return nil
-  elseif not unit.ext then
-    return nil
-  elseif unit.ext == 'px' then
+  elseif unit.ext == nil then
     return unit.val
   elseif unit.ext == 'vw' then
     return S.camera.box.w * (unit.val / 100)
@@ -138,14 +138,8 @@ UiStyle.new = function(...)
     },
     extend = Box.Extend.new(s.extend or 0),
     hover_cursor = s.hover_cursor,
-    width = UiStyle.parse(s.width) or {
-      val = 0,
-      ext = nil,
-    },
-    height = UiStyle.parse(s.height) or {
-      val = 0,
-      ext = nil,
-    },
+    width = UiStyle.parse(s.width),
+    height = UiStyle.parse(s.height),
     flex_dir = s.flex_dir or 'row',
     justify_content = s.justify_content or 'start',
     align_items = s.align_items or 'start',

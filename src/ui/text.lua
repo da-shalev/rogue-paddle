@@ -2,9 +2,9 @@
 
 ---@param font love.Font
 ---@param text ValidText
----@return Vec2
+---@return number, number
 local function getSize(font, text)
-  return Vec2.new(font:getWidth(text), font:getHeight())
+  return font:getWidth(text), font:getHeight()
 end
 
 local EMPTY = ''
@@ -12,7 +12,7 @@ local EMPTY = ''
 ---@class ComputedText
 ---@field val ValidText
 ---@field font love.Font
----@field _box Box
+---@field flags UiFlags
 local Text = {}
 Text.__index = Text
 
@@ -30,12 +30,13 @@ function Text.new(opts)
     setmetatable({
       val = val,
       font = font,
-      _box = Box.new(Vec2.zero(), getSize(font, val)),
+      flags = UiElement.Flags.default(),
     }, Text),
     function(t, k)
+      -- any time val or font mutates
+      -- mark for layout recalculation
       if k == 'val' or k == 'font' then
-        t._box.size = getSize(t.font, t.val)
-        t._box._dirty = true
+        t.flags.dirty = true
       end
     end
   )
@@ -44,26 +45,18 @@ end
 ---@return UiElement
 function Text:ui()
   return UiElement.new {
-    box = self._box,
+    flags = self.flags,
     applyLayout = function(ui)
-      ui.style.width.val = self._box.w
-      ui.style.width.ext = 'px'
-      ui.style.height.val = self._box.h
-      ui.style.height.ext = 'px'
+      local w, h = getSize(self.font, self.val)
+      ui.style.width.val = w
+      ui.style.height.val = h
     end,
-    update = function()
-      -- print(self._box.w, self.val)
-    end,
-    draw = function()
-      self:draw()
+    draw = function(ui)
+      if self.val ~= EMPTY then
+        love.graphics.printf(self.val, self.font, ui.box.pos.x, ui.box.pos.y, ui.box.size.x)
+      end
     end,
   }
-end
-
-function Text:draw()
-  if self.val ~= EMPTY then
-    love.graphics.printf(self.val, self.font, self._box.pos.x, self._box.pos.y, self._box.size.x)
-  end
 end
 
 return Text

@@ -1,13 +1,24 @@
 local UiStyle = require('ui.style')
 
+---@class UiFlags
+---@field dirty boolean
+local Flags = {}
+
+---@return UiFlags
+Flags.default = function()
+  return {
+    dirty = false,
+  }
+end
+
 ---@class UiActions
 ---@field onClick? fun()
 
 ---@class UiEvents
 ---@field applyLayout? fun(e: UiElement)
----@field update? fun(dt: number)
 ---@field draw? fun(e: UiElement)
----@field onHover? fun(e: UiElement)
+---@field onHoverEnter? fun(e: UiElement)
+---@field onHoverExit? fun(e: UiElement)
 
 ---@class UiElement
 ---@field root? UiElement
@@ -19,12 +30,13 @@ local UiStyle = require('ui.style')
 ---@field actions? UiActions
 ---@field name? string
 ---@field children (UiElement)[]
+---@field flags UiFlags
 local UiElement = {}
 UiElement.__index = UiElement
 
 ---@class UiElementOpts : UiEvents
----@field box? Box
 ---@field style? UiStyles
+---@field flags? UiFlags
 ---@field actions? UiActions
 ---@field children? (UiElement)[]
 
@@ -33,16 +45,16 @@ UiElement.new = function(opts)
   ---@type UiElement
   local e = {
     parent = nil,
-    box = opts.box or Box.zero(),
+    box = Box.zero(),
     root = nil,
     hover = nil,
     events = {
       draw = opts.draw,
-      update = opts.update,
       applyLayout = opts.applyLayout,
-      onHover = opts.onHover,
+      onHoverEnter = opts.onHoverEnter,
     },
     style = UiStyle.normalize(opts.style),
+    flags = opts.flags or Flags.default(),
     actions = opts.actions or {},
     children = opts.children or {},
   }
@@ -63,15 +75,19 @@ function UiElement:update(dt)
         love.mouse.setCursor(self.style.hover_cursor)
         self.style.content.color = self.style.content.hover_color
         self.style.background.color = self.style.background.hover_color
+
+        if self.events.onHoverEnter then
+          self.events.onHoverEnter(self)
+        end
       else
         love.mouse.setCursor()
         self.style.content.color = self.style.content.base_color
         self.style.background.color = self.style.background.base_color
-      end
-    end
 
-    if self.events.onHover then
-      self.events.onHover(self)
+        if self.events.onHoverExit then
+          self.events.onHoverExit(self)
+        end
+      end
     end
 
     self.hover = hover
@@ -81,13 +97,11 @@ function UiElement:update(dt)
     self.actions.onClick()
   end
 
-  if self.events.update then
-    self.events.update(dt)
-  end
-
-  for _, child in ipairs(self.children) do
-    if child.update then
-      child:update(dt)
+  if hover then
+    for _, child in ipairs(self.children) do
+      if child.update then
+        child:update(dt)
+      end
     end
   end
 end
@@ -124,10 +138,10 @@ function UiElement:getName()
 end
 
 function UiElement:draw()
-  if self.box._dirty then
-    self.box._dirty = false
-
-    if self.root then
+  if self.flags.dirty then
+    self.flags.dirty = false
+    self:updateLayout(self.parent)
+    if self.root ~= self then
       self.root:updateLayout()
     end
   end
@@ -184,15 +198,6 @@ function UiElement:updateLayout(parent)
   end
 
   self:layout()
-  -- for _, child in pairs(self.children) do
-  --   child:updateLayout(self)
-  -- end
-
-  -- if parent ~= nil then
-  --   print(self:getName(), parent:getName())
-  -- elseif self:getName() ~= nil then
-  --   print(self:getName())
-  -- end
 end
 
 ---@param child UiElement
@@ -218,6 +223,7 @@ function UiElement:removeChild(child)
   return false
 end
 
+-- -TODO: return boolean to know wheather a mutation happened to avoid recalculation
 function UiElement:layout()
   local style = self:getStyle()
 
@@ -246,7 +252,9 @@ function UiElement:layout()
   local current_axis_size = 0
   local cross_axis_size = 0
 
-  -- First pass: place children
+  local w = UiStyle.calculateUnit(style.width)
+  local h = UiStyle.calculateUnit(style.height)
+
   for i = start_i, end_i, step do
     local child = self.children[i]
     child.box.x = cr_x
@@ -267,9 +275,6 @@ function UiElement:layout()
 
   current_axis_size = current_axis_size - style.gap
 
-  local w = UiStyle.calculateUnit(style.width)
-  local h = UiStyle.calculateUnit(style.height)
-
   -- Sets container size based on placed children
   if is_row then
     self.box.w = w or (current_axis_size + style.extend.left + style.extend.right)
@@ -287,6 +292,8 @@ function UiElement:layout()
   elseif is_col then
     justify_space = self.box.h - style.extend.top - style.extend.bottom - current_axis_size
   end
+
+  --- TODO: IMPLEMENT WRAPPING HERE
 
   if style.justify_content == 'center' then
     justify_offset = justify_space / 2
@@ -323,5 +330,7 @@ function UiElement:layout()
     child:updateLayout(self)
   end
 end
+
+UiElement.Flags = Flags
 
 return UiElement

@@ -9,7 +9,7 @@ local flexbox = UiElement.new {
   },
   children = {
     UiElement.new {
-      style = Res.styles.OVERLAY,
+      style = { Res.styles.OVERLAY, { flex_dir = 'row-reverse' } },
       children = {
         Text.new {
           val = 'PAUSE',

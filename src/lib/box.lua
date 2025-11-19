@@ -8,8 +8,6 @@
 ---@field pos Vec2
 ---@field size Vec2
 ---@field rot number
---- internal usage
----@field _dirty boolean
 local Box = {}
 
 ---@class ComputedExtend
@@ -147,7 +145,6 @@ function Box.new(pos, size, rot, starting_origin)
     pos = pos,
     size = size,
     rot = rot or 0,
-    _dirty = false,
   }
 
   return setmetatable(box, Box)

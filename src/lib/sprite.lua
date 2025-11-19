@@ -70,7 +70,7 @@ function Sprite:ui(opts)
   local box = Box.new(Vec2.zero(), self:getDimensions())
   return UiElement.new({
     box = box,
-    onHover = function(e)
+    onHoverExit = function(e)
       -- opts.color = e.style.content.color
     end,
     draw = function(e)

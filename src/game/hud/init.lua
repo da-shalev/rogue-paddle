@@ -38,6 +38,9 @@ return function()
   }
 
   ui.lives = UiElement.new {
+    style = {
+      indent,
+    },
     children = {},
   }
 
