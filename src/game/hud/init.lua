@@ -17,11 +17,25 @@ return function()
     if Hud.score.val > 0 then
       ui.score:draw()
     end
+
+    -- if Hud.lives.val > 0 then
+    ui.lives:draw()
+    -- end
+
+    ui.info:draw()
   end
 
   Hud.score = Text.new { val = 0, font = Res.fonts.BASE }
-  Hud.lives = Help.proxy({ val = Res.config.INITIAL_HEALTH }, function(val)
-    print('hi')
+  Hud.info = Text.new {
+    val = string.format('Press %s to begin', Res.keybinds.CONFIRM),
+    font = Res.fonts.BASE,
+  }
+
+  Hud.lives = Help.proxy({ val = 0 }, function(self)
+    ui.lives:clear()
+    for _ = 1, self.val do
+      ui.lives:addChild(Res.sprites.HEART:ui({}))
+    end
   end)
 
   ui.score = UiElement.new {
@@ -37,9 +51,26 @@ return function()
     },
   }
 
+  ui.info = UiElement.new {
+    style = {
+      {
+        width = '100vw',
+        height = '100vh',
+        justify_content = 'center',
+        align_items = 'center',
+      },
+    },
+    children = {
+      Hud.info:ui(),
+    },
+  }
+
   ui.lives = UiElement.new {
     style = {
       indent,
+      {
+        gap = 2,
+      },
     },
     children = {},
   }

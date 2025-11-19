@@ -1,6 +1,6 @@
 local Text = require('ui.text')
 
-local flexbox = UiElement.new {
+local e = UiElement.new {
   style = {
     width = '100vw',
     height = '100vh',
@@ -12,12 +12,12 @@ local flexbox = UiElement.new {
       style = Res.styles.OVERLAY,
       children = {
         Text.new {
-          value = 'GAME OVER',
+          val = 'GAME OVER',
           font = Res.fonts.IBM,
         }:ui(),
 
         Text.new {
-          value = 'Restart',
+          val = 'Restart',
           font = Res.fonts.BASE,
         }
           :ui()
@@ -29,7 +29,7 @@ local flexbox = UiElement.new {
           :setStyle(Res.styles.BUTTON),
 
         Text.new {
-          value = 'Quit',
+          val = 'Quit',
           font = Res.fonts.BASE,
         }
           :ui()
@@ -46,9 +46,9 @@ local flexbox = UiElement.new {
 
 return Status.new {
   update = function(_, dt)
-    flexbox:update(dt)
+    e:update(dt)
   end,
   draw = function()
-    flexbox:draw()
+    e:draw()
   end,
 }

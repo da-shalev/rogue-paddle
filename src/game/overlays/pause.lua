@@ -1,6 +1,6 @@
 local Text = require('ui.text')
 
-local flexbox = UiElement.new {
+local e = UiElement.new {
   style = {
     width = '100vw',
     height = '100vh',
@@ -9,7 +9,7 @@ local flexbox = UiElement.new {
   },
   children = {
     UiElement.new {
-      style = { Res.styles.OVERLAY, { flex_dir = 'row-reverse' } },
+      style = Res.styles.OVERLAY,
       children = {
         Text.new {
           val = 'PAUSE',
@@ -46,9 +46,9 @@ local flexbox = UiElement.new {
 
 return Status.new {
   update = function(_, dt)
-    flexbox:update(dt)
+    e:update(dt)
   end,
   draw = function()
-    flexbox:draw()
+    e:draw()
   end,
 }

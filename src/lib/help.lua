@@ -39,7 +39,7 @@ function Help.setTimeout(delay, func)
 end
 
 --- Metamethod to watch a tables mutation, allows avoiding getters and setters
---- by allowing internal tracking without abstractions
+--- by enabling internal tracking without abstractions (some would disagree)
 ---@generic T : table
 ---@param init T
 ---@param onMutate fun(tbl: T, key: any, val: any)

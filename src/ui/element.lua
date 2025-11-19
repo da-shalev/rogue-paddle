@@ -208,6 +208,13 @@ function UiElement:addChild(child, pos)
   else
     table.insert(self.children, child)
   end
+
+  self:updateLayout()
+  self.root:updateLayout()
+end
+
+function UiElement:clear()
+  self.children = {}
 end
 
 ---@param child UiElement

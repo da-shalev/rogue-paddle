@@ -67,14 +67,14 @@ end
 ---@param opts SpriteRenderState
 ---@return UiElement
 function Sprite:ui(opts)
-  local box = Box.new(Vec2.zero(), self:getDimensions())
+  opts.frame_idx = opts.frame_idx or 1
   return UiElement.new({
-    box = box,
-    onHoverExit = function(e)
-      -- opts.color = e.style.content.color
+    applyLayout = function(ui)
+      ui.style.width.val = self:getWidth()
+      ui.style.height.val = self:getHeight()
     end,
-    draw = function(e)
-      self:drawFrom(box, opts)
+    draw = function(ui)
+      self:drawFrom(ui.box, opts)
     end,
   })
 end
