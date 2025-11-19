@@ -1,14 +1,14 @@
 return function()
   local state = {}
-  local hud = require('game.hud')
+  local hud = require 'game.hud'
   -- hud.lives.val = Res.config.INITIAL_HEALTH
 
-  local paddle = require('game.entities.paddle') {
+  local paddle = require 'game.entities.paddle' {
     pos = Vec2.new(S.camera.box.w / 2, S.camera.box.h - 20),
     starting_origin = Origin.BOTTOM_CENTER,
   }
 
-  local ball = require('game.entities.ball')({})
+  local ball = require 'game.entities.ball' {}
 
   local bricks = require('game.brick_manager').new {
     colors = {
@@ -139,7 +139,7 @@ return function()
   end
 
   state.updateCheats = function()
-    if love.keyboard.isPressed('r') then
+    if love.keyboard.isPressed 'r' then
       bricks:reset()
     end
 
@@ -156,7 +156,7 @@ return function()
         if ctx:hasOverlay() then
           ctx:popOverlay()
         else
-          ctx:setOverlay(require('game.overlays.pause'))
+          ctx:setOverlay(require 'game.overlays.pause')
         end
       end
     end,

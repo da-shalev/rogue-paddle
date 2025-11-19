@@ -1,4 +1,4 @@
-local Text = require('ui.text')
+local Text = require 'ui.text'
 
 local e = UiNode.new {
   style = {
@@ -11,33 +11,33 @@ local e = UiNode.new {
     UiNode.new {
       style = Res.styles.OVERLAY,
       children = {
-        Text.new {
+        Text.new({
           val = 'PAUSE',
           font = Res.fonts.IBM,
-        }:ui({
+        }):ui {
           style = { extend = { 50 } },
-        }),
+        },
 
-        Text.new {
+        Text.new({
           val = 'Restart',
           font = Res.fonts.BASE,
-        }:ui({
+        }):ui {
           onClick = function()
-            S.scene_queue.setNext(require('game.scenes.brickin'))
+            S.scene_queue.setNext(require 'game.scenes.brickin')
           end,
 
           style = Res.styles.BUTTON,
-        }),
+        },
 
-        Text.new {
+        Text.new({
           val = 'Quit',
           font = Res.fonts.BASE,
-        }:ui({
+        }):ui {
           onClick = function()
             love.event.quit(0)
           end,
           style = Res.styles.BUTTON,
-        }),
+        },
       },
     },
   },

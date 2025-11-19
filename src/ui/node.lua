@@ -1,4 +1,4 @@
-local UiStyle = require('ui.style')
+local UiStyle = require 'ui.style'
 
 ---@class UiFlags
 ---@field dirty boolean
@@ -47,7 +47,6 @@ ComputedUiNode.__index = ComputedUiNode
 ComputedUiNode.new = function(opts, events)
   events = events or {}
   opts.children = opts.children or {}
-  opts.style = opts.style or UiStyle.new()
   events.flags = events.flags or Flags.default()
 
   ---@type ComputedUiNode

@@ -6,11 +6,6 @@ local Res = {
   cheats = true,
   cursors = cursors,
 
-  -- configuration defaults for every new game
-  config = {
-    INITIAL_HEALTH = 3,
-  },
-
   sprites = {
     PLAYER = Sprite.new('res/sprites/player.png'),
     BALL = Sprite.new('res/sprites/ball.png'),
@@ -19,7 +14,6 @@ local Res = {
   },
 
   fonts = {
-    -- default font
     BASE = love.graphics.newFont('res/fonts/Px437_IBM_CGA.ttf', 8),
     IBM = love.graphics.newFont('res/fonts/Px437_IBM_BIOS-2y.ttf', 16),
   },

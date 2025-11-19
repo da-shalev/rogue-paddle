@@ -56,7 +56,7 @@ UiStyle.parse = function(v)
     return { val = nil, ext = nil }
   end
 
-  local num, unit = v:match('^(%d+%.?%d*)(%D.*)$')
+  local num, unit = v:match '^(%d+%.?%d*)(%D.*)$'
   if not num then
     print(string.format("invalid format: '%s'", v))
     return { val = nil, ext = nil }
@@ -108,12 +108,13 @@ function UiStyle.calculateUnit(unit)
   return unit.val
 end
 
+--- I am so interested in implementing tailwind style creation
 ---@param ... UiStyles
 ---@return ComputedUiStyle
 UiStyle.new = function(...)
   ---@type UiStyle
   local s = {}
-  for _, style in ipairs({ ... }) do
+  for _, style in ipairs { ... } do
     if style then
       for k, v in pairs(style) do
         s[k] = v
