@@ -27,7 +27,7 @@ function Text.new(opts)
     setmetatable({
       val = opts.val,
       font = font,
-      flags = UiElement.Flags.default(),
+      flags = UiNode.Flags.default(),
     }, Text),
     function(self, key, val)
       -- any time val or font mutates
@@ -45,10 +45,10 @@ function Text.new(opts)
 end
 
 ---@return UiIdx
----@param opts? UiElement
+---@param opts? UiNode
 function Text:ui(opts)
   opts = opts or {}
-  return UiElement.new(opts, {
+  return UiNode.new(opts, {
     flags = self.flags,
     applyLayout = function(ui)
       if self.val then

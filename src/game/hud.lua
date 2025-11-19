@@ -38,7 +38,7 @@ local indent = {
 --   end
 -- end)
 --
--- ui.score = UiElement.new {
+-- ui.score = UiNode.new {
 --   style = {
 --     {
 --       width = '100vw',
@@ -51,7 +51,7 @@ local indent = {
 --   },
 -- }
 --
--- ui.info = UiElement.new {
+-- ui.info = UiNode.new {
 --   style = {
 --     {
 --       width = '100vw',
@@ -65,7 +65,7 @@ local indent = {
 --   },
 -- }
 --
--- ui.lives = UiElement.new {
+-- ui.lives = UiNode.new {
 --   style = {
 --     indent,
 --     {

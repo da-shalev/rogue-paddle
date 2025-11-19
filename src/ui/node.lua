@@ -19,12 +19,12 @@ end
 
 ---@class UiEvents
 ---@field flags? UiFlags
----@field applyLayout? fun(e: ComputedUiElement)
----@field draw? fun(e: ComputedUiElement)
----@field onHoverEnter? fun(e: ComputedUiElement)
----@field onHoverExit? fun(e: ComputedUiElement)
+---@field applyLayout? fun(e: ComputedUiNode)
+---@field draw? fun(e: ComputedUiNode)
+---@field onHoverEnter? fun(e: ComputedUiNode)
+---@field onHoverExit? fun(e: ComputedUiNode)
 
----@class ComputedUiElement : UiActions
+---@class ComputedUiNode : UiActions
 ---@field root? UiIdx
 ---@field parent? UiIdx
 ---@field box Box
@@ -34,23 +34,23 @@ end
 ---@field name? string
 ---@field _children UiChildren
 ---@field _idx UiIdx
-local ComputedUiElement = {}
-ComputedUiElement.__index = ComputedUiElement
+local ComputedUiNode = {}
+ComputedUiNode.__index = ComputedUiNode
 
----@class UiElement : UiActions
+---@class UiNode : UiActions
 ---@field style? UiStyles
 ---@field children? UiChildren
 
----@param opts UiElement
+---@param opts UiNode
 ---@param events? UiEvents
 ---@return UiIdx
-ComputedUiElement.new = function(opts, events)
+ComputedUiNode.new = function(opts, events)
   events = events or {}
   opts.children = opts.children or {}
   opts.style = opts.style or UiStyle.new()
   events.flags = events.flags or Flags.default()
 
-  ---@type ComputedUiElement
+  ---@type ComputedUiNode
   local e = {
     parent = nil,
     box = Box.zero(),
@@ -63,14 +63,14 @@ ComputedUiElement.new = function(opts, events)
     onClick = opts.onClick,
   }
 
-  local e = setmetatable(e, ComputedUiElement)
+  local e = setmetatable(e, ComputedUiNode)
 
   UiRegistry:add(e)
   return e:getIdx()
 end
 
 ---@param dt number
-function ComputedUiElement:update(dt)
+function ComputedUiNode:update(dt)
   local x, y = S.cursor:within(self.box)
   local hover = x and y
 
@@ -110,28 +110,28 @@ function ComputedUiElement:update(dt)
 end
 
 ---@return UiIdx
-function ComputedUiElement:getIdx()
+function ComputedUiNode:getIdx()
   return self._idx
 end
 
 ---@param name string
----@return ComputedUiElement
-function ComputedUiElement:setName(name)
+---@return ComputedUiNode
+function ComputedUiNode:setName(name)
   self.name = name
   return self
 end
 
 ---@return string
-function ComputedUiElement:getName()
+function ComputedUiNode:getName()
   return self.name
 end
 
 ---@return UiChildren
-function ComputedUiElement:children()
+function ComputedUiNode:children()
   return self._children
 end
 
-function ComputedUiElement:draw()
+function ComputedUiNode:draw()
   if self.events.flags.dirty then
     self.events.flags.dirty = false
 
@@ -190,8 +190,8 @@ function ComputedUiElement:draw()
 end
 
 --- If no parent is passed, it is assumed self is root!
---- @param parent? ComputedUiElement
-function ComputedUiElement:updateLayout(parent)
+--- @param parent? ComputedUiNode
+function ComputedUiNode:updateLayout(parent)
   if parent then
     -- local parent =
     self.parent = parent:getIdx()
@@ -209,7 +209,7 @@ end
 
 -- ---@param child UiIdx
 -- ---@param pos? integer
--- function ComputedUiElement:addChild(child, pos)
+-- function ComputedUiNode:addChild(child, pos)
 --   if pos then
 --     table.insert(self._children, pos, child)
 --   else
@@ -220,9 +220,9 @@ end
 --   -- self.root:updateLayout()
 -- end
 --
--- ---@param child UiElement
+-- ---@param child UiNode
 -- ---@return boolean
--- function ComputedUiElement:removeChild(child)
+-- function ComputedUiNode:removeChild(child)
 --   for i, c in ipairs(self._children) do
 --     if c == child then
 --       table.remove(self._children, i)
@@ -234,7 +234,7 @@ end
 -- end
 
 -- TODO: return boolean to know whether a mutation happened to avoid recalculation
-function ComputedUiElement:layout()
+function ComputedUiNode:layout()
   local style = self.style
 
   -- Starting cursor for placing children
@@ -354,6 +354,6 @@ function ComputedUiElement:layout()
   end
 end
 
-ComputedUiElement.Flags = Flags
+ComputedUiNode.Flags = Flags
 
-return ComputedUiElement
+return ComputedUiNode

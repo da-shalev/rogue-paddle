@@ -68,7 +68,7 @@ end
 -- ---@return UiIdx
 -- function Sprite:ui(opts)
 --   opts.frame_idx = opts.frame_idx or 1
---   return UiElement.new({
+--   return UiNode.new({
 --     applyLayout = function(ui)
 --       ui.style.width.val = self:getWidth()
 --       ui.style.height.val = self:getHeight()

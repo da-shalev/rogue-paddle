@@ -1,6 +1,6 @@
 local Text = require('ui.text')
 
-local e = UiElement.new {
+local e = UiNode.new {
   style = {
     width = '100vw',
     height = '100vh',
@@ -8,7 +8,7 @@ local e = UiElement.new {
     justify_content = 'center',
   },
   children = {
-    UiElement.new {
+    UiNode.new {
       style = Res.styles.OVERLAY,
       children = {
         Text.new {
