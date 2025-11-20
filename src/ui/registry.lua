@@ -1,30 +1,45 @@
 local uid = 0
 
 ---@class UiRegistry
----@field elements table<UiIdx, ComputedUiNode>
+---@field nodes table<UiIdx, UiNode>
 local UiRegistry = {}
 UiRegistry.__index = UiRegistry
 
-local registry = setmetatable({ elements = {} }, UiRegistry)
+local registry = setmetatable({ nodes = {} }, UiRegistry)
 
 ---@param idx UiIdx
----@return ComputedUiNode
+---@return boolean
+function UiRegistry:is(idx)
+  return self.nodes[idx] ~= nil
+end
+
+---@param idx UiIdx
+---@return UiNode?
 function UiRegistry:get(idx)
-  return self.elements[idx]
+  return self.nodes[idx]
 end
 
----@param node ComputedUiNode
+---@param idx UiIdx
+---@return UiCtx?
+function UiRegistry:getCtx(idx)
+  return self.nodes[idx].ctx
+end
+
+---@param node UiNode
+---@return number
 function UiRegistry:add(node)
-  node:updateLayout()
   uid = uid + 1
-  node._idx = uid
-  self.elements[uid] = node
+  node.ctx.idx = uid
+  self.nodes[uid] = node
+
+  node.events.layout(node.ctx)
+  return uid
 end
 
----@param node ComputedUiNode
+---@param node UiNode
 function UiRegistry:_removeNode(node)
-  self.elements[node:getIdx()] = self.elements[uid]
-  self.elements[uid] = nil
+  self.nodes[node.ctx.idx] = self.nodes[uid]
+  self.nodes[uid] = nil
   uid = uid - 1
 end
 
@@ -40,38 +55,24 @@ function UiRegistry:removeIdx(idx)
   return true
 end
 
----@param node ComputedUiNode
+---@param node UiNode
 function UiRegistry:remove(node)
-  for _, child_idx in ipairs(node:children()) do
-    self:removeIdx(child_idx)
-  end
-
   self:_removeNode(node)
 end
 
----@param idx UiIdx
+---@param node UiNode?
 ---@param dt number
----@return boolean
-function UiRegistry:update(idx, dt)
-  local node = self:get(idx)
-  if node then
-    node:update(dt)
-    return true
+function UiRegistry:update(node, dt)
+  if node and node.events.update then
+    node.events.update(node.ctx, dt)
   end
-
-  return false
 end
 
----@param idx UiIdx
-function UiRegistry:draw(idx)
-  local node = self:get(idx)
-
+---@param node UiNode?
+function UiRegistry:draw(node)
   if node then
-    node:draw()
-    return true
+    node.events.draw(node.ctx)
   end
-
-  return false
 end
 
 return registry
