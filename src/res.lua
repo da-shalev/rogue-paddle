@@ -44,8 +44,11 @@ local Res = {
     ---@type UiStyle
     BUTTON = {
       content_color = Color.FOREGROUND,
-      content_hover_color = Color.BRIGHT0,
       hover_cursor = cursors.hand,
+      hover = {
+        content_color = Color.BRIGHT0,
+        cursor = cursors.hand,
+      },
     },
   },
 

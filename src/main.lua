@@ -1,5 +1,5 @@
-local tlfres = require('lib.tlfres')
-local state = require('state')
+local tlfres = require 'lib.tlfres'
+local state = require 'state'
 local canvas, canvas_w, canvas_h
 
 local keys_pressed = {}
@@ -15,7 +15,7 @@ local current_scene
 
 function love.load()
   -- you will not be able to accces anything loaded here before love.load executes
-  Res = require('res')
+  Res = require 'res'
   love.resize()
 end
 

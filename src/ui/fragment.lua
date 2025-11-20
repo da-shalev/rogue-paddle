@@ -30,7 +30,6 @@ Fragment.new = function(val, font)
         love.graphics.printf(self.val, self.font, ctx.box.pos.x, ctx.box.pos.y, ctx.box.size.x)
       end
     end,
-    remove = function() end,
     layout = function(ctx)
       local w, h = getSize(self.font, self.val)
       ctx.box.w = w

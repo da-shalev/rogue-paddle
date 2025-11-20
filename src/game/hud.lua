@@ -1,5 +1,3 @@
-local Text = require 'ui.text'
-
 local Hud = {}
 local ui = {}
 

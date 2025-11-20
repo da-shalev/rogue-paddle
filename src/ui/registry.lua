@@ -37,7 +37,11 @@ function UiRegistry:add(node)
 end
 
 ---@param node UiNode
-function UiRegistry:_removeNode(node)
+function UiRegistry:remove(node)
+  if node.events.remove then
+    node.events.remove(node.ctx)
+  end
+
   self.nodes[node.ctx.idx] = self.nodes[uid]
   self.nodes[uid] = nil
   uid = uid - 1
@@ -51,13 +55,8 @@ function UiRegistry:removeIdx(idx)
     return false
   end
 
-  self:_removeNode(node)
+  self:remove(node)
   return true
-end
-
----@param node UiNode
-function UiRegistry:remove(node)
-  self:_removeNode(node)
 end
 
 ---@param node UiNode?

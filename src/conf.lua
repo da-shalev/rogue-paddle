@@ -1,20 +1,20 @@
 -- define util globals
-require('lib.math')
-Help = require('lib.help')
-Timer = require('lib.timer')
-Vec2 = require('lib.vec2')
-Box = require('lib.box')
-Origin = require('lib.origin')
-Sprite = require('lib.sprite')
-Scene = require('lib.scene')
-Status = require('lib.status')
-UiElement = require('ui.element')
-UiRegistry = require('ui.registry')
-Color = require('colors')
-S = require('state')
+require 'lib.math'
+Help = require 'lib.help'
+Timer = require 'lib.timer'
+Vec2 = require 'lib.vec2'
+Box = require 'lib.box'
+Origin = require 'lib.origin'
+Sprite = require 'lib.sprite'
+Scene = require 'lib.scene'
+Status = require 'lib.status'
+UiElement = require 'ui.element'
+UiRegistry = require 'ui.registry'
+Color = require 'colors'
+S = require 'state'
 
 -- define current scene
-S.scene_queue.setNext(require('game.scenes.brickin'))
+S.scene_queue.setNext(require 'game.scenes.brickin')
 
 -- define love2d configuration
 function love.conf(t)

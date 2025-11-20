@@ -76,7 +76,11 @@ UiElement.new = function(opts, events)
     draw = function(ctx)
       UiElement.draw(self, ctx)
     end,
-    remove = function() end,
+    remove = function()
+      for _, child_idx in ipairs(self._children) do
+        UiRegistry:removeIdx(child_idx)
+      end
+    end,
     layout = function(ctx, parent)
       UiElement.layout(self, ctx)
       return true
@@ -95,17 +99,14 @@ function UiElement.update(self, ctx, dt)
 
   if self.hover ~= hover then
     if hover then
-      self.style.content.color = self.style.content.hover_color or self.style.content.base_color
-      self.style.background.color = self.style.background.hover_color
-        or self.style.background.base_color
-      love.mouse.setCursor(self.style.hover_cursor)
+      self.style.current = self.style.hover
+      love.mouse.setCursor(self.style.current.cursor)
 
       if self.events.onHoverEnter then
         self.events.onHoverEnter(self)
       end
     else
-      self.style.content.color = self.style.content.base_color
-      self.style.background.color = self.style.background.base_color
+      self.style.current = self.style.base
       love.mouse.setCursor()
 
       if self.events.onHoverExit then
@@ -150,36 +151,36 @@ function UiElement.draw(self, ctx)
   --   end
   -- end
 
-  if self.style.background.color then
-    love.graphics.setColor(self.style.background.color)
+  if self.style.current.background_color then
+    love.graphics.setColor(self.style.current.background_color)
     love.graphics.rectangle(
       'fill',
-      ctx.box.pos.x + self.style.border / 2,
-      ctx.box.pos.y + self.style.border / 2,
-      ctx.box.size.x - self.style.border,
-      ctx.box.size.y - self.style.border,
-      self.style.border_radius,
-      self.style.border_radius
+      ctx.box.pos.x + self.style.current.border / 2,
+      ctx.box.pos.y + self.style.current.border / 2,
+      ctx.box.size.x - self.style.current.border,
+      ctx.box.size.y - self.style.current.border,
+      self.style.current.border_radius,
+      self.style.current.border_radius
     )
   end
 
-  if self.style.border > 0 and self.style.border_color then
-    love.graphics.setColor(self.style.border_color)
-    love.graphics.setLineWidth(self.style.border)
+  if self.style.current.border > 0 and self.style.current.border_color then
+    love.graphics.setColor(self.style.current.border_color)
+    love.graphics.setLineWidth(self.style.current.border)
     love.graphics.rectangle(
       'line',
-      ctx.box.pos.x + self.style.border / 2,
-      ctx.box.pos.y + self.style.border / 2,
-      ctx.box.size.x - self.style.border,
-      ctx.box.size.y - self.style.border,
-      self.style.border_radius,
-      self.style.border_radius
+      ctx.box.pos.x + self.style.current.border / 2,
+      ctx.box.pos.y + self.style.current.border / 2,
+      ctx.box.size.x - self.style.current.border,
+      ctx.box.size.y - self.style.current.border,
+      self.style.current.border_radius,
+      self.style.current.border_radius
     )
   end
 
-  -- if self.style.extend and self.style.extend then
+  -- if self.style.current.extend and self.style.current.extend then
   --   love.graphics.setColor(0, 255, 0, 0.5)
-  --   local e = self.style.extend.bottom
+  --   local e = self.style.current.extend.bottom
   --   love.graphics.setLineWidth(e)
   --   love.graphics.rectangle(
   --     'line',
@@ -187,12 +188,12 @@ function UiElement.draw(self, ctx)
   --     self.box.pos.y + e / 2,
   --     self.box.size.x - e,
   --     self.box.size.y - e,
-  --     self.style.border_radius,
-  --     self.style.border_radius
+  --     self.style.current.border_radius,
+  --     self.style.current.border_radius
   --   )
   -- end
 
-  love.graphics.setColor(self.style.content.color or Color.RESET)
+  love.graphics.setColor(self.style.current.content_color or Color.RESET)
 
   for _, child_idx in ipairs(self._children) do
     UiRegistry:draw(UiRegistry:get(child_idx))
@@ -229,7 +230,7 @@ end
 ---@param ctx UiCtx
 -- TODO: return boolean to know whether a mutation happened to avoid recalculation
 function UiElement.layout(self, ctx)
-  local style = self.style
+  local style = self.style.current
 
   -- Starting cursor for placing children
   local cr_x = ctx.box.x + style.extend.left

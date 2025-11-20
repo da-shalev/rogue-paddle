@@ -2,16 +2,14 @@
 ---@alias FlexJustifyContent "start" | "center" | "end"
 ---@alias FlexAlignItems "start" | "center" | "end"
 
----@class UiStyle
+---@class UiStyleBasis
 ---@field border? number
 ---@field border_color? Color
 ---@field content_color? Color
----@field content_hover_color? Color
 ---@field background_color? Color
----@field background_hover_color? Color
 ---@field border_radius? number
 ---@field extend Extend?
----@field hover_cursor? love.Cursor
+---@field cursor? love.Cursor
 ---@field width? string|number
 ---@field height? string|number
 ---@field flex_dir? FlexDirection
@@ -19,25 +17,28 @@
 ---@field align_items? FlexAlignItems
 ---@field gap? number
 
----@class ComputedUiColor
----@field color Color
----@field base_color Color
----@field hover_color Color
+---@class UiStyle : UiStyleBasis
+---@field hover? UiStyleBasis
 
----@class ComputedUiStyle
+---@class ComputedUiBasis
 ---@field border number
 ---@field border_color? Color
----@field content ComputedUiColor
----@field background ComputedUiColor
+---@field content_color? Color
+---@field background_color? Color
 ---@field border_radius number
 ---@field extend ComputedExtend
----@field hover_cursor? love.Cursor
+---@field cursor? love.Cursor
 ---@field width? UiUnit
 ---@field height? UiUnit
 ---@field flex_dir FlexDirection
 ---@field justify_content FlexJustifyContent
 ---@field align_items FlexAlignItems
 ---@field gap number
+
+---@class ComputedUiStyle
+---@field current ComputedUiBasis
+---@field base ComputedUiBasis
+---@field hover ComputedUiBasis
 
 local UiStyle = {}
 
@@ -111,40 +112,62 @@ end
 --- I am so interested in implementing tailwind style creation
 ---@param ... UiStyles
 ---@return ComputedUiStyle
-UiStyle.new = function(...)
-  ---@type UiStyle
-  local s = {}
-  for _, style in ipairs { ... } do
-    if style then
-      for k, v in pairs(style) do
-        s[k] = v
+function UiStyle.new(...)
+  ---@param base table
+  ---@param add table
+  local function merge(base, add)
+    for k, v in pairs(add) do
+      if type(v) == 'table' and type(base[k]) == 'table' then
+        merge(base[k], v)
+      else
+        base[k] = v
       end
     end
   end
 
+  ---@type UiStyle
+  local style = {}
+
+  for i = 1, select('#', ...) do
+    local cstyle = select(i, ...)
+    if cstyle then
+      merge(style, cstyle)
+    end
+  end
+
+  ---@param c UiStyle|UiStyleBasis
+  ---@param fb? UiStyle|UiStyleBasis
+  ---@return ComputedUiBasis
+  local function compute(c, fb)
+    fb = fb or {}
+
+    ---@type ComputedUiBasis
+    return {
+      border = c.border or fb.border or 0,
+      background_color = c.background_color or fb.background_color,
+      content_color = c.content_color or fb.content_color,
+      border_color = c.border_color or fb.border_color,
+      border_radius = c.border_radius or fb.border_radius or 0,
+      extend = Box.Extend.new(c.extend or fb.extend or 0),
+      cursor = c.cursor or fb.cursor,
+      width = UiStyle.parse(c.width) or UiStyle.parse(fb.width),
+      height = UiStyle.parse(c.height) or UiStyle.parse(fb.height),
+      flex_dir = c.flex_dir or fb.flex_dir or 'row',
+      justify_content = c.justify_content or fb.justify_content or 'start',
+      align_items = c.align_items or fb.align_items or 'start',
+      gap = c.gap or fb.gap or 0,
+    }
+  end
+
+  local base = compute(style)
+  local hover = style.hover and compute(style.hover, style) or base
+  local current = base
+
   ---@type ComputedUiStyle
   return {
-    border = s.border or 0,
-    border_color = s.border_color,
-    border_radius = s.border_radius or 0,
-    background = {
-      color = s.background_color,
-      base_color = s.background_color,
-      hover_color = s.background_hover_color,
-    },
-    content = {
-      color = s.content_color,
-      base_color = s.content_color,
-      hover_color = s.content_hover_color,
-    },
-    extend = Box.Extend.new(s.extend or 0),
-    hover_cursor = s.hover_cursor,
-    width = UiStyle.parse(s.width),
-    height = UiStyle.parse(s.height),
-    flex_dir = s.flex_dir or 'row',
-    justify_content = s.justify_content or 'start',
-    align_items = s.align_items or 'start',
-    gap = s.gap or 0,
+    current = current,
+    base = base,
+    hover = hover,
   }
 end
 
