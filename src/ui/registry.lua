@@ -1,6 +1,12 @@
 local uid = 0
 
 ---@alias UiIdx number
+---@alias UiChildren UiIdx[]
+
+---@alias UiLayoutEvent<T> fun(self: UiCtx<T>, parent?: UiLayout<T>): boolean
+---@alias UiUpdateEvent<T> fun(self: UiCtx<T>, dt: number)?
+---@alias UiRemoveEvent<T> fun(self: UiCtx<T>)?
+---@alias UiDrawEvent<T> fun(self: UiCtx<T>)
 
 ---@class UiNode<T>: {
 ---  ctx: UiCtx<T>,
@@ -8,23 +14,26 @@ local uid = 0
 --- }
 
 ---@class UiNodeEvents<T>: {
----  layout: (fun(self: UiCtx<T>): boolean),
----  update: fun(self: UiCtx<T>, dt: number)|nil,
----  remove: fun(self: UiCtx<T>)|nil,
----  draw: fun(self: UiCtx<T>)
+---  layout: UiLayoutEvent<T>,
+---  update: UiUpdateEvent<T>,
+---  remove: UiRemoveEvent<T>,
+---  draw: UiDrawEvent<T>,
 ---}
 
----@class UiCtx<T>: {
+---@class UiLayout<T>: {
 ---   root?: UiIdx<T>,
 ---   parent?: UiIdx<T>,
 ---   idx: UiIdx<T>,
+---}
+
+---@class UiCtx<T>: {
+---   layout: UiLayout<T>,
 ---   data: T,
 ---   box: Box,
 ---}
 
----@class UiRegistry: {
----   nodes: table<UiIdx, UiNode<any>>,
----}
+---@class UiRegistry
+---@field nodes table<UiIdx, UiNode<any>>
 local UiRegistry = {}
 UiRegistry.__index = UiRegistry
 
@@ -39,12 +48,27 @@ local registry = setmetatable({
 function UiRegistry:add(data, e)
   uid = uid + 1
 
+  ---@generic T
+  ---@type UiLayoutEvent<T>
+  local layout = function(ctx, layout)
+    if layout then
+      ctx.layout.parent = layout.idx
+      ctx.layout.root = layout.root
+    else
+      ctx.layout.root = ctx.layout.idx
+    end
+
+    return e.layout(ctx, layout)
+  end
+
   ---@type UiNode
   local node = {
     ctx = {
-      root = nil,
-      parent = nil,
-      idx = uid,
+      layout = {
+        root = nil,
+        parent = nil,
+        idx = uid,
+      },
       box = Box.zero(),
       data = data,
     },
@@ -52,7 +76,7 @@ function UiRegistry:add(data, e)
       update = e.update,
       draw = e.draw,
       remove = e.remove,
-      layout = e.layout,
+      layout = layout,
     },
   }
 

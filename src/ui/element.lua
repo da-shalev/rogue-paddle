@@ -1,69 +1,68 @@
 local UiStyle = require 'ui.style'
 
----@class UiFlags
----@field queue_apply_layout boolean
-local Flags = {}
-
----@return UiFlags
-Flags.default = function()
-  return {
-    dirty = false,
-  }
-end
-
----@class UiActions
----@field onClick? fun()
-
----@alias UiChildren UiIdx[]
-
----@class UiEvents
----@field flags? UiFlags
----@field applyLayout? fun(e: UiElement)
+---@class UiElementEvents
 ---@field draw? fun(e: UiElement)
 ---@field onHoverEnter? fun(e: UiElement)
 ---@field onHoverExit? fun(e: UiElement)
+---@field onClick? fun()
 
 ---@class UiElement
 ---@field hover? boolean
----@field events UiEvents
+---@field events UiElementEvents
 ---@field style ComputedUiStyle
 ---@field name? string
----@field actions UiActions
 ---@field _children UiChildren
 local UiElement = {}
+UiElement.__index = {}
 
 ---@class UiElementBuilder
 ---@field style? UiStyles
----@field children? UiChildren
----@field actions? UiActions
+---@field children? UiChildren|UiIdx
+---@field events? UiElementEvents
 
 ---@param opts UiElementBuilder
----@param events? UiEvents
 ---@return UiIdx
-UiElement.new = function(opts, events)
-  events = events or {}
-  opts.actions = opts.actions or {}
-  events.flags = events.flags or Flags.default()
+UiElement.new = function(opts)
+  opts.events = opts.events or {}
+
+  -- normalize children
+
+  ---@type UiChildren
+  local children = {}
+  local c = opts.children
+  if type(c) == 'number' then
+    children = { c }
+  elseif type(c) == 'table' then
+    -- ensures it iterates through all values including nil
+    -- max length to appropriately add the UiNode
+    for i = 1, table.maxn(c) do
+      if c[i] then
+        children[#children + 1] = c[i]
+      end
+    end
+  else
+    children = {}
+  end
 
   ---@type UiElement
   local e = {
     hover = nil,
-    style = UiStyle.normalize(opts.style),
-    events = events,
-    _children = opts.children,
-    actions = opts.actions,
-    __type = 'UiElement',
+    style = UiStyle.new(unpack(UiStyle.normalize(opts.style))),
+    events = opts.events,
+    _children = children,
   }
 
-  return UiRegistry:add(e, {
-    update = function(self, dt)
-      UiElement.update(self, dt)
+  -- table.remove(ctx.data._children, child_idx)
+
+  return UiRegistry:add(setmetatable(e, UiElement), {
+    update = function(ctx, dt)
+      UiElement.update(ctx, dt)
     end,
     draw = function(ctx)
       UiElement.draw(ctx)
     end,
-    remove = function()
-      for _, child_idx in ipairs(e._children) do
+    remove = function(ctx)
+      for _, child_idx in ipairs(ctx.data._children) do
         UiRegistry:remove(child_idx)
       end
     end,
@@ -100,8 +99,8 @@ function UiElement.update(ctx, dt)
     ctx.data.hover = hover
   end
 
-  if love.mouse.isDown(1) and ctx.data.hover and ctx.data.actions.onClick then
-    ctx.data.actions.onClick()
+  if love.mouse.isDown(1) and ctx.data.hover and ctx.data.events.onClick then
+    ctx.data.events.onClick()
   end
 
   if hover then
@@ -113,57 +112,37 @@ end
 
 ---@param ctx UiCtx<UiElement>
 function UiElement.draw(ctx)
-  local style = ctx.data.style
-  -- if self.events.flags.queue_apply_layout then
-  --   self.events.flags.queue_apply_layout = false
-  --
-  --   local parent = UiRegistry:get(self.parent)
-  --   if parent then
-  --     self:updateLayout(parent)
-  --   else
-  --     self.parent = nil
-  --   end
-  --
-  --   local root = UiRegistry:get(self.root)
-  --   if root then
-  --     if root:getIdx() ~= self:getIdx() then
-  --       root:updateLayout()
-  --     end
-  --   else
-  --     self.root = self:getIdx()
-  --   end
-  -- end
-
-  if style.current.background_color then
-    love.graphics.setColor(style.current.background_color)
+  local style = ctx.data.style.current
+  if style.background_color then
+    love.graphics.setColor(style.background_color)
     love.graphics.rectangle(
       'fill',
-      ctx.box.pos.x + style.current.border / 2,
-      ctx.box.pos.y + style.current.border / 2,
-      ctx.box.size.x - style.current.border,
-      ctx.box.size.y - style.current.border,
-      style.current.border_radius,
-      style.current.border_radius
+      ctx.box.pos.x + style.border / 2,
+      ctx.box.pos.y + style.border / 2,
+      ctx.box.size.x - style.border,
+      ctx.box.size.y - style.border,
+      style.border_radius,
+      style.border_radius
     )
   end
 
-  if style.current.border > 0 and style.current.border_color then
-    love.graphics.setColor(style.current.border_color)
-    love.graphics.setLineWidth(style.current.border)
+  if style.border > 0 and style.border_color then
+    love.graphics.setColor(style.border_color)
+    love.graphics.setLineWidth(style.border)
     love.graphics.rectangle(
       'line',
-      ctx.box.pos.x + style.current.border / 2,
-      ctx.box.pos.y + style.current.border / 2,
-      ctx.box.size.x - style.current.border,
-      ctx.box.size.y - style.current.border,
-      style.current.border_radius,
-      style.current.border_radius
+      ctx.box.pos.x + style.border / 2,
+      ctx.box.pos.y + style.border / 2,
+      ctx.box.size.x - style.border,
+      ctx.box.size.y - style.border,
+      style.border_radius,
+      style.border_radius
     )
   end
 
-  -- if self.style.current.extend and self.style.current.extend then
+  -- if self.style.extend and self.style.extend then
   --   love.graphics.setColor(0, 255, 0, 0.5)
-  --   local e = self.style.current.extend.bottom
+  --   local e = self.style.extend.bottom
   --   love.graphics.setLineWidth(e)
   --   love.graphics.rectangle(
   --     'line',
@@ -171,43 +150,33 @@ function UiElement.draw(ctx)
   --     self.box.pos.y + e / 2,
   --     self.box.size.x - e,
   --     self.box.size.y - e,
-  --     self.style.current.border_radius,
-  --     self.style.current.border_radius
+  --     self.style.border_radius,
+  --     self.style.border_radius
   --   )
   -- end
 
-  love.graphics.setColor(style.current.content_color or Color.RESET)
+  love.graphics.setColor(style.content_color or Color.RESET)
 
   for _, child_idx in ipairs(ctx.data._children) do
     UiRegistry:draw(UiRegistry:get(child_idx))
   end
 end
 
--- ---@param child UiIdx
--- ---@param pos? integer
--- function ComputedUiElement:addChild(child, pos)
---   if pos then
---     table.insert(self._children, pos, child)
---   else
---     table.insert(self._children, child)
---   end
---
---   self:updateLayout()
---   -- self.root:updateLayout()
--- end
---
--- ---@param child UiElement
--- ---@return boolean
--- function ComputedUiElement:removeChild(child)
---   for i, c in ipairs(self._children) do
---     if c == child then
---       table.remove(self._children, i)
---       return true
---     end
---   end
---
---   return false
--- end
+---@param child UiIdx
+---@param pos? integer
+function UiElement:addChild(child, pos)
+  if pos then
+    table.insert(self._children, pos, child)
+  else
+    table.insert(self._children, child)
+  end
+end
+
+function UiElement:clearChildren()
+  for child in self._children do
+    UiRegistry:remove(child)
+  end
+end
 
 ---@param ctx UiCtx<UiElement>
 --  TODO: return boolean to know whether a mutation happened to avoid recalculation
@@ -242,8 +211,8 @@ function UiElement.layout(ctx)
   local w = UiStyle.calculateUnit(style.width)
   local h = UiStyle.calculateUnit(style.height)
 
-  for i = start_i, end_i, step do
-    local child = UiRegistry:getCtx(ctx.data._children[i])
+  for child_idx = start_i, end_i, step do
+    local child = UiRegistry:getCtx(ctx.data._children[child_idx])
     if not child then
       goto continue
     end
@@ -325,11 +294,9 @@ function UiElement.layout(ctx)
       box.y = box.y + justify_offset
     end
 
-    child.events.layout(child.ctx)
+    child.events.layout(child.ctx, ctx.layout)
     ::continue::
   end
 end
-
-UiElement.Flags = Flags
 
 return UiElement

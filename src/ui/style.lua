@@ -80,17 +80,17 @@ UiStyle.parse = function(v)
 end
 
 ---@param st UiStyles
----@return ComputedUiStyle
+---@return UiStyle[]
 function UiStyle.normalize(st)
   if not st then
-    return UiStyle.new()
+    return {}
   end
 
   if st[1] ~= nil then
-    return UiStyle.new(unpack(st))
+    return st
+  else
+    return { st }
   end
-
-  return UiStyle.new(st)
 end
 
 ---@param unit UiUnit

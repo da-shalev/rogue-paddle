@@ -1,4 +1,5 @@
 local Fragment = require 'ui.fragment'
+local Tri = require 'ui.tri'
 
 local idx = UiElement.new {
   style = {
@@ -14,31 +15,25 @@ local idx = UiElement.new {
       },
       children = {
         Fragment.new('PAUSE', Res.fonts.IBM),
-        --   Text.new({
-        --     val = 'Restart',
-        --     font = Res.fonts.BASE,
-        --   }):ui {
-        --     actions = {
-        --       onClick = function()
-        --         S.scene_queue.setNext(require 'game.scenes.brickin')
-        --       end,
-        --     },
-        --
-        --     style = Res.styles.BUTTON,
-        --   },
-        --
-        --   Text.new({
-        --     val = 'Quit',
-        --     font = Res.fonts.BASE,
-        --   }):ui {
-        --     actions = {
-        --       onClick = function()
-        --         love.event.quit(0)
-        --       end,
-        --     },
-        --
-        --     style = Res.styles.BUTTON,
-        --   },
+        Tri.new {
+          events = {
+            onClick = function()
+              S.scene_queue.setNext(require 'game.scenes.brickin')
+            end,
+          },
+          body = Fragment.new('Restart', Res.fonts.BASE),
+          styles = { Res.styles.BUTTON },
+        },
+
+        Tri.new {
+          events = {
+            onClick = function()
+              love.event.quit(0)
+            end,
+          },
+          body = Fragment.new('Quit', Res.fonts.BASE),
+          styles = { Res.styles.BUTTON },
+        },
       },
     },
   },

@@ -21,7 +21,6 @@ Fragment.new = function(val, font)
   local self = {
     val = val,
     font = font,
-    __type = 'UiFragment',
   }
 
   return UiRegistry:add(self, {
