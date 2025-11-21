@@ -13,7 +13,7 @@ local UiStyle = require 'ui.style'
 ---@field name? string
 ---@field _children UiChildren
 local UiElement = {}
-UiElement.__index = {}
+UiElement.__index = UiElement
 
 ---@class UiElementBuilder
 ---@field style? UiStyles
@@ -52,67 +52,72 @@ UiElement.new = function(opts)
     _children = children,
   }
 
-  -- table.remove(ctx.data._children, child_idx)
+  local e = setmetatable(e, UiElement)
 
-  return UiRegistry:add(setmetatable(e, UiElement), {
+  return UiRegistry.add(e, {
     update = function(ctx, dt)
-      UiElement.update(ctx, dt)
+      UiElement.update(e, ctx, dt)
     end,
+
     draw = function(ctx)
-      UiElement.draw(ctx)
+      UiElement.draw(e, ctx)
     end,
-    remove = function(ctx)
-      for _, child_idx in ipairs(ctx.data._children) do
-        UiRegistry:remove(child_idx)
+
+    remove = function(_)
+      for _, child_idx in ipairs(e._children) do
+        UiRegistry.remove(child_idx)
       end
     end,
+
     layout = function(ctx)
-      UiElement.layout(ctx)
+      UiElement.layout(e, ctx)
       return true
     end,
   })
 end
 
----@param ctx UiCtx<UiElement>
+---@param self UiElement
+---@param ctx UiCtx
 ---@param dt number
-function UiElement.update(ctx, dt)
+function UiElement.update(self, ctx, dt)
   local x, y = S.cursor:within(ctx.box)
   local hover = x and y
 
-  if ctx.data.hover ~= hover then
+  if self.hover ~= hover then
     if hover then
-      ctx.data.style.current = ctx.data.style.hover
-      love.mouse.setCursor(ctx.data.style.current.cursor)
+      self.style.current = self.style.hover
+      love.mouse.setCursor(self.style.current.cursor)
 
-      if ctx.data.events.onHoverEnter then
-        ctx.data.events.onHoverEnter(ctx.data)
+      if self.events.onHoverEnter then
+        self.events.onHoverEnter(self)
       end
     else
-      ctx.data.style.current = ctx.data.style.base
+      self.style.current = self.style.base
       love.mouse.setCursor()
 
-      if ctx.data.events.onHoverExit then
-        ctx.data.events.onHoverExit(ctx.data)
+      if self.events.onHoverExit then
+        self.events.onHoverExit(self)
       end
     end
 
-    ctx.data.hover = hover
+    self.hover = hover
   end
 
-  if love.mouse.isDown(1) and ctx.data.hover and ctx.data.events.onClick then
-    ctx.data.events.onClick()
+  if love.mouse.isDown(1) and self.hover and self.events.onClick then
+    self.events.onClick()
   end
 
   if hover then
-    for _, child_idx in ipairs(ctx.data._children) do
-      UiRegistry:update(UiRegistry:get(child_idx), dt)
+    for _, child_idx in ipairs(self._children) do
+      UiRegistry.update(UiRegistry.get(child_idx), dt)
     end
   end
 end
 
----@param ctx UiCtx<UiElement>
-function UiElement.draw(ctx)
-  local style = ctx.data.style.current
+---@param self UiElement
+---@param ctx UiCtx
+function UiElement.draw(self, ctx)
+  local style = self.style.current
   if style.background_color then
     love.graphics.setColor(style.background_color)
     love.graphics.rectangle(
@@ -157,8 +162,8 @@ function UiElement.draw(ctx)
 
   love.graphics.setColor(style.content_color or Color.RESET)
 
-  for _, child_idx in ipairs(ctx.data._children) do
-    UiRegistry:draw(UiRegistry:get(child_idx))
+  for _, child_idx in ipairs(self._children) do
+    UiRegistry.draw(UiRegistry.get(child_idx))
   end
 end
 
@@ -174,14 +179,15 @@ end
 
 function UiElement:clearChildren()
   for child in self._children do
-    UiRegistry:remove(child)
+    UiRegistry.remove(child)
   end
 end
 
----@param ctx UiCtx<UiElement>
+---@param self UiElement
+---@param ctx UiCtx
 --  TODO: return boolean to know whether a mutation happened to avoid recalculation
-function UiElement.layout(ctx)
-  local style = ctx.data.style.current
+function UiElement.layout(self, ctx)
+  local style = self.style.current
 
   -- Starting cursor for placing children
   local cr_x = ctx.box.x + style.extend.left
@@ -195,12 +201,12 @@ function UiElement.layout(ctx)
   -- Determines iteration direction
   local start_i, end_i, step
   if is_reverse then
-    start_i = #ctx.data._children
+    start_i = #self._children
     end_i = 1
     step = -1
   else
     start_i = 1
-    end_i = #ctx.data._children
+    end_i = #self._children
     step = 1
   end
 
@@ -212,7 +218,7 @@ function UiElement.layout(ctx)
   local h = UiStyle.calculateUnit(style.height)
 
   for child_idx = start_i, end_i, step do
-    local child = UiRegistry:getCtx(ctx.data._children[child_idx])
+    local child = UiRegistry.getCtx(self._children[child_idx])
     if not child then
       goto continue
     end
@@ -264,8 +270,8 @@ function UiElement.layout(ctx)
   end
 
   -- Second pass: apply cross-axis alignment and offset
-  for _, child_idx in pairs(ctx.data._children) do
-    local child = UiRegistry:get(child_idx)
+  for _, child_idx in pairs(self._children) do
+    local child = UiRegistry.get(child_idx)
     if not child then
       goto continue
     end

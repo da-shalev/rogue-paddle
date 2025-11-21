@@ -13,7 +13,7 @@ end
 
 ---@param val? string
 ---@param font? love.Font
----@return UiIdx<UiFragment>
+---@return UiIdx
 Fragment.new = function(val, font)
   local font = font or love.graphics.getFont()
 
@@ -23,7 +23,7 @@ Fragment.new = function(val, font)
     font = font,
   }
 
-  return UiRegistry:add(self, {
+  return UiRegistry.add(self, {
     draw = function(ctx)
       if self.val then
         love.graphics.printf(self.val, self.font, ctx.box.pos.x, ctx.box.pos.y, ctx.box.size.x)

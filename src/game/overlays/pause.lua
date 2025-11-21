@@ -22,7 +22,7 @@ local idx = UiElement.new {
             end,
           },
           body = Fragment.new('Restart', Res.fonts.BASE),
-          styles = { Res.styles.BUTTON },
+          styles = Res.styles.BUTTON,
         },
 
         Tri.new {
@@ -32,20 +32,20 @@ local idx = UiElement.new {
             end,
           },
           body = Fragment.new('Quit', Res.fonts.BASE),
-          styles = { Res.styles.BUTTON },
+          styles = Res.styles.BUTTON,
         },
       },
     },
   },
 }
 
-local ui = UiRegistry:get(idx)
+local ui = UiRegistry.get(idx)
 
 return Status.new {
   update = function(_, dt)
-    UiRegistry:update(ui, dt)
+    UiRegistry.update(ui, dt)
   end,
   draw = function()
-    UiRegistry:draw(ui)
+    UiRegistry.draw(ui)
   end,
 }

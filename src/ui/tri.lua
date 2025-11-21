@@ -13,7 +13,7 @@ local Tri = {}
 ---@return UiIdx
 function Tri.new(opts)
   return UiElement.new {
-    style = UiStyle.normalize {
+    style = {
       {
         flex_dir = 'row',
         gap = 3,

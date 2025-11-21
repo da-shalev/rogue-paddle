@@ -40,9 +40,9 @@ local e = UiNode.new {
 
 return Status.new {
   update = function(_, dt)
-    UiRegistry:update(e, dt)
+    UiRegistry.update(e, dt)
   end,
   draw = function()
-    UiRegistry:draw(e)
+    UiRegistry.draw(e)
   end,
 }
