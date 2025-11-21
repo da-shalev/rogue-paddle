@@ -11,7 +11,6 @@ local idx = UiElement.new {
     UiElement.new {
       style = {
         Res.styles.OVERLAY,
-        Res.styles.BUTTON,
       },
       children = {
         Fragment.new('PAUSE', Res.fonts.IBM),

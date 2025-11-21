@@ -1,5 +1,4 @@
 local UiStyle = require 'ui.style'
-local UiNode = require 'ui.node'
 
 ---@class UiFlags
 ---@field queue_apply_layout boolean
@@ -15,7 +14,6 @@ end
 ---@class UiActions
 ---@field onClick? fun()
 
----@alias UiIdx integer
 ---@alias UiChildren UiIdx[]
 
 ---@class UiEvents
@@ -33,11 +31,10 @@ end
 ---@field actions UiActions
 ---@field _children UiChildren
 local UiElement = {}
-UiElement.__index = UiElement
 
 ---@class UiElementBuilder
 ---@field style? UiStyles
----@field children? UiChildren|UiIdx
+---@field children? UiChildren
 ---@field actions? UiActions
 
 ---@param opts UiElementBuilder
@@ -48,89 +45,75 @@ UiElement.new = function(opts, events)
   opts.actions = opts.actions or {}
   events.flags = events.flags or Flags.default()
 
-  ---@type UiChildren
-  local children = {}
-  local c = opts.children
-  if type(c) == 'number' then
-    children = { c }
-  elseif type(c) == 'table' then
-    children = c
-  else
-    children = {}
-  end
-
   ---@type UiElement
-  local self = {
+  local e = {
     hover = nil,
     style = UiStyle.normalize(opts.style),
     events = events,
-    _children = children,
+    _children = opts.children,
     actions = opts.actions,
+    __type = 'UiElement',
   }
 
-  ---@type UiNode
-  local node = UiNode.new {
-    update = function(ctx, dt)
-      UiElement.update(self, ctx, dt)
+  return UiRegistry:add(e, {
+    update = function(self, dt)
+      UiElement.update(self, dt)
     end,
     draw = function(ctx)
-      UiElement.draw(self, ctx)
+      UiElement.draw(ctx)
     end,
     remove = function()
-      for _, child_idx in ipairs(self._children) do
-        UiRegistry:removeIdx(child_idx)
+      for _, child_idx in ipairs(e._children) do
+        UiRegistry:remove(child_idx)
       end
     end,
-    layout = function(ctx, parent)
-      UiElement.layout(self, ctx)
+    layout = function(ctx)
+      UiElement.layout(ctx)
       return true
     end,
-  }
-
-  return UiRegistry:add(node)
+  })
 end
 
----@param self UiElement
----@param ctx UiCtx
+---@param ctx UiCtx<UiElement>
 ---@param dt number
-function UiElement.update(self, ctx, dt)
+function UiElement.update(ctx, dt)
   local x, y = S.cursor:within(ctx.box)
   local hover = x and y
 
-  if self.hover ~= hover then
+  if ctx.data.hover ~= hover then
     if hover then
-      self.style.current = self.style.hover
-      love.mouse.setCursor(self.style.current.cursor)
+      ctx.data.style.current = ctx.data.style.hover
+      love.mouse.setCursor(ctx.data.style.current.cursor)
 
-      if self.events.onHoverEnter then
-        self.events.onHoverEnter(self)
+      if ctx.data.events.onHoverEnter then
+        ctx.data.events.onHoverEnter(ctx.data)
       end
     else
-      self.style.current = self.style.base
+      ctx.data.style.current = ctx.data.style.base
       love.mouse.setCursor()
 
-      if self.events.onHoverExit then
-        self.events.onHoverExit(self)
+      if ctx.data.events.onHoverExit then
+        ctx.data.events.onHoverExit(ctx.data)
       end
     end
 
-    self.hover = hover
+    ctx.data.hover = hover
   end
 
-  if love.mouse.isDown(1) and self.hover and self.actions.onClick then
-    self.actions.onClick()
+  if love.mouse.isDown(1) and ctx.data.hover and ctx.data.actions.onClick then
+    ctx.data.actions.onClick()
   end
 
   if hover then
-    for _, child_idx in ipairs(self._children) do
+    for _, child_idx in ipairs(ctx.data._children) do
       UiRegistry:update(UiRegistry:get(child_idx), dt)
     end
   end
 end
 
----@param self UiElement
----@param ctx UiCtx
-function UiElement.draw(self, ctx)
+---@param ctx UiCtx<UiElement>
+function UiElement.draw(ctx)
+  local style = ctx.data.style
   -- if self.events.flags.queue_apply_layout then
   --   self.events.flags.queue_apply_layout = false
   --
@@ -151,30 +134,30 @@ function UiElement.draw(self, ctx)
   --   end
   -- end
 
-  if self.style.current.background_color then
-    love.graphics.setColor(self.style.current.background_color)
+  if style.current.background_color then
+    love.graphics.setColor(style.current.background_color)
     love.graphics.rectangle(
       'fill',
-      ctx.box.pos.x + self.style.current.border / 2,
-      ctx.box.pos.y + self.style.current.border / 2,
-      ctx.box.size.x - self.style.current.border,
-      ctx.box.size.y - self.style.current.border,
-      self.style.current.border_radius,
-      self.style.current.border_radius
+      ctx.box.pos.x + style.current.border / 2,
+      ctx.box.pos.y + style.current.border / 2,
+      ctx.box.size.x - style.current.border,
+      ctx.box.size.y - style.current.border,
+      style.current.border_radius,
+      style.current.border_radius
     )
   end
 
-  if self.style.current.border > 0 and self.style.current.border_color then
-    love.graphics.setColor(self.style.current.border_color)
-    love.graphics.setLineWidth(self.style.current.border)
+  if style.current.border > 0 and style.current.border_color then
+    love.graphics.setColor(style.current.border_color)
+    love.graphics.setLineWidth(style.current.border)
     love.graphics.rectangle(
       'line',
-      ctx.box.pos.x + self.style.current.border / 2,
-      ctx.box.pos.y + self.style.current.border / 2,
-      ctx.box.size.x - self.style.current.border,
-      ctx.box.size.y - self.style.current.border,
-      self.style.current.border_radius,
-      self.style.current.border_radius
+      ctx.box.pos.x + style.current.border / 2,
+      ctx.box.pos.y + style.current.border / 2,
+      ctx.box.size.x - style.current.border,
+      ctx.box.size.y - style.current.border,
+      style.current.border_radius,
+      style.current.border_radius
     )
   end
 
@@ -193,9 +176,9 @@ function UiElement.draw(self, ctx)
   --   )
   -- end
 
-  love.graphics.setColor(self.style.current.content_color or Color.RESET)
+  love.graphics.setColor(style.current.content_color or Color.RESET)
 
-  for _, child_idx in ipairs(self._children) do
+  for _, child_idx in ipairs(ctx.data._children) do
     UiRegistry:draw(UiRegistry:get(child_idx))
   end
 end
@@ -226,11 +209,10 @@ end
 --   return false
 -- end
 
----@param self UiElement
----@param ctx UiCtx
--- TODO: return boolean to know whether a mutation happened to avoid recalculation
-function UiElement.layout(self, ctx)
-  local style = self.style.current
+---@param ctx UiCtx<UiElement>
+--  TODO: return boolean to know whether a mutation happened to avoid recalculation
+function UiElement.layout(ctx)
+  local style = ctx.data.style.current
 
   -- Starting cursor for placing children
   local cr_x = ctx.box.x + style.extend.left
@@ -244,12 +226,12 @@ function UiElement.layout(self, ctx)
   -- Determines iteration direction
   local start_i, end_i, step
   if is_reverse then
-    start_i = #self._children
+    start_i = #ctx.data._children
     end_i = 1
     step = -1
   else
     start_i = 1
-    end_i = #self._children
+    end_i = #ctx.data._children
     step = 1
   end
 
@@ -261,8 +243,7 @@ function UiElement.layout(self, ctx)
   local h = UiStyle.calculateUnit(style.height)
 
   for i = start_i, end_i, step do
-    local child_idx = self._children[i]
-    local child = UiRegistry:getCtx(child_idx)
+    local child = UiRegistry:getCtx(ctx.data._children[i])
     if not child then
       goto continue
     end
@@ -314,32 +295,34 @@ function UiElement.layout(self, ctx)
   end
 
   -- Second pass: apply cross-axis alignment and offset
-  for _, child_idx in pairs(self._children) do
+  for _, child_idx in pairs(ctx.data._children) do
     local child = UiRegistry:get(child_idx)
     if not child then
       goto continue
     end
 
+    local box = child.ctx.box
+
     if is_row then
       local inner_h = ctx.box.h - style.extend.top - style.extend.bottom
 
       if style.align_items == 'center' then
-        child.ctx.box.y = child.ctx.box.y + (inner_h - child.ctx.box.h) / 2
+        box.y = box.y + (inner_h - box.h) / 2
       elseif style.align_items == 'end' then
-        child.ctx.box.y = child.ctx.box.y + (inner_h - child.ctx.box.h)
+        box.y = box.y + (inner_h - box.h)
       end
 
-      child.ctx.box.x = child.ctx.box.x + justify_offset
+      box.x = box.x + justify_offset
     elseif is_col then
       local inner_w = ctx.box.w - style.extend.left - style.extend.right
 
       if style.align_items == 'center' then
-        child.ctx.box.x = child.ctx.box.x + (inner_w - child.ctx.box.w) / 2
+        box.x = box.x + (inner_w - box.w) / 2
       elseif style.align_items == 'end' then
-        child.ctx.box.x = child.ctx.box.x + (inner_w - child.ctx.box.w)
+        box.x = box.x + (inner_w - box.w)
       end
 
-      child.ctx.box.y = child.ctx.box.y + justify_offset
+      box.y = box.y + justify_offset
     end
 
     child.events.layout(child.ctx)
