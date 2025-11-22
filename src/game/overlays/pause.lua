@@ -8,33 +8,28 @@ local idx = UiElement.new {
     align_items = 'center',
     justify_content = 'center',
   },
-  children = {
-    UiElement.new {
-      style = {
-        Res.styles.OVERLAY,
+  UiElement.new {
+    style = {
+      Res.styles.OVERLAY,
+    },
+    Fragment.new('PAUSE', Res.fonts.IBM),
+    Tri.new {
+      events = {
+        onClick = function()
+          S.scene_queue.setNext(require 'game.scenes.brickin')
+        end,
       },
-      children = {
-        Fragment.new('PAUSE', Res.fonts.IBM),
-        Tri.new {
-          events = {
-            onClick = function()
-              S.scene_queue.setNext(require 'game.scenes.brickin')
-            end,
-          },
-          body = Fragment.new('Restart', Res.fonts.BASE),
-          styles = Res.styles.BUTTON,
-        },
-
-        Tri.new {
-          events = {
-            onClick = function()
-              love.event.quit(0)
-            end,
-          },
-          body = Fragment.new('Quit', Res.fonts.BASE),
-          styles = Res.styles.BUTTON,
-        },
+      body = Fragment.new('Restart', Res.fonts.BASE),
+      styles = Res.styles.BUTTON,
+    },
+    Tri.new {
+      events = {
+        onClick = function()
+          love.event.quit(0)
+        end,
       },
+      body = Fragment.new('Quit', Res.fonts.BASE),
+      styles = Res.styles.BUTTON,
     },
   },
 }

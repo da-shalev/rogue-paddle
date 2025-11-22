@@ -20,8 +20,10 @@ function Tri.new(opts)
       },
       unpack(UiStyle.normalize(opts.styles)),
     },
-    children = { opts.head, opts.body, opts.tail },
     events = opts.events,
+    opts.head,
+    opts.body,
+    opts.tail,
   }
 end
 

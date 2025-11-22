@@ -17,7 +17,6 @@ UiElement.__index = UiElement
 
 ---@class UiElementBuilder
 ---@field style? UiStyles
----@field children? UiChildren|UiIdx
 ---@field events? UiElementEvents
 
 ---@param opts UiElementBuilder
@@ -25,23 +24,12 @@ UiElement.__index = UiElement
 UiElement.new = function(opts)
   opts.events = opts.events or {}
 
-  -- normalize children
-
   ---@type UiChildren
   local children = {}
-  local c = opts.children
-  if type(c) == 'number' then
-    children = { c }
-  elseif type(c) == 'table' then
-    -- ensures it iterates through all values including nil
-    -- max length to appropriately add the UiNode
-    for i = 1, table.maxn(c) do
-      if c[i] then
-        children[#children + 1] = c[i]
-      end
+  for i = 1, table.maxn(opts) do
+    if opts[i] then
+      children[#children + 1] = opts[i]
     end
-  else
-    children = {}
   end
 
   ---@type UiElement

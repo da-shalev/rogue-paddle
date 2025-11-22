@@ -38,7 +38,7 @@ local Res = {
       flex_dir = 'col',
       align_items = 'center',
       justify_content = 'center',
-      gap = 8,
+      gap = 7,
     },
 
     ---@type UiStyle

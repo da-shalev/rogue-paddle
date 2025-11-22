@@ -1,48 +1,46 @@
-local e = UiNode.new {
+local Fragment = require 'ui.fragment'
+local Tri = require 'ui.tri'
+
+local idx = UiElement.new {
   style = {
     width = '100vw',
     height = '100vh',
     align_items = 'center',
     justify_content = 'center',
   },
-  children = {
-    UiNode.new {
-      style = Res.styles.OVERLAY,
-      children = {
-        Text.new({
-          val = 'GAME OVER',
-          font = Res.fonts.IBM,
-        }):ui(),
-
-        Text.new({
-          val = 'Restart',
-          font = Res.fonts.BASE,
-        }):ui {
-          onClick = function()
-            S.scene_queue.setNext(require 'game.scenes.brickin')
-          end,
-          style = Res.styles.BUTTON,
-        },
-
-        Text.new({
-          val = 'Quit',
-          font = Res.fonts.BASE,
-        }):ui {
-          onClick = function()
-            love.event.quit(0)
-          end,
-          style = Res.styles.BUTTON,
-        },
+  UiElement.new {
+    style = {
+      Res.styles.OVERLAY,
+    },
+    Fragment.new('GAME OVER', Res.fonts.IBM),
+    Tri.new {
+      events = {
+        onClick = function()
+          S.scene_queue.setNext(require 'game.scenes.brickin')
+        end,
       },
+      body = Fragment.new('Restart', Res.fonts.BASE),
+      styles = Res.styles.BUTTON,
+    },
+    Tri.new {
+      events = {
+        onClick = function()
+          love.event.quit(0)
+        end,
+      },
+      body = Fragment.new('Quit', Res.fonts.BASE),
+      styles = Res.styles.BUTTON,
     },
   },
 }
 
+local ui = UiRegistry.get(idx)
+
 return Status.new {
   update = function(_, dt)
-    UiRegistry.update(e, dt)
+    UiRegistry.update(ui, dt)
   end,
   draw = function()
-    UiRegistry.draw(e)
+    UiRegistry.draw(ui)
   end,
 }
