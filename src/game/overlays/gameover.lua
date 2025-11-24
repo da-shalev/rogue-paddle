@@ -1,46 +1,44 @@
+local Element = require 'ui.element'
 local Fragment = require 'ui.fragment'
-local Tri = require 'ui.tri'
 
-local idx = UiElement.new {
+local ui = Ui.get(Element.new {
   style = {
     width = '100vw',
     height = '100vh',
     align_items = 'center',
     justify_content = 'center',
   },
-  UiElement.new {
+  Element.new {
     style = {
       Res.styles.OVERLAY,
     },
     Fragment.new('GAME OVER', Res.fonts.IBM),
-    Tri.new {
+    Element.new {
+      styles = Res.styles.BUTTON,
       events = {
         onClick = function()
           S.scene_queue.setNext(require 'game.scenes.brickin')
         end,
       },
-      body = Fragment.new('Restart', Res.fonts.BASE),
-      styles = Res.styles.BUTTON,
+      Fragment.new('Restart', Res.fonts.BASE),
     },
-    Tri.new {
+    Element.new {
+      styles = Res.styles.BUTTON,
       events = {
         onClick = function()
           love.event.quit(0)
         end,
       },
-      body = Fragment.new('Quit', Res.fonts.BASE),
-      styles = Res.styles.BUTTON,
+      Fragment.new('Quit', Res.fonts.BASE),
     },
   },
-}
-
-local ui = UiRegistry.get(idx)
+})
 
 return Status.new {
   update = function(_, dt)
-    UiRegistry.update(ui, dt)
+    Ui.update(ui, dt)
   end,
   draw = function()
-    UiRegistry.draw(ui)
+    Ui.draw(ui)
   end,
 }

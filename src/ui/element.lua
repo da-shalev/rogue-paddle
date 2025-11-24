@@ -6,7 +6,7 @@ local UiStyle = require 'ui.style'
 ---@field onHoverExit? fun(e: UiElement)
 ---@field onClick? fun()
 
----@class UiElement
+---@class UiElement : UiType
 ---@field hover? boolean
 ---@field events UiElementEvents
 ---@field style ComputedUiStyle
@@ -17,10 +17,11 @@ UiElement.__index = UiElement
 
 ---@class UiElementBuilder
 ---@field style? UiStyles
+---@field name? string
 ---@field events? UiElementEvents
 
 ---@param opts UiElementBuilder
----@return UiIdx
+---@return RegIdx
 UiElement.new = function(opts)
   opts.events = opts.events or {}
 
@@ -35,37 +36,37 @@ UiElement.new = function(opts)
   ---@type UiElement
   local e = {
     hover = nil,
+    name = opts.name or 'unnamed',
     style = UiStyle.new(unpack(UiStyle.normalize(opts.style))),
     events = opts.events,
     _children = children,
   }
 
   local e = setmetatable(e, UiElement)
-
-  return UiRegistry.add(e, {
-    update = function(ctx, dt)
-      UiElement.update(e, ctx, dt)
+  return Ui.add(e, {
+    update = function(state, dt)
+      UiElement.update(e, state, dt)
     end,
 
-    draw = function(ctx)
-      UiElement.draw(e, ctx)
+    draw = function(state)
+      UiElement.draw(e, state)
     end,
 
     remove = function(_)
       for _, child_idx in ipairs(e._children) do
-        UiRegistry.remove(child_idx)
+        Ui.remove(child_idx)
       end
     end,
 
-    layout = function(ctx)
-      UiElement.layout(e, ctx)
+    layout = function(state)
+      UiElement.layout(e, state)
       return true
     end,
   })
 end
 
 ---@param self UiElement
----@param ctx UiCtx
+---@param ctx UiState
 ---@param dt number
 function UiElement.update(self, ctx, dt)
   local x, y = S.cursor:within(ctx.box)
@@ -97,23 +98,24 @@ function UiElement.update(self, ctx, dt)
 
   if hover then
     for _, child_idx in ipairs(self._children) do
-      UiRegistry.update(UiRegistry.get(child_idx), dt)
+      Ui.update(Ui.get(child_idx), dt)
     end
   end
 end
 
 ---@param self UiElement
----@param ctx UiCtx
-function UiElement.draw(self, ctx)
+---@param state UiState
+function UiElement.draw(self, state)
   local style = self.style.current
+
   if style.background_color then
     love.graphics.setColor(style.background_color)
     love.graphics.rectangle(
       'fill',
-      ctx.box.pos.x + style.border / 2,
-      ctx.box.pos.y + style.border / 2,
-      ctx.box.size.x - style.border,
-      ctx.box.size.y - style.border,
+      state.box.pos.x + style.border / 2,
+      state.box.pos.y + style.border / 2,
+      state.box.size.x - style.border,
+      state.box.size.y - style.border,
       style.border_radius,
       style.border_radius
     )
@@ -124,62 +126,67 @@ function UiElement.draw(self, ctx)
     love.graphics.setLineWidth(style.border)
     love.graphics.rectangle(
       'line',
-      ctx.box.pos.x + style.border / 2,
-      ctx.box.pos.y + style.border / 2,
-      ctx.box.size.x - style.border,
-      ctx.box.size.y - style.border,
+      state.box.pos.x + style.border / 2,
+      state.box.pos.y + style.border / 2,
+      state.box.size.x - style.border,
+      state.box.size.y - style.border,
       style.border_radius,
       style.border_radius
     )
   end
 
-  -- if self.style.extend and self.style.extend then
-  --   love.graphics.setColor(0, 255, 0, 0.5)
-  --   local e = self.style.extend.bottom
-  --   love.graphics.setLineWidth(e)
-  --   love.graphics.rectangle(
-  --     'line',
-  --     self.box.pos.x + e / 2,
-  --     self.box.pos.y + e / 2,
-  --     self.box.size.x - e,
-  --     self.box.size.y - e,
-  --     self.style.border_radius,
-  --     self.style.border_radius
-  --   )
-  -- end
-
   love.graphics.setColor(style.content_color or Color.RESET)
 
   for _, child_idx in ipairs(self._children) do
-    UiRegistry.draw(UiRegistry.get(child_idx))
+    local child = Ui.get(child_idx)
+    Ui.draw(child)
   end
 end
 
----@param child UiIdx
----@param pos? integer
-function UiElement:addChild(child, pos)
-  if pos then
-    table.insert(self._children, pos, child)
-  else
-    table.insert(self._children, child)
+---@param children RegIdx
+function UiElement:addChildren(children)
+  local node = Ui.get(self.node)
+  assert(node, 'tried to add child to nil parent')
+
+  for _, child_idx in ipairs(children) do
+    local child = Ui.get(child_idx)
+    table.insert(self._children, child_idx)
+    assert(child, string.format('tried to add nil child to %s', self.name))
+    Ui.layout(child, self.node)
   end
+
+  Ui.layout(node, node.state.parent, true)
+end
+
+---@param child RegIdx
+---@param pos integer
+function UiElement:addChildAt(child, pos)
+  local child = Ui.get(child)
+  local node = Ui.get(self.node)
+  assert(child, 'tried to add nil child')
+  assert(node, 'tried to add child to nil parent')
+
+  table.insert(self._children, pos, child)
+  Ui.layout(child, node.state.parent, true)
 end
 
 function UiElement:clearChildren()
-  for child in self._children do
-    UiRegistry.remove(child)
+  for _, child in ipairs(self._children) do
+    Ui.remove(child)
   end
+
+  self._children = {}
 end
 
 ---@param self UiElement
----@param ctx UiCtx
+---@param state UiState
 --  TODO: return boolean to know whether a mutation happened to avoid recalculation
-function UiElement.layout(self, ctx)
+function UiElement.layout(self, state)
   local style = self.style.current
 
   -- Starting cursor for placing children
-  local cr_x = ctx.box.x + style.extend.left
-  local cr_y = ctx.box.y + style.extend.top
+  local cr_x = state.box.x + style.extend.left
+  local cr_y = state.box.y + style.extend.top
 
   -- Determines which axis children flow along
   local is_row = style.flex_dir == 'row' or style.flex_dir == 'row-reverse'
@@ -206,47 +213,47 @@ function UiElement.layout(self, ctx)
   local h = UiStyle.calculateUnit(style.height)
 
   for child_idx = start_i, end_i, step do
-    local child = UiRegistry.getCtx(self._children[child_idx])
-    if not child then
-      goto continue
-    end
+    local child = Ui.get(self._children[child_idx])
+    assert(child, 'flex layout child is nil')
 
-    child.box.x = cr_x
-    child.box.y = cr_y
+    child.events.layout(child.state, self.node)
+
+    child.state.box.x = cr_x
+    child.state.box.y = cr_y
 
     if is_row then
-      cross_axis_size = math.max(cross_axis_size, child.box.h)
-      local add = child.box.w + style.gap
+      cross_axis_size = math.max(cross_axis_size, child.state.box.h)
+      local add = child.state.box.w + style.gap
       cr_x = cr_x + add
       current_axis_size = current_axis_size + add
     elseif is_col then
-      cross_axis_size = math.max(cross_axis_size, child.box.w)
-      local add = child.box.h + style.gap
+      cross_axis_size = math.max(cross_axis_size, child.state.box.w)
+      local add = child.state.box.h + style.gap
       cr_y = cr_y + add
       current_axis_size = current_axis_size + add
     end
-
-    ::continue::
   end
 
   current_axis_size = current_axis_size - style.gap
 
   -- Sets container size based on placed children
   if is_row then
-    ctx.box.w = (w or current_axis_size) + style.extend.left + style.extend.right
-    ctx.box.h = (h or cross_axis_size) + style.extend.top + style.extend.bottom
+    state.box.w = w or current_axis_size + style.extend.left + style.extend.right
+    state.box.h = h or cross_axis_size + style.extend.top + style.extend.bottom
   elseif is_col then
-    ctx.box.w = (w or cross_axis_size) + style.extend.left + style.extend.right
-    ctx.box.h = (h or current_axis_size) + style.extend.top + style.extend.bottom
+    state.box.w = w or cross_axis_size + style.extend.left + style.extend.right
+    state.box.h = h or current_axis_size + style.extend.top + style.extend.bottom
   end
+
+  -- TODO: measure() above, position() below
 
   -- Computes spare space for justify-content
   local justify_offset = 0
   local justify_space
   if is_row then
-    justify_space = (ctx.box.w - style.extend.left - style.extend.right) - current_axis_size
+    justify_space = (state.box.w - style.extend.left - style.extend.right) - current_axis_size
   elseif is_col then
-    justify_space = (ctx.box.h - style.extend.top - style.extend.bottom) - current_axis_size
+    justify_space = (state.box.h - style.extend.top - style.extend.bottom) - current_axis_size
   end
 
   --- TODO: IMPLEMENT WRAPPING HERE
@@ -259,15 +266,13 @@ function UiElement.layout(self, ctx)
 
   -- Second pass: apply cross-axis alignment and offset
   for _, child_idx in pairs(self._children) do
-    local child = UiRegistry.get(child_idx)
-    if not child then
-      goto continue
-    end
+    local child = Ui.get(child_idx)
+    assert(child, 'flex layout child is nil')
 
-    local box = child.ctx.box
+    local box = child.state.box
 
     if is_row then
-      local inner_h = ctx.box.h - style.extend.top - style.extend.bottom
+      local inner_h = state.box.h - style.extend.top - style.extend.bottom
 
       if style.align_items == 'center' then
         box.y = box.y + (inner_h - box.h) / 2
@@ -277,7 +282,7 @@ function UiElement.layout(self, ctx)
 
       box.x = box.x + justify_offset
     elseif is_col then
-      local inner_w = ctx.box.w - style.extend.left - style.extend.right
+      local inner_w = state.box.w - style.extend.left - style.extend.right
 
       if style.align_items == 'center' then
         box.x = box.x + (inner_w - box.w) / 2
@@ -288,8 +293,7 @@ function UiElement.layout(self, ctx)
       box.y = box.y + justify_offset
     end
 
-    child.events.layout(child.ctx, ctx.layout)
-    ::continue::
+    child.events.layout(child.state, self.node)
   end
 end
 

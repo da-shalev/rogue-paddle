@@ -1,5 +1,6 @@
 return {
-  BACKGROUND = { 0.0, 0.0, 0.0, 1.0 },
+  -- BACKGROUND = { 0.0, 0.0, 0.0, 1.0 },
+  BACKGROUND = { 0.05, 0.05, 0.05, 1.0 },
   -- BACKGROUND = { 0.114, 0.125, 0.129, 1.0 },
   FOREGROUND = { 0.976, 0.961, 0.843, 1.0 },
   RESET = { 1, 1, 1, 1 },

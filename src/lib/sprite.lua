@@ -58,26 +58,42 @@ function Sprite:getDimensions()
   return self.cell_size
 end
 
+---@class SpriteFragment : UiType
+---@field sprite Sprite
+---@field style SpriteRenderState
+
 ---@class SpriteRenderState
 ---@field frame_idx? number
 ---@field flip_x? boolean
 ---@field flip_y? boolean
 ---@field color? Color
 
--- ---@param opts SpriteRenderState
--- ---@return UiIdx
--- function Sprite:ui(opts)
---   opts.frame_idx = opts.frame_idx or 1
---   return UiNode.new({
---     applyLayout = function(ui)
---       ui.style.width.val = self:getWidth()
---       ui.style.height.val = self:getHeight()
---     end,
---     draw = function(ui)
---       self:drawFrom(ui.box, opts)
---     end,
---   })
--- end
+---@param opts? SpriteRenderState
+---@return RegIdx
+function Sprite:ui(opts)
+  opts = opts or {}
+  opts.frame_idx = opts.frame_idx or 1
+
+  local sprite = self
+
+  ---@type SpriteFragment
+  local data = {
+    sprite = sprite,
+    style = opts,
+  }
+
+  return Ui.add(data, {
+    layout = function(ctx)
+      local size = sprite:getDimensions()
+      ctx.box.w = size.x
+      ctx.box.h = size.y
+      return true
+    end,
+    draw = function(ctx)
+      sprite:drawFrom(ctx.box, data.style)
+    end,
+  })
+end
 
 ---@class SpriteState: SpriteRenderState
 ---@field pos? Vec2

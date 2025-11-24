@@ -14,7 +14,7 @@ local Res = {
   },
 
   fonts = {
-    BASE = love.graphics.newFont('res/fonts/Px437_IBM_CGA.ttf', 8),
+    BASE = love.graphics.newFont('res/fonts/Mx437_IBM_Conv.ttf', 8),
     IBM = love.graphics.newFont('res/fonts/Px437_IBM_BIOS-2y.ttf', 16),
   },
 
@@ -44,11 +44,17 @@ local Res = {
     ---@type UiStyle
     BUTTON = {
       content_color = Color.FOREGROUND,
+      flex_dir = 'row',
+      gap = 3,
       hover = {
         content_color = Color.BRIGHT0,
         cursor = cursors.hand,
       },
     },
+  },
+
+  config = {
+    INITIAL_HEALTH = 3,
   },
 
   -- defines layouts for bricks

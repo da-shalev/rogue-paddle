@@ -42,6 +42,7 @@ For development, use the following extensions:
 - [StyLua](https://marketplace.visualstudio.com/items?itemName=JohnnyMorganz.stylua)
 
 
-### Attribution:
+### Attributions
 
-* [https://leo-red.itch.io/lucid-icon-pack](https://leo-red.itch.io/lucid-icon-pack) (icons)
+- [https://leo-red.itch.io/lucid-icon-pack](https://leo-red.itch.io/lucid-icon-pack) (icons)
+- [https://int10h.org/oldschool-pc-fonts/download](https://int10h.org/oldschool-pc-fonts/download) (fonts)

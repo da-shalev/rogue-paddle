@@ -1,7 +1,7 @@
 return function()
   local state = {}
   local hud = require 'game.hud'
-  -- hud.lives.val = Res.config.INITIAL_HEALTH
+  hud.lives.val = Res.config.INITIAL_HEALTH
 
   local paddle = require 'game.entities.paddle' {
     pos = Vec2.new(S.camera.box.w / 2, S.camera.box.h - 20),
@@ -21,10 +21,10 @@ return function()
     variants = {},
     onGenerate = function(brick) end,
     onReset = function(e)
-      -- hud.score.val = hud.score.val + 100
+      hud.score.val = hud.score.val + 100
     end,
     onRemove = function(e, brick)
-      -- hud.score.val = hud.score.val + 10
+      hud.score.val = hud.score.val + 10
     end,
     onSpawn = function(e, brick) end,
     viewTransitionSpeed = 1.0,
@@ -44,7 +44,7 @@ return function()
       if love.keyboard.isPressed(Res.keybinds.CONFIRM) and not ctx:hasOverlay() then
         ctx:setStatus(state.PLAYING)
         ball.velocity:set((math.random() < 0.5 and 1.0 or -1.0), -1.0):normalize()
-        -- hud.info.val = nil
+        hud.info.val = nil
       end
     end,
 
@@ -59,7 +59,7 @@ return function()
         return
       end
 
-      -- hud.update()
+      hud.update(dt)
 
       paddle.input_x = 0
 
@@ -123,19 +123,18 @@ return function()
     paddle.sprite:drawLerp(paddle.prev_box)
     ball.sprite:drawLerp(ball.prev_box)
     bricks:draw()
-
-    -- hud.draw()
+    hud.draw()
   end
 
   ---@param ctx StatusCtx
   state.removeLife = function(ctx)
-    -- hud.lives.val = hud.lives.val - 1
+    hud.lives.val = hud.lives.val - 1
 
-    -- if hud.lives.val == 0 then
-    --   ctx:setOverlay(require('game.overlays.gameover'))
-    -- else
-    ctx:setStatus(state.ATTACHED)
-    -- end
+    if hud.lives.val == 0 then
+      ctx:setOverlay(require 'game.overlays.gameover')
+    else
+      ctx:setStatus(state.ATTACHED)
+    end
   end
 
   state.updateCheats = function()

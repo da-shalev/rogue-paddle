@@ -1,46 +1,63 @@
+local Element = require 'ui.element'
 local Fragment = require 'ui.fragment'
-local Tri = require 'ui.tri'
 
-local idx = UiElement.new {
+local overlay = Element.new {
+  style = Res.styles.OVERLAY,
+  name = 'overlay',
+  Fragment.new('PAUSE', Res.fonts.IBM),
+  Element.new {
+    style = Res.styles.BUTTON,
+    events = {
+      onClick = function()
+        S.scene_queue.setNext(require 'game.scenes.brickin')
+      end,
+    },
+    Fragment.new('Restart', Res.fonts.BASE),
+  },
+  Element.new {
+    style = Res.styles.BUTTON,
+    events = {
+      onClick = function() end,
+    },
+    Fragment.new('Settings', Res.fonts.BASE),
+  },
+  Element.new {
+    style = Res.styles.BUTTON,
+    events = {
+      onClick = function() end,
+    },
+    Fragment.new('Scores', Res.fonts.BASE),
+  },
+  Element.new {
+    style = Res.styles.BUTTON,
+    events = {
+      onClick = function()
+        love.event.quit(0)
+      end,
+    },
+    Fragment.new('Quit', Res.fonts.BASE),
+  },
+}
+
+local ui = Ui.get(Element.new {
+  name = 'overlay_wrapper',
   style = {
     width = '100vw',
     height = '100vh',
     align_items = 'center',
     justify_content = 'center',
   },
-  UiElement.new {
-    style = {
-      Res.styles.OVERLAY,
-    },
-    Fragment.new('PAUSE', Res.fonts.IBM),
-    Tri.new {
-      events = {
-        onClick = function()
-          S.scene_queue.setNext(require 'game.scenes.brickin')
-        end,
-      },
-      body = Fragment.new('Restart', Res.fonts.BASE),
-      styles = Res.styles.BUTTON,
-    },
-    Tri.new {
-      events = {
-        onClick = function()
-          love.event.quit(0)
-        end,
-      },
-      body = Fragment.new('Quit', Res.fonts.BASE),
-      styles = Res.styles.BUTTON,
-    },
-  },
-}
+  overlay,
+})
 
-local ui = UiRegistry.get(idx)
+print(overlay.idx)
+assert(ui)
 
 return Status.new {
   update = function(_, dt)
-    UiRegistry.update(ui, dt)
+    Ui.update(ui, dt)
   end,
   draw = function()
-    UiRegistry.draw(ui)
+    Ui.draw(ui)
   end,
 }

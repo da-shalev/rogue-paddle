@@ -1,11 +1,13 @@
----@class UiFragment
----@field val? string
+---@alias TextVal string | number
+
+---@class Fragment
+---@field val? TextVal
 ---@field font love.Font
 local Fragment = {}
 Fragment.__index = Fragment
 
 ---@param font love.Font
----@param text string
+---@param text TextVal
 ---@return number, number
 local function getSize(font, text)
   return font:getWidth(text), font:getHeight()
@@ -13,27 +15,29 @@ end
 
 ---@param val? string
 ---@param font? love.Font
----@return UiIdx
+---@return RegIdx
 Fragment.new = function(val, font)
-  local font = font or love.graphics.getFont()
-
-  ---@type UiFragment
+  ---@type Fragment
   local self = {
     val = val,
-    font = font,
+    font = font or love.graphics.getFont(),
   }
 
-  return UiRegistry.add(self, {
+  return Ui.add(self, {
     draw = function(ctx)
       if self.val then
         love.graphics.printf(self.val, self.font, ctx.box.pos.x, ctx.box.pos.y, ctx.box.size.x)
       end
     end,
     layout = function(ctx)
-      local w, h = getSize(self.font, self.val)
-      ctx.box.w = w
-      ctx.box.h = h
-      return true
+      if self.val then
+        local w, h = getSize(self.font, self.val)
+        ctx.box.w = w
+        ctx.box.h = h
+        return true
+      end
+
+      return false
     end,
   })
 end
