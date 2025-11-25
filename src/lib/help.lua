@@ -38,18 +38,48 @@ function Help.setTimeout(delay, func)
   table.insert(Help.timers, { time = delay, func = func })
 end
 
+--- @alias GetSet<T> {
+---   set: fun(v: T),
+---   get: fun(): T
+--- }
+
+---@generic T
+---@param init T
+---@param onMutate fun(val: T)
+---@return GetSet<T>
+function Help.accessor(init, onMutate)
+  local value = init
+
+  return {
+    set = function(v)
+      value = v
+      onMutate(v)
+    end,
+    get = function()
+      return value
+    end,
+  }
+end
+
 --- Metamethod to watch a tables mutation, allows avoiding getters and setters
 --- by enabling internal tracking without abstractions (some would disagree)
----@generic T : table
+---@generic T
 ---@param init T
----@param onMutate fun(tbl: T, key: any, val: any)
+---@param onMutate fun(val: T)
 ---@return T
 function Help.proxy(init, onMutate)
+  local value = init
+  onMutate(value)
   return setmetatable({}, {
-    __index = init,
-    __newindex = function(_, k, v)
-      init[k] = v
-      onMutate(init, k, v)
+    __index = function()
+      return value
+    end,
+    __newindex = function(_, _, v)
+      value = v
+      onMutate(v)
+    end,
+    __tostring = function()
+      return tostring(value)
     end,
   })
 end

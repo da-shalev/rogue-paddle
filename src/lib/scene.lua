@@ -96,7 +96,6 @@ function Scene.new(events)
   }
 
   events.status.init(scene.ctx)
-
   return setmetatable(scene, Scene)
 end
 

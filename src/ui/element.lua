@@ -61,9 +61,8 @@ UiElement.new = function(opts)
     layout = function(state, parent, propagate)
       for _, child_idx in ipairs(e._children) do
         local child = Ui.get(child_idx)
-        if child then
-          Ui.layout(child, state.node)
-        end
+        assert(child, 'passed nil child to element')
+        Ui.layout(child, state.node)
       end
     end,
 
@@ -156,7 +155,7 @@ function UiElement.draw(self, state)
   end
 end
 
----@param children RegIdx
+---@param children UiChildren
 function UiElement:addChildren(children)
   local node = Ui.get(self.node)
   assert(node, 'tried to add child to nil parent')

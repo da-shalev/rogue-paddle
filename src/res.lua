@@ -53,10 +53,6 @@ local Res = {
     },
   },
 
-  config = {
-    INITIAL_HEALTH = 3,
-  },
-
   -- defines layouts for bricks
   layouts = {
     DEFAULT = {

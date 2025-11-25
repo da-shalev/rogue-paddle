@@ -132,9 +132,9 @@ function UiStyle.new(...)
   local style = {}
 
   for i = 1, select('#', ...) do
-    local cstyle = select(i, ...)
-    if cstyle then
-      merge(style, cstyle)
+    local s = select(i, ...)
+    if s then
+      merge(style, s)
     end
   end
 

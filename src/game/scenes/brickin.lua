@@ -1,7 +1,9 @@
 return function()
   local state = {}
-  local hud = require 'game.hud'
-  hud.lives.val = Res.config.INITIAL_HEALTH
+  local hud = require 'game.stats'
+  hud.lives.set(3)
+  hud.info.set('Press ' .. Res.keybinds.CONFIRM .. ' to begin')
+  hud.score.set(0)
 
   local paddle = require 'game.entities.paddle' {
     pos = Vec2.new(S.camera.box.w / 2, S.camera.box.h - 20),
@@ -9,7 +11,6 @@ return function()
   }
 
   local ball = require 'game.entities.ball' {}
-
   local bricks = require('game.brick_manager').new {
     colors = {
       Color.REGULAR1,
@@ -21,10 +22,10 @@ return function()
     variants = {},
     onGenerate = function(brick) end,
     onReset = function(e)
-      hud.score.val = hud.score.val + 100
+      hud.score.set(hud.score.get() + 100)
     end,
     onRemove = function(e, brick)
-      hud.score.val = hud.score.val + 10
+      hud.score.set(hud.score.get() + 10)
     end,
     onSpawn = function(e, brick) end,
     viewTransitionSpeed = 1.0,
@@ -38,13 +39,11 @@ return function()
       )
 
       ball.prev_box:copy(ball.sprite.box)
-      -- hud.info.val = string.format('Press %s to continue', Res.keybinds.CONFIRM)
+      hud.info.set('Press ' .. Res.keybinds.CONFIRM .. ' to continue')
     end,
     update = function(ctx, dt)
       if love.keyboard.isPressed(Res.keybinds.CONFIRM) and not ctx:hasOverlay() then
         ctx:setStatus(state.PLAYING)
-        ball.velocity:set((math.random() < 0.5 and 1.0 or -1.0), -1.0):normalize()
-        hud.info.val = nil
       end
     end,
 
@@ -54,12 +53,14 @@ return function()
   }
 
   state.PLAYING = Status.new {
+    init = function()
+      hud.info.set(nil)
+      ball.velocity:set((math.random() < 0.5 and 1.0 or -1.0), -1.0):normalize()
+    end,
     update = function(ctx, dt)
       if ctx:hasOverlay() then
         return
       end
-
-      hud.update(dt)
 
       paddle.input_x = 0
 
@@ -119,7 +120,6 @@ return function()
   }
 
   state.drawLevel = function()
-    -- render scene objects
     paddle.sprite:drawLerp(paddle.prev_box)
     ball.sprite:drawLerp(ball.prev_box)
     bricks:draw()
@@ -128,9 +128,9 @@ return function()
 
   ---@param ctx StatusCtx
   state.removeLife = function(ctx)
-    hud.lives.val = hud.lives.val - 1
+    hud.lives.set(hud.lives.get() - 1)
 
-    if hud.lives.val == 0 then
+    if hud.lives.get() == 0 then
       ctx:setOverlay(require 'game.overlays.gameover')
     else
       ctx:setStatus(state.ATTACHED)
@@ -150,8 +150,7 @@ return function()
   return Scene.new {
     status = state.ATTACHED,
     update = function(ctx)
-      -- and lives ~= 0
-      if love.keyboard.isPressed(Res.keybinds.PAUSE) then
+      if love.keyboard.isPressed(Res.keybinds.PAUSE) and hud.lives.get() > 0 then
         if ctx:hasOverlay() then
           ctx:popOverlay()
         else

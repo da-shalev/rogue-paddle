@@ -13,7 +13,7 @@ local function getSize(font, text)
   return font:getWidth(text), font:getHeight()
 end
 
----@param val? string
+---@param val? TextVal
 ---@param font? love.Font
 ---@return RegIdx
 Fragment.new = function(val, font)
