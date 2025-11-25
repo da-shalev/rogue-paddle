@@ -58,9 +58,14 @@ UiElement.new = function(opts)
       end
     end,
 
-    layout = function(state)
-      UiElement.layout(e, state)
-      return true
+    size = function(state)
+      UiElement.size(e, state)
+      -- return true
+    end,
+
+    position = function(state)
+      UiElement.position(e, state)
+      -- return true
     end,
   })
 end
@@ -138,8 +143,7 @@ function UiElement.draw(self, state)
   love.graphics.setColor(style.content_color or Color.RESET)
 
   for _, child_idx in ipairs(self._children) do
-    local child = Ui.get(child_idx)
-    Ui.draw(child)
+    Ui.draw(Ui.get(child_idx))
   end
 end
 
@@ -181,21 +185,55 @@ end
 ---@param self UiElement
 ---@param state UiState
 --  TODO: return boolean to know whether a mutation happened to avoid recalculation
-function UiElement.layout(self, state)
+function UiElement.size(self, state)
   local style = self.style.current
 
-  -- Starting cursor for placing children
+  local current_axis_size = 0
+  local cross_axis_size = 0
+
+  local w = UiStyle.calculateUnit(style.width)
+  local h = UiStyle.calculateUnit(style.height)
+
+  for _, child_idx in ipairs(self._children) do
+    local child = Ui.get(child_idx)
+    assert(child, 'flex layout child is nil')
+
+    if child.events.size then
+      child.events.size(child.state, self.node)
+    end
+
+    if style.is_row then
+      cross_axis_size = math.max(cross_axis_size, child.state.box.h)
+      current_axis_size = current_axis_size + child.state.box.w + style.gap
+    elseif style.is_col then
+      cross_axis_size = math.max(cross_axis_size, child.state.box.w)
+      current_axis_size = current_axis_size + child.state.box.h + style.gap
+    end
+  end
+
+  current_axis_size = current_axis_size - style.gap
+
+  if style.is_row then
+    state.box.w = w or current_axis_size + style.extend.left + style.extend.right
+    state.box.h = h or cross_axis_size + style.extend.top + style.extend.bottom
+  elseif style.is_col then
+    state.box.w = w or cross_axis_size + style.extend.left + style.extend.right
+    state.box.h = h or current_axis_size + style.extend.top + style.extend.bottom
+  end
+
+  state.current_axis_size = current_axis_size
+end
+
+---@param self UiElement
+---@param state UiState
+function UiElement.position(self, state)
+  local style = self.style.current
+
   local cr_x = state.box.x + style.extend.left
   local cr_y = state.box.y + style.extend.top
 
-  -- Determines which axis children flow along
-  local is_row = style.flex_dir == 'row' or style.flex_dir == 'row-reverse'
-  local is_col = style.flex_dir == 'col' or style.flex_dir == 'col-reverse'
-  local is_reverse = style.flex_dir == 'row-reverse' or style.flex_dir == 'col-reverse'
-
-  -- Determines iteration direction
   local start_i, end_i, step
-  if is_reverse then
+  if style.is_reverse then
     start_i = #self._children
     end_i = 1
     step = -1
@@ -205,58 +243,13 @@ function UiElement.layout(self, state)
     step = 1
   end
 
-  -- Tracks total axis usage and the largest cross-size
-  local current_axis_size = 0
-  local cross_axis_size = 0
-
-  local w = UiStyle.calculateUnit(style.width)
-  local h = UiStyle.calculateUnit(style.height)
-
-  for child_idx = start_i, end_i, step do
-    local child = Ui.get(self._children[child_idx])
-    assert(child, 'flex layout child is nil')
-
-    child.events.layout(child.state, self.node)
-
-    child.state.box.x = cr_x
-    child.state.box.y = cr_y
-
-    if is_row then
-      cross_axis_size = math.max(cross_axis_size, child.state.box.h)
-      local add = child.state.box.w + style.gap
-      cr_x = cr_x + add
-      current_axis_size = current_axis_size + add
-    elseif is_col then
-      cross_axis_size = math.max(cross_axis_size, child.state.box.w)
-      local add = child.state.box.h + style.gap
-      cr_y = cr_y + add
-      current_axis_size = current_axis_size + add
-    end
-  end
-
-  current_axis_size = current_axis_size - style.gap
-
-  -- Sets container size based on placed children
-  if is_row then
-    state.box.w = w or current_axis_size + style.extend.left + style.extend.right
-    state.box.h = h or cross_axis_size + style.extend.top + style.extend.bottom
-  elseif is_col then
-    state.box.w = w or cross_axis_size + style.extend.left + style.extend.right
-    state.box.h = h or current_axis_size + style.extend.top + style.extend.bottom
-  end
-
-  -- TODO: measure() above, position() below
-
-  -- Computes spare space for justify-content
   local justify_offset = 0
   local justify_space
-  if is_row then
-    justify_space = (state.box.w - style.extend.left - style.extend.right) - current_axis_size
-  elseif is_col then
-    justify_space = (state.box.h - style.extend.top - style.extend.bottom) - current_axis_size
+  if style.is_row then
+    justify_space = (state.box.w - style.extend.left - style.extend.right) - state.current_axis_size
+  elseif style.is_col then
+    justify_space = (state.box.h - style.extend.top - style.extend.bottom) - state.current_axis_size
   end
-
-  --- TODO: IMPLEMENT WRAPPING HERE
 
   if style.justify_content == 'center' then
     justify_offset = justify_space / 2
@@ -264,14 +257,16 @@ function UiElement.layout(self, state)
     justify_offset = justify_space
   end
 
-  -- Second pass: apply cross-axis alignment and offset
-  for _, child_idx in pairs(self._children) do
-    local child = Ui.get(child_idx)
+  for child_idx = start_i, end_i, step do
+    local child = Ui.get(self._children[child_idx])
     assert(child, 'flex layout child is nil')
 
     local box = child.state.box
 
-    if is_row then
+    box.x = cr_x
+    box.y = cr_y
+
+    if style.is_row then
       local inner_h = state.box.h - style.extend.top - style.extend.bottom
 
       if style.align_items == 'center' then
@@ -281,7 +276,8 @@ function UiElement.layout(self, state)
       end
 
       box.x = box.x + justify_offset
-    elseif is_col then
+      cr_x = cr_x + box.w + style.gap
+    elseif style.is_col then
       local inner_w = state.box.w - style.extend.left - style.extend.right
 
       if style.align_items == 'center' then
@@ -291,9 +287,12 @@ function UiElement.layout(self, state)
       end
 
       box.y = box.y + justify_offset
+      cr_y = cr_y + box.h + style.gap
     end
 
-    child.events.layout(child.state, self.node)
+    if child.events.position then
+      child.events.position(child.state, self.node)
+    end
   end
 end
 

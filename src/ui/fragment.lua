@@ -29,15 +29,12 @@ Fragment.new = function(val, font)
         love.graphics.printf(self.val, self.font, ctx.box.pos.x, ctx.box.pos.y, ctx.box.size.x)
       end
     end,
-    layout = function(ctx)
+    size = function(ctx)
       if self.val then
         local w, h = getSize(self.font, self.val)
         ctx.box.w = w
         ctx.box.h = h
-        return true
       end
-
-      return false
     end,
   })
 end

@@ -4,7 +4,9 @@
 
 ---@alias UiChildren RegIdx[]
 
----@alias UiLayoutEvent fun(state: UiState, parent?: RegIdx, propagate?: boolean): boolean
+--TODO: UiLayoutEvent returns boolean on mutation
+
+---@alias UiLayoutEvent fun(state: UiState, parent?: RegIdx, propagate?: boolean)
 ---@alias UiUpdateEvent fun(state: UiState, dt: number)
 ---@alias UiRemoveEvent fun(state: UiState)
 ---@alias UiDrawEvent fun(state: UiState)
@@ -12,8 +14,17 @@
 ---@class UiType
 ---@field node? RegIdx
 
----@class UiNodeEvents
+---@class UiEvents
+---@field size? UiLayoutEvent
+---@field position? UiLayoutEvent
+---@field update? UiUpdateEvent
+---@field remove? UiRemoveEvent
+---@field draw UiDrawEvent
+
+---@class ComputedUiEvents
 ---@field layout? UiLayoutEvent
+---@field size? UiLayoutEvent
+---@field position? UiLayoutEvent
 ---@field update? UiUpdateEvent
 ---@field remove? UiRemoveEvent
 ---@field draw UiDrawEvent
@@ -23,10 +34,12 @@
 ---@field parent? RegIdx
 ---@field node RegIdx
 ---@field box Box
+--- cached layout calculations
+---@field current_axis_size number
 
 ---@class UiCtx
 ---@field state UiState
----@field events UiNodeEvents
+---@field events ComputedUiEvents
 
 ---@alias UiNode<T> {
 ---  data: T,
@@ -45,10 +58,44 @@ local nodes = {}
 ---   data: T,
 --- }
 ---@field data Data
----@param e UiNodeEvents
+---@param e UiEvents
 ---@return RegIdx
 function Ui.add(data, e)
   uid = uid + 1
+
+  ---@type UiLayoutEvent
+  local size = function(state, parent, propagate)
+    if e.size then
+      if parent then
+        assert(parent ~= state.node, 'size claimed that parent is self?')
+        local parent_node = Ui.get(parent)
+        assert(parent_node, 'child has no parent - missing parent in size or stale child')
+
+        if propagate then
+          parent_node.events.size(parent_node.state, parent_node.state.parent, propagate)
+        end
+      end
+
+      e.size(state, parent, propagate)
+    end
+  end
+
+  ---@type UiLayoutEvent
+  local position = function(state, parent, propagate)
+    if e.position then
+      if parent then
+        assert(parent ~= state.node, 'position claimed that parent is self?')
+        local parent_node = Ui.get(parent)
+        assert(parent_node, 'child has no parent - missing parent in position or stale child')
+
+        if propagate then
+          parent_node.events.position(parent_node.state, parent_node.state.parent, propagate)
+        end
+      end
+
+      e.position(state, parent, propagate)
+    end
+  end
 
   ---@type UiLayoutEvent
   local layout = function(state, parent, propagate)
@@ -58,16 +105,17 @@ function Ui.add(data, e)
       assert(parent_node, 'child has no parent - missing parent in layout or stale child')
       state.parent = parent
       state.root = parent_node.state.root
-      print(state.root.idx)
 
       if propagate then
-        Ui.layout(parent_node, parent_node.state.parent, propagate)
+        print 'propgation!!!'
+        parent_node.events.layout(parent_node.state, parent_node.state.parent, propagate)
       end
     else
       state.root = state.node
     end
 
-    return e.layout(state, parent, propagate)
+    size(state, parent, propagate)
+    position(state, parent, propagate)
   end
 
   ---@generic T
@@ -83,12 +131,15 @@ function Ui.add(data, e)
           uid = Ui.UID,
         },
         box = Box.zero(),
+        current_axis_size = 0,
       },
       events = {
         update = e.update,
         draw = e.draw,
         remove = e.remove,
         layout = layout,
+        size = size,
+        position = position,
       },
     },
   }
@@ -101,7 +152,7 @@ end
 
 ---@param reg RegIdx
 function Ui.assert(reg)
-  assert(Ui.UID, reg.uid, "Tried using a idx in a registry it wasn't created for.")
+  assert(Ui.UID == reg.uid, "tried using a idx in a registry it wasn't created for")
 end
 
 ---@param reg RegIdx

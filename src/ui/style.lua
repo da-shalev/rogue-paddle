@@ -34,6 +34,9 @@
 ---@field justify_content FlexJustifyContent
 ---@field align_items FlexAlignItems
 ---@field gap number
+---@field is_row boolean
+---@field is_col boolean
+---@field is_reverse boolean
 
 ---@class ComputedUiStyle
 ---@field current ComputedUiBasis
@@ -141,6 +144,10 @@ function UiStyle.new(...)
   local function compute(c, fb)
     fb = fb or {}
 
+    local flex_dir = c.flex_dir or fb.flex_dir or 'row'
+    local justify_content = c.justify_content or fb.justify_content or 'start'
+    local align_items = c.align_items or fb.align_items or 'start'
+
     ---@type ComputedUiBasis
     return {
       border = c.border or fb.border or 0,
@@ -152,10 +159,16 @@ function UiStyle.new(...)
       cursor = c.cursor or fb.cursor,
       width = UiStyle.parse(c.width) or UiStyle.parse(fb.width),
       height = UiStyle.parse(c.height) or UiStyle.parse(fb.height),
-      flex_dir = c.flex_dir or fb.flex_dir or 'row',
-      justify_content = c.justify_content or fb.justify_content or 'start',
-      align_items = c.align_items or fb.align_items or 'start',
+      flex_dir = flex_dir,
+      justify_content = justify_content,
+      align_items = align_items,
       gap = c.gap or fb.gap or 0,
+      -- good cache yaya!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      -- FIX: except if you want to change it during runtime :( lol
+      -- either proxy it or do it properly whatever flows
+      is_row = flex_dir == 'row' or flex_dir == 'row-reverse',
+      is_col = flex_dir == 'col' or flex_dir == 'col-reverse',
+      is_reverse = flex_dir == 'row-reverse' or flex_dir == 'col-reverse',
     }
   end
 

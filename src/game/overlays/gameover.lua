@@ -14,7 +14,7 @@ local ui = Ui.get(Element.new {
     },
     Fragment.new('GAME OVER', Res.fonts.IBM),
     Element.new {
-      styles = Res.styles.BUTTON,
+      style = Res.styles.BUTTON,
       events = {
         onClick = function()
           S.scene_queue.setNext(require 'game.scenes.brickin')
@@ -23,7 +23,7 @@ local ui = Ui.get(Element.new {
       Fragment.new('Restart', Res.fonts.BASE),
     },
     Element.new {
-      styles = Res.styles.BUTTON,
+      style = Res.styles.BUTTON,
       events = {
         onClick = function()
           love.event.quit(0)
