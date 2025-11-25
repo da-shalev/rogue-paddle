@@ -31,6 +31,7 @@ end
 ---@type Timeout[]
 Help.timers = {}
 
+--- WARN; Highly unrecommended. Good for debugging. This is a crutch, not a solution.
 --- Runs a function after a delay (seconds)
 ---@param delay number
 ---@param func fun()
@@ -38,15 +39,16 @@ function Help.setTimeout(delay, func)
   table.insert(Help.timers, { time = delay, func = func })
 end
 
---- @alias GetSet<T> {
+--- @alias Accessor<T> {
 ---   set: fun(v: T),
 ---   get: fun(): T
 --- }
 
+--- Not java :)
 ---@generic T
 ---@param init T
 ---@param onMutate fun(val: T)
----@return GetSet<T>
+---@return Accessor<T>
 function Help.accessor(init, onMutate)
   local value = init
 

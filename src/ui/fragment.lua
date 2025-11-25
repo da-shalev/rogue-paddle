@@ -1,10 +1,9 @@
 ---@alias TextVal string | number
 
----@class Fragment
+---@class Fragment : UiType
 ---@field val? TextVal
 ---@field font love.Font
 local Fragment = {}
-Fragment.__index = Fragment
 
 ---@param font love.Font
 ---@param text TextVal

@@ -1,9 +1,9 @@
 return function()
   local state = {}
-  local hud = require 'game.stats'
-  hud.lives.set(3)
-  hud.info.set('Press ' .. Res.keybinds.CONFIRM .. ' to begin')
-  hud.score.set(0)
+  local stat = require 'game.stats'
+  stat.lives.set(3)
+  stat.msg.set('Press ' .. Res.keybinds.CONFIRM .. ' to begin')
+  stat.score.set(0)
 
   local paddle = require 'game.entities.paddle' {
     pos = Vec2.new(S.camera.box.w / 2, S.camera.box.h - 20),
@@ -22,10 +22,10 @@ return function()
     variants = {},
     onGenerate = function(brick) end,
     onReset = function(e)
-      hud.score.set(hud.score.get() + 100)
+      stat.score.set(stat.score.get() + 100)
     end,
     onRemove = function(e, brick)
-      hud.score.set(hud.score.get() + 10)
+      stat.score.set(stat.score.get() + 10)
     end,
     onSpawn = function(e, brick) end,
     viewTransitionSpeed = 1.0,
@@ -39,8 +39,9 @@ return function()
       )
 
       ball.prev_box:copy(ball.sprite.box)
-      hud.info.set('Press ' .. Res.keybinds.CONFIRM .. ' to continue')
+      stat.msg.set('Press ' .. Res.keybinds.CONFIRM .. ' to continue')
     end,
+
     update = function(ctx, dt)
       if love.keyboard.isPressed(Res.keybinds.CONFIRM) and not ctx:hasOverlay() then
         ctx:setStatus(state.PLAYING)
@@ -54,9 +55,10 @@ return function()
 
   state.PLAYING = Status.new {
     init = function()
-      hud.info.set(nil)
+      stat.msg.set(nil)
       ball.velocity:set((math.random() < 0.5 and 1.0 or -1.0), -1.0):normalize()
     end,
+
     update = function(ctx, dt)
       if ctx:hasOverlay() then
         return
@@ -78,7 +80,6 @@ return function()
     end,
 
     fixed = function(ctx, dt)
-      -- pause if menu
       if ctx:hasOverlay() then
         return
       end
@@ -123,14 +124,14 @@ return function()
     paddle.sprite:drawLerp(paddle.prev_box)
     ball.sprite:drawLerp(ball.prev_box)
     bricks:draw()
-    hud.draw()
+    stat.draw()
   end
 
   ---@param ctx StatusCtx
   state.removeLife = function(ctx)
-    hud.lives.set(hud.lives.get() - 1)
+    stat.lives.set(stat.lives.get() - 1)
 
-    if hud.lives.get() == 0 then
+    if stat.lives.get() == 0 then
       ctx:setOverlay(require 'game.overlays.gameover')
     else
       ctx:setStatus(state.ATTACHED)
@@ -150,7 +151,7 @@ return function()
   return Scene.new {
     status = state.ATTACHED,
     update = function(ctx)
-      if love.keyboard.isPressed(Res.keybinds.PAUSE) and hud.lives.get() > 0 then
+      if love.keyboard.isPressed(Res.keybinds.PAUSE) and stat.lives.get() > 0 then
         if ctx:hasOverlay() then
           ctx:popOverlay()
         else

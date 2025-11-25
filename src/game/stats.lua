@@ -1,10 +1,10 @@
 local Element = require 'ui.element'
 local Fragment = require 'ui.fragment'
 
----@class GameStats
----@field score GetSet<number>
----@field lives GetSet<number>
----@field info GetSet<string?>
+---@class Stats
+---@field score Accessor<number>
+---@field lives Accessor<number>
+---@field msg Accessor<string?>
 ---@field update fun(dt: number)
 ---@field draw fun()
 local Stats = {}
@@ -24,7 +24,7 @@ Stats.draw = function()
     Ui.draw(hud.lives)
   end
 
-  if Stats.info.get() then
+  if Stats.msg.get() then
     Ui.draw(hud.info)
   end
 end
@@ -40,7 +40,7 @@ Stats.score = Help.accessor(0, function(val)
   end
 end)
 
-Stats.info = Help.accessor(nil, function(val)
+Stats.msg = Help.accessor(nil, function(val)
   ---@type Fragment
   local frag = Ui.getData(hud.info_text)
   local node = Ui.get(hud.info_text)

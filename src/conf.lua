@@ -10,6 +10,7 @@ Scene = require 'lib.scene'
 Status = require 'lib.status'
 Ui = require 'ui.registry'
 Color = require 'colors'
+BUILD = require("build_info").build_type
 S = require 'state'
 
 -- define current scene
