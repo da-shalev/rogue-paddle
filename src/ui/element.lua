@@ -58,6 +58,15 @@ UiElement.new = function(opts)
       end
     end,
 
+    layout = function(state, parent, propagate)
+      for _, child_idx in ipairs(e._children) do
+        local child = Ui.get(child_idx)
+        if child then
+          Ui.layout(child, state.node)
+        end
+      end
+    end,
+
     size = function(state)
       UiElement.size(e, state)
       -- return true

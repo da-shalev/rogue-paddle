@@ -15,13 +15,6 @@
 ---@field node? RegIdx
 
 ---@class UiEvents
----@field size? UiLayoutEvent
----@field position? UiLayoutEvent
----@field update? UiUpdateEvent
----@field remove? UiRemoveEvent
----@field draw UiDrawEvent
-
----@class ComputedUiEvents
 ---@field layout? UiLayoutEvent
 ---@field size? UiLayoutEvent
 ---@field position? UiLayoutEvent
@@ -39,7 +32,7 @@
 
 ---@class UiCtx
 ---@field state UiState
----@field events ComputedUiEvents
+---@field events UiEvents
 
 ---@alias UiNode<T> {
 ---  data: T,
@@ -66,14 +59,12 @@ function Ui.add(data, e)
   ---@type UiLayoutEvent
   local size = function(state, parent, propagate)
     if e.size then
-      if parent then
+      if parent and propagate then
         assert(parent ~= state.node, 'size claimed that parent is self?')
         local parent_node = Ui.get(parent)
         assert(parent_node, 'child has no parent - missing parent in size or stale child')
 
-        if propagate then
-          parent_node.events.size(parent_node.state, parent_node.state.parent, propagate)
-        end
+        parent_node.events.size(parent_node.state, parent_node.state.parent, propagate)
       end
 
       e.size(state, parent, propagate)
@@ -83,14 +74,12 @@ function Ui.add(data, e)
   ---@type UiLayoutEvent
   local position = function(state, parent, propagate)
     if e.position then
-      if parent then
+      if parent and propagate then
         assert(parent ~= state.node, 'position claimed that parent is self?')
         local parent_node = Ui.get(parent)
         assert(parent_node, 'child has no parent - missing parent in position or stale child')
 
-        if propagate then
-          parent_node.events.position(parent_node.state, parent_node.state.parent, propagate)
-        end
+        parent_node.events.position(parent_node.state, parent_node.state.parent, propagate)
       end
 
       e.position(state, parent, propagate)
@@ -107,11 +96,14 @@ function Ui.add(data, e)
       state.root = parent_node.state.root
 
       if propagate then
-        print 'propgation!!!'
         parent_node.events.layout(parent_node.state, parent_node.state.parent, propagate)
       end
     else
       state.root = state.node
+    end
+
+    if e.layout then
+      e.layout(state, parent, propagate)
     end
 
     size(state, parent, propagate)
