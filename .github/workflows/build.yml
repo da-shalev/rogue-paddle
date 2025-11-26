@@ -9,6 +9,14 @@ on:
       notes:
         description: "Release notes"
         required: false
+      build_windows:
+        description: "Build Windows"
+        type: boolean
+        default: true
+      build_android:
+        description: "Build Android"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -43,6 +51,7 @@ jobs:
 
   build-windows:
     needs: build-love-package
+    if: ${{ github.event.inputs.build_windows == 'true' }}
     runs-on: windows-latest
 
     steps:
@@ -63,7 +72,6 @@ jobs:
           product-name: ${{ env.PRODUCT_NAME }}
           output-folder: ${{ env.OUTPUT_FOLDER }}
           app-id: ${{ secrets.APP_ID }}
-          # icon-path: ".github/windows/icon.ico"
 
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
@@ -76,6 +84,7 @@ jobs:
 
   build-android:
     needs: build-love-package
+    if: ${{ github.event.inputs.build_android == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -110,27 +119,37 @@ jobs:
 
   release:
     needs: [build-windows, build-android]
+    if: ${{ always() && !cancelled() && (needs.build-windows.result == 'success' || needs.build-android.result == 'success') }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Download Windows artifacts
+        if: ${{ github.event.inputs.build_windows == 'true' && needs.build-windows.result == 'success' }}
         uses: actions/download-artifact@v4
         with:
           name: windows-builds
           path: ./windows
 
       - name: Download Android artifacts
+        if: ${{ github.event.inputs.build_android == 'true' && needs.build-android.result == 'success' }}
         uses: actions/download-artifact@v4
         with:
           name: android-builds
           path: ./android
 
-      - name: Rename files with version
+      - name: Create release directory
+        run: mkdir -p ./release
+
+      - name: Rename Windows files
+        if: ${{ github.event.inputs.build_windows == 'true' && needs.build-windows.result == 'success' }}
         run: |
-          mkdir -p ./release
           mv ./windows/${{ env.PRODUCT_NAME }}_x86.zip ./release/${{ env.PRODUCT_NAME }}_x86_Windows_${{ github.event.inputs.version }}.zip
           mv ./windows/${{ env.PRODUCT_NAME }}_x64.zip ./release/${{ env.PRODUCT_NAME }}_x64_Windows_${{ github.event.inputs.version }}.zip
           mv ./windows/${{ env.PRODUCT_NAME }}_installer.exe ./release/${{ env.PRODUCT_NAME }}_installer_Windows_${{ github.event.inputs.version }}.exe
+
+      - name: Rename Android files
+        if: ${{ github.event.inputs.build_android == 'true' && needs.build-android.result == 'success' }}
+        run: |
           mv ./android/${{ env.PRODUCT_NAME }}-debug.apk ./release/${{ env.PRODUCT_NAME }}_Android_${{ github.event.inputs.version }}.apk
 
       - name: Release
