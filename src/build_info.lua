@@ -1,3 +1,1 @@
-return {
-  build_type = 'dev',
-}
+return 'dev'

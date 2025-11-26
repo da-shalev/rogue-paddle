@@ -1,5 +1,6 @@
 -- define util globals
 require 'lib.math'
+BUILD = require 'build_info'
 Builtin = require 'lib.builtin'
 Timer = require 'lib.timer'
 Vec2 = require 'lib.vec2'
@@ -10,7 +11,6 @@ Scene = require 'lib.scene'
 Status = require 'lib.status'
 Ui = require 'ui.registry'
 Color = require 'colors'
-BUILD = require('build_info').build_type
 S = require 'state'
 
 -- define current scene

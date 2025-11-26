@@ -3,6 +3,7 @@
 ---@field update? fun(ctx: StatusCtx, dt: number)
 ---@field fixed? fun(ctx: StatusCtx, dt: number)
 ---@field draw? fun(ctx: StatusCtx)
+---@field exit? fun(ctx: StatusCtx)
 local Status = {}
 Status.__index = Status
 
@@ -13,6 +14,7 @@ Status.new = function(opts)
     update = opts.update,
     fixed = opts.fixed,
     draw = opts.draw,
+    exit = opts.exit,
   }
 end
 

@@ -11,26 +11,35 @@ end
 
 ---@param status Status
 function StatusCtx:setStatus(status)
-  if status.init then
-    status.init(self)
+  if self._status.exit then
+    self._status.exit(self)
   end
 
   self._status = status
+
+  if status.init then
+    status.init(self)
+  end
 end
 
 function StatusCtx:popOverlay()
   -- reset cursor state in case a button or other was hovered
   love.mouse.setCursor()
+
+  if self._overlay.exit then
+    self._overlay.exit(self)
+  end
+
   self._overlay = nil
 end
 
 ---@param status Status
 function StatusCtx:setOverlay(status)
+  self._overlay = status
+
   if status.init then
     status.init(self)
   end
-
-  self._overlay = status
 end
 
 ---@return boolean

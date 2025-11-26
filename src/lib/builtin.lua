@@ -21,10 +21,11 @@ function Builtin.shallowCopy(t)
   for k, v in pairs(t) do
     copy[k] = v
   end
+
   return setmetatable(copy, getmetatable(t))
 end
 
---- @alias Accessor<T> {
+--- @class Accessor<T>: {
 ---   set: fun(v: T),
 ---   get: fun(): T
 --- }

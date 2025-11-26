@@ -62,4 +62,7 @@ return Status.new {
   draw = function()
     Ui.draw(ui)
   end,
+  exit = function()
+    settings.hidden = true
+  end,
 }

@@ -3,7 +3,7 @@ local cursors = {
 }
 
 local Res = {
-  cheats = BUILD == "dev",
+  cheats = BUILD == 'dev',
   cursors = cursors,
 
   sprites = {
