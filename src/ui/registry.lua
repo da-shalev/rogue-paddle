@@ -158,7 +158,7 @@ function Ui.add(data, build)
   data.node = reg_idx
   nodes[reg_idx] = node
   layout(node.ctx.state)
-  
+
   return reg_idx
 end
 
@@ -207,30 +207,6 @@ end
 function Ui.exists(reg)
   Ui.assert(reg)
   return nodes[reg] ~= nil
-end
-
----@param node UiCtx?
----@param dt number
-function Ui.update(node, dt)
-  if node and node.events.update then
-    node.events.update(node.state, dt)
-  end
-end
-
----@param node UiCtx?
-function Ui.draw(node)
-  if node and not node.state.hidden then
-    node.events.draw(node.state)
-  end
-end
-
----@param node UiCtx?
----@param parent? RegIdx
----@param propagate? boolean
-function Ui.layout(node, parent, propagate)
-  if node then
-    node.events.layout(node.state, parent, propagate)
-  end
 end
 
 return Ui

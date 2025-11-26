@@ -124,7 +124,6 @@ return function()
     paddle.sprite:drawLerp(paddle.prev_box)
     ball.sprite:drawLerp(ball.prev_box)
     bricks:draw()
-    stat.draw()
   end
 
   ---@param ctx StatusCtx
@@ -132,7 +131,7 @@ return function()
     stat.lives.set(stat.lives.get() - 1)
 
     if stat.lives.get() == 0 then
-      ctx:setOverlay(require 'game.overlays.gameover')
+      ctx:setOverlay(require 'game.overlays.gameover'())
     else
       ctx:setStatus(state.ATTACHED)
     end
@@ -149,13 +148,14 @@ return function()
   end
 
   return Scene.new {
+    ui = stat.ui,
     status = state.ATTACHED,
-    update = function(ctx)
+    update = function(ctx, dt)
       if love.keyboard.isPressed(Res.keybinds.PAUSE) and stat.lives.get() > 0 then
         if ctx:hasOverlay() then
           ctx:popOverlay()
         else
-          ctx:setOverlay(require 'game.overlays.pause')
+          ctx:setOverlay(require 'game.overlays.pause'())
         end
       end
     end,

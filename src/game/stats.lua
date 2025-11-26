@@ -1,59 +1,47 @@
 local Element = require 'ui.element'
 local Fragment = require 'ui.fragment'
+local UiManager = require 'ui.manager'
 
 ---@class Stats
 ---@field score Accessor<number>
 ---@field lives Accessor<number>
 ---@field msg Accessor<string?>
----@field update fun(dt: number)
----@field draw fun()
 local Stats = {}
-local hud = {}
 
 ---@type UiStyle
 local indent = {
   extend = { 3 },
 }
 
-Stats.draw = function()
-  if Stats.score.get() > 0 then
-    Ui.draw(hud.score)
-  end
-
-  if Stats.lives.get() > 0 then
-    Ui.draw(hud.lives)
-  end
-
-  if Stats.msg.get() then
-    Ui.draw(hud.info)
-  end
-end
+local score_text = Fragment.new(0, Res.fonts.BASE)
+local info_text = Fragment.new(nil, Res.fonts.BASE)
+local lives_idx
 
 Stats.score = Builtin.accessor(0, function(val)
   ---@type Fragment
-  local data = Ui.getData(hud.score_text)
-  local node = Ui.get(hud.score_text)
+  local data = Ui.getData(score_text)
+  local node = Ui.get(score_text)
   if data then
     data.val = val
     assert(node)
-    Ui.layout(node, node.state.parent, true)
+    UiManager.layout(node, node.state.parent, true)
   end
 end)
 
 Stats.msg = Builtin.accessor(nil, function(val)
   ---@type Fragment
-  local frag = Ui.getData(hud.info_text)
-  local node = Ui.get(hud.info_text)
+  local frag = Ui.getData(info_text)
+  local node = Ui.get(info_text)
   assert(node)
   if frag then
     frag.val = val
-    Ui.layout(node, node.state.parent, true)
+    UiManager.layout(node, node.state.parent, true)
   end
 end)
 
 Stats.lives = Builtin.accessor(0, function(val)
   ---@type UiElement
-  local lives = Ui.getData(hud.lives.state.node)
+  local lives = Ui.getData(lives_idx)
   lives:clearChildren()
 
   ---@type UiChildren
@@ -69,8 +57,7 @@ Stats.lives = Builtin.accessor(0, function(val)
   lives:addChildren(children)
 end)
 
-hud.score_text = Fragment.new(0, Res.fonts.BASE)
-hud.score = Ui.get(Element.new {
+local score_ui = Element.new {
   style = {
     {
       width = '100vw',
@@ -78,11 +65,10 @@ hud.score = Ui.get(Element.new {
     },
     indent,
   },
-  hud.score_text,
-})
+  score_text,
+}
 
-hud.info_text = Fragment.new(nil, Res.fonts.BASE)
-hud.info = Ui.get(Element.new {
+local info_ui = Element.new {
   style = {
     {
       width = '100vw',
@@ -91,10 +77,10 @@ hud.info = Ui.get(Element.new {
       align_items = 'center',
     },
   },
-  hud.info_text,
-})
+  info_text,
+}
 
-hud.lives = Ui.get(Element.new {
+lives_idx = Element.new {
   style = {
     indent,
     {
@@ -103,6 +89,16 @@ hud.lives = Ui.get(Element.new {
       width = '100vw',
     },
   },
-})
+}
+
+Stats.ui = Element.new {
+  style = {
+    width = '100vw',
+    height = '100vh',
+  },
+  score_ui,
+  info_ui,
+  lives_idx,
+}
 
 return Stats

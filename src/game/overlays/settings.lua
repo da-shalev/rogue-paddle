@@ -7,5 +7,6 @@ return function(state)
     style = Res.styles.OVERLAY,
     state = state,
     Fragment.new('SETTINGS', Res.fonts.IBM),
+    Fragment.new('Todo', Res.fonts.BASE),
   }
 end
