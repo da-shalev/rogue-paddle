@@ -1,12 +1,11 @@
 ---@class RegIdx
----@field idx integer -- the index in the registry
 ---@field uid integer -- the registries uid
 ---@alias UiChildren RegIdx[]
 
 local RegIdx = {}
 
 function RegIdx.valid(v)
-  return type(v) == 'table' and type(v.idx) == 'number' and type(v.uid) == 'number'
+  return type(v) == 'table' and type(v.uid) == 'number'
 end
 
 ---@alias UiLayoutEvent fun(state: ComputedUiState, parent?: RegIdx, propagate?: boolean)
@@ -52,10 +51,10 @@ end
 local Ui = {}
 Ui.UID = 0 -- this registries uid
 Ui.RegIdx = RegIdx
-local uid = 0
 
+-- weak key map, cleans up nodes when the RegIdx is garbage collected
 ---@type table<RegIdx, UiNode<any>>
-local nodes = {}
+local nodes = setmetatable({}, { __mode = 'k' })
 
 ---@class UiBuilder
 
@@ -67,7 +66,9 @@ local nodes = {}
 ---@param build UiBuilder
 ---@return RegIdx
 function Ui.add(data, build)
-  uid = uid + 1
+  local reg_idx = {
+    uid = Ui.UID,
+  }
 
   ---@type UiLayoutEvent
   local size = function(state, parent, propagate)
@@ -131,10 +132,7 @@ function Ui.add(data, build)
       state = {
         root = nil,
         parent = nil,
-        node = {
-          idx = uid,
-          uid = Ui.UID,
-        },
+        node = reg_idx,
         box = Box.zero(),
         current_axis_size = 0,
       },
@@ -157,10 +155,11 @@ function Ui.add(data, build)
     end)
   end
 
-  data.node = node.ctx.state.node
-  nodes[uid] = node
+  data.node = reg_idx
+  nodes[reg_idx] = node
   layout(node.ctx.state)
-  return node.ctx.state.node
+  
+  return reg_idx
 end
 
 ---@param reg RegIdx
@@ -175,43 +174,39 @@ end
 ---@param reg RegIdx
 function Ui.getData(reg)
   Ui.assert(reg)
-  return nodes[reg.idx].data
+  local node = nodes[reg]
+  return node and node.data
 end
 
 ---@param reg RegIdx
 ---@return UiCtx?
 function Ui.get(reg)
   Ui.assert(reg)
-
-  return nodes[reg.idx].ctx
+  local node = nodes[reg]
+  return node and node.ctx
 end
 
 ---@param reg RegIdx
 function Ui.remove(reg)
   Ui.assert(reg)
 
-  local node = Ui.get(reg)
+  local node = nodes[reg]
   if not node then
     return
   end
 
-  if node.events.remove then
-    node.events.remove(node.state)
+  if node.ctx.events.remove then
+    node.ctx.events.remove(node.ctx.state)
   end
 
-  local target_idx = node.state.node.idx
-  assert(nodes[uid], 'uid should always point to a valid node')
-  nodes[target_idx] = nodes[uid]
-  nodes[uid].ctx.state.node.idx = target_idx
-  nodes[uid] = nil
-  uid = uid - 1
+  nodes[reg] = nil
 end
 
 ---@param reg RegIdx
 ---@return boolean
 function Ui.exists(reg)
   Ui.assert(reg)
-  return nodes[reg.idx] ~= nil
+  return nodes[reg] ~= nil
 end
 
 ---@param node UiCtx?

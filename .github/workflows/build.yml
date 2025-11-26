@@ -33,10 +33,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Write build metadata
-        run: |
-          echo "return 'release'" > src/build_info.lua
-
       - name: Build .love file
         run: |
           cd src
@@ -62,6 +58,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: love-package
+
+      - name: Write build metadata
+        run: |
+          echo "return 'release'" > src/build_info.lua
 
       - name: Build Windows Package
         id: build
@@ -95,6 +95,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: love-package
+
+      - name: Write build metadata
+        run: |
+          echo "return 'mobile'" > src/build_info.lua
 
       - name: Build Android Package
         id: build-android
