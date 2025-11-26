@@ -1,10 +1,10 @@
-local Help = {}
+local Builtin = {}
 
 ---@generic T
 ---@param value T The value to switch on
 ---@param cases table<T, function> Table mapping values to handler functions
 ---@param ... ... Additional parameters to pass through to the matched case handler
-function Help.switch(value, cases, ...)
+function Builtin.switch(value, cases, ...)
   local v = cases[value]
   if v then
     v(...)
@@ -16,7 +16,7 @@ end
 ---@generic T: table
 ---@param t T
 ---@return T A cloned table
-function Help.shallowCopy(t)
+function Builtin.shallowCopy(t)
   local copy = {}
   for k, v in pairs(t) do
     copy[k] = v
@@ -34,7 +34,7 @@ end
 ---@param init T
 ---@param onMutate fun(val: T)
 ---@return Accessor<T>
-function Help.accessor(init, onMutate)
+function Builtin.accessor(init, onMutate)
   local value = init
 
   return {
@@ -49,24 +49,23 @@ function Help.accessor(init, onMutate)
 end
 
 ---@generic T: table
----@param tbl T
----@param onMutate fun(key: any, value: any, old_value: any)
+---@param t T
+---@param onMutate fun(key: any, value: any, old: any)
 ---@return T
-function Help.proxy(tbl, onMutate)
-  if getmetatable(tbl) and getmetatable(tbl).__is_proxy then
-    return tbl
-  end
+function Builtin.proxy(t, onMutate)
+  local mt = getmetatable(t)
+  assert(not (mt and mt.__is_proxy), 'attempted double proxy, no')
 
   local data = {}
-  for k, v in pairs(tbl) do
+  for k, v in pairs(t) do
     data[k] = v
   end
 
-  for k in pairs(tbl) do
-    tbl[k] = nil
+  for k in pairs(t) do
+    t[k] = nil
   end
 
-  setmetatable(tbl, {
+  setmetatable(t, {
     __is_proxy = true,
     __index = function(_, key)
       return data[key]
@@ -81,15 +80,15 @@ function Help.proxy(tbl, onMutate)
     end,
   })
 
-  return tbl
+  return t
 end
 
 ---@param base table
 ---@param add table
-function Help.merge(base, add)
+function Builtin.merge(base, add)
   for k, v in pairs(add) do
     if type(v) == 'table' and type(base[k]) == 'table' then
-      Help.merge(base[k], v)
+      Builtin.merge(base[k], v)
     else
       base[k] = v
     end
@@ -100,7 +99,7 @@ end
 ---@param map table<T, boolean>
 ---@param ... T
 ---@return boolean
-function Help.any(map, ...)
+function Builtin.any(map, ...)
   for i = 1, select('#', ...) do
     local key = select(i, ...)
     if map[key] then
@@ -111,4 +110,4 @@ function Help.any(map, ...)
   return false
 end
 
-return Help
+return Builtin

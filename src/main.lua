@@ -49,11 +49,11 @@ function love.update(dt)
     current_scene:update(dt)
 
     for i = #Timer.delayed, 1, -1 do
-      local delay = Help.timers[i]
+      local delay = Timer.delayed[i]
       delay.time = delay.time - dt
       if delay.time <= 0 then
         delay.func()
-        table.remove(Help.timers, i)
+        table.remove(Timer.delayed, i)
       end
     end
   end
@@ -143,14 +143,14 @@ end
 ---@param ... love.KeyConstant
 ---@return boolean
 function love.keyboard.isPressed(key, ...)
-  return Help.any(keys_pressed, key, ...) or false
+  return Builtin.any(keys_pressed, key, ...) or false
 end
 
 ---@param key love.KeyConstant
 ---@param ... love.KeyConstant
 ---@return boolean
 function love.keyboard.isReleased(key, ...)
-  return Help.any(keys_released, key, ...) or false
+  return Builtin.any(keys_released, key, ...) or false
 end
 
 ---@param key love.KeyConstant

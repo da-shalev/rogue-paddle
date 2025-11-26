@@ -122,7 +122,7 @@ function UiStyle.new(...)
   for i = 1, select('#', ...) do
     local s = select(i, ...)
     if s then
-      Help.merge(style, s)
+      Builtin.merge(style, s)
     end
   end
 

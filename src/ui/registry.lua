@@ -150,8 +150,8 @@ function Ui.add(data, build)
   }
 
   if build.state then
-    Help.merge(node.ctx.state, build.state)
-    Help.proxy(build.state, function(key, value, _)
+    Builtin.merge(node.ctx.state, build.state)
+    Builtin.proxy(build.state, function(key, value, _)
       node.ctx.state[key] = value
       layout(node.ctx.state, node.ctx.state.parent, true)
     end)

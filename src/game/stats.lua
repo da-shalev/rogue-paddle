@@ -29,7 +29,7 @@ Stats.draw = function()
   end
 end
 
-Stats.score = Help.accessor(0, function(val)
+Stats.score = Builtin.accessor(0, function(val)
   ---@type Fragment
   local data = Ui.getData(hud.score_text)
   local node = Ui.get(hud.score_text)
@@ -40,7 +40,7 @@ Stats.score = Help.accessor(0, function(val)
   end
 end)
 
-Stats.msg = Help.accessor(nil, function(val)
+Stats.msg = Builtin.accessor(nil, function(val)
   ---@type Fragment
   local frag = Ui.getData(hud.info_text)
   local node = Ui.get(hud.info_text)
@@ -51,7 +51,7 @@ Stats.msg = Help.accessor(nil, function(val)
   end
 end)
 
-Stats.lives = Help.accessor(0, function(val)
+Stats.lives = Builtin.accessor(0, function(val)
   ---@type UiElement
   local lives = Ui.getData(hud.lives.state.node)
   lives:clearChildren()
