@@ -1,15 +1,18 @@
 ---@class RegIdx
 ---@field idx integer -- the index in the registry
 ---@field uid integer -- the registries uid
-
 ---@alias UiChildren RegIdx[]
 
---TODO: UiLayoutEvent returns boolean on mutation
+local RegIdx = {}
 
----@alias UiLayoutEvent fun(state: UiState, parent?: RegIdx, propagate?: boolean)
----@alias UiUpdateEvent fun(state: UiState, dt: number)
----@alias UiRemoveEvent fun(state: UiState)
----@alias UiDrawEvent fun(state: UiState)
+function RegIdx.valid(v)
+  return type(v) == 'table' and type(v.idx) == 'number' and type(v.uid) == 'number'
+end
+
+---@alias UiLayoutEvent fun(state: ComputedUiState, parent?: RegIdx, propagate?: boolean)
+---@alias UiUpdateEvent fun(state: ComputedUiState, dt: number)
+---@alias UiRemoveEvent fun(state: ComputedUiState)
+---@alias UiDrawEvent fun(state: ComputedUiState)
 
 ---@class UiType
 ---@field node? RegIdx
@@ -22,16 +25,23 @@
 ---@field remove? UiRemoveEvent
 ---@field draw UiDrawEvent
 
----@class UiState
+---@class ComputedUiState : UiState
 ---@field root? RegIdx
 ---@field parent? RegIdx
 ---@field node RegIdx
 ---@field box Box
---- cached layout calculations
----@field current_axis_size number
+---@field current_axis_size number -- cached layout calculations
+
+---@class UiState
+---@field hidden? boolean
+---@field name? string
+
+---@class UiBuilder
+---@field events UiEvents
+---@field state? UiState
 
 ---@class UiCtx
----@field state UiState
+---@field state ComputedUiState
 ---@field events UiEvents
 
 ---@alias UiNode<T> {
@@ -41,24 +51,27 @@
 
 local Ui = {}
 Ui.UID = 0 -- this registries uid
+Ui.RegIdx = RegIdx
 local uid = 0
 
 ---@type table<RegIdx, UiNode<any>>
 local nodes = {}
+
+---@class UiBuilder
 
 ---@generic T: UiType
 ---@class Data<T>: {
 ---   data: T,
 --- }
 ---@field data Data
----@param e UiEvents
+---@param build UiBuilder
 ---@return RegIdx
-function Ui.add(data, e)
+function Ui.add(data, build)
   uid = uid + 1
 
   ---@type UiLayoutEvent
   local size = function(state, parent, propagate)
-    if e.size then
+    if build.events.size then
       if parent and propagate then
         assert(parent ~= state.node, 'size claimed that parent is self?')
         local parent_node = Ui.get(parent)
@@ -67,13 +80,13 @@ function Ui.add(data, e)
         parent_node.events.size(parent_node.state, parent_node.state.parent, propagate)
       end
 
-      e.size(state, parent, propagate)
+      build.events.size(state, parent, propagate)
     end
   end
 
   ---@type UiLayoutEvent
   local position = function(state, parent, propagate)
-    if e.position then
+    if build.events.position then
       if parent and propagate then
         assert(parent ~= state.node, 'position claimed that parent is self?')
         local parent_node = Ui.get(parent)
@@ -82,7 +95,7 @@ function Ui.add(data, e)
         parent_node.events.position(parent_node.state, parent_node.state.parent, propagate)
       end
 
-      e.position(state, parent, propagate)
+      build.events.position(state, parent, propagate)
     end
   end
 
@@ -102,8 +115,8 @@ function Ui.add(data, e)
       state.root = state.node
     end
 
-    if e.layout then
-      e.layout(state, parent, propagate)
+    if build.events.layout then
+      build.events.layout(state, parent, propagate)
     end
 
     size(state, parent, propagate)
@@ -126,15 +139,23 @@ function Ui.add(data, e)
         current_axis_size = 0,
       },
       events = {
-        update = e.update,
-        draw = e.draw,
-        remove = e.remove,
+        update = build.events.update,
+        draw = build.events.draw,
+        remove = build.events.remove,
         layout = layout,
         size = size,
         position = position,
       },
     },
   }
+
+  if build.state then
+    Help.merge(node.ctx.state, build.state)
+    Help.proxy(build.state, function(key, value, _)
+      node.ctx.state[key] = value
+      layout(node.ctx.state, node.ctx.state.parent, true)
+    end)
+  end
 
   data.node = node.ctx.state.node
   nodes[uid] = node
@@ -144,7 +165,11 @@ end
 
 ---@param reg RegIdx
 function Ui.assert(reg)
-  assert(Ui.UID == reg.uid, "tried using a idx in a registry it wasn't created for")
+  assert(Ui.RegIdx.valid(reg), 'passed an invalid idx to the UI registry')
+  assert(
+    Ui.UID == reg.uid,
+    string.format("tried using a idx within a UI registry it wasn't created for id: %s", reg.uid)
+  )
 end
 
 ---@param reg RegIdx
@@ -199,7 +224,7 @@ end
 
 ---@param node UiCtx?
 function Ui.draw(node)
-  if node then
+  if node and not node.state.hidden then
     node.events.draw(node.state)
   end
 end

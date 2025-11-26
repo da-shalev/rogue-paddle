@@ -69,8 +69,9 @@ end
 ---@field color? Color
 
 ---@param opts? SpriteRenderState
+---@param state? UiState
 ---@return RegIdx
-function Sprite:ui(opts)
+function Sprite:ui(opts, state)
   opts = opts or {}
   opts.frame_idx = opts.frame_idx or 1
 
@@ -83,15 +84,17 @@ function Sprite:ui(opts)
   }
 
   return Ui.add(data, {
-    layout = function(ctx)
-      local size = sprite:getDimensions()
-      ctx.box.w = size.x
-      ctx.box.h = size.y
-      return true
-    end,
-    draw = function(ctx)
-      sprite:drawFrom(ctx.box, data.style)
-    end,
+    state = state,
+    events = {
+      layout = function(ctx)
+        local size = sprite:getDimensions()
+        ctx.box.w = size.x
+        ctx.box.h = size.y
+      end,
+      draw = function(ctx)
+        sprite:drawFrom(ctx.box, data.style)
+      end,
+    },
   })
 end
 

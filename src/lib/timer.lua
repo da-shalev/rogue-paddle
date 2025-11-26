@@ -6,6 +6,21 @@
 local Timer = {}
 Timer.__index = Timer
 
+---@class Timeout
+---@field time number
+---@field func fun()
+
+---@type Timeout[]
+Timer.delayed = {}
+
+--- WARN; Highly unrecommended. Good for debugging. This is a crutch, not a solution.
+--- Runs a function after a delay (seconds)
+---@param time number
+---@param func fun()
+function Timer.setTimeout(time, func)
+  table.insert(Timer.delayed, { time = time, func = func })
+end
+
 --- Create a new timer
 ---@param duration number seconds until finished
 ---@return Timer

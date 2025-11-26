@@ -120,16 +120,16 @@ Box.__newindex = function(t, k, v)
   end
 end
 
----@class BoxOpts
+---@class BoxBuilder
 ---@field pos Vec2
 ---@field size Vec2
 ---@field starting_origin? Vec2
 ---@field rot? number
 
----@param opts BoxOpts
+---@param build BoxBuilder
 ---@return Box
-function Box.from(opts)
-  return Box.new(opts.pos, opts.size, opts.rot, opts.starting_origin)
+function Box.from(build)
+  return Box.new(build.pos, build.size, build.rot, build.starting_origin)
 end
 
 ---@param pos Vec2

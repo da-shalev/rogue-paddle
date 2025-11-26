@@ -24,21 +24,6 @@ function Help.shallowCopy(t)
   return setmetatable(copy, getmetatable(t))
 end
 
----@class Timeout
----@field time number
----@field func fun()
-
----@type Timeout[]
-Help.timers = {}
-
---- WARN; Highly unrecommended. Good for debugging. This is a crutch, not a solution.
---- Runs a function after a delay (seconds)
----@param delay number
----@param func fun()
-function Help.setTimeout(delay, func)
-  table.insert(Help.timers, { time = delay, func = func })
-end
-
 --- @alias Accessor<T> {
 ---   set: fun(v: T),
 ---   get: fun(): T
@@ -63,27 +48,67 @@ function Help.accessor(init, onMutate)
   }
 end
 
---- Metamethod to watch a tables mutation, allows avoiding getters and setters
---- by enabling internal tracking without abstractions (some would disagree)
----@generic T
----@param init T
----@param onMutate fun(val: T)
+---@generic T: table
+---@param tbl T
+---@param onMutate fun(key: any, value: any, old_value: any)
 ---@return T
-function Help.proxy(init, onMutate)
-  local value = init
-  onMutate(value)
-  return setmetatable({}, {
-    __index = function()
-      return value
+function Help.proxy(tbl, onMutate)
+  if getmetatable(tbl) and getmetatable(tbl).__is_proxy then
+    return tbl
+  end
+
+  local data = {}
+  for k, v in pairs(tbl) do
+    data[k] = v
+  end
+
+  for k in pairs(tbl) do
+    tbl[k] = nil
+  end
+
+  setmetatable(tbl, {
+    __is_proxy = true,
+    __index = function(_, key)
+      return data[key]
     end,
-    __newindex = function(_, _, v)
-      value = v
-      onMutate(v)
+    __newindex = function(_, key, value)
+      local old_value = data[key]
+      data[key] = value
+      onMutate(key, value, old_value)
     end,
-    __tostring = function()
-      return tostring(value)
+    __pairs = function()
+      return pairs(data)
     end,
   })
+
+  return tbl
+end
+
+---@param base table
+---@param add table
+function Help.merge(base, add)
+  for k, v in pairs(add) do
+    if type(v) == 'table' and type(base[k]) == 'table' then
+      Help.merge(base[k], v)
+    else
+      base[k] = v
+    end
+  end
+end
+
+---@generic T
+---@param map table<T, boolean>
+---@param ... T
+---@return boolean
+function Help.any(map, ...)
+  for i = 1, select('#', ...) do
+    local key = select(i, ...)
+    if map[key] then
+      return true
+    end
+  end
+
+  return false
 end
 
 return Help

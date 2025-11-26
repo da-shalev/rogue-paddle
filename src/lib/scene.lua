@@ -52,12 +52,12 @@ end
 local Scene = {}
 Scene.__index = Scene
 
----@class SceneOpts : Status
+---@class SceneBuilder : Status
 ---@field status Status
 ---@field overlay? Status
 ---@field exit? fun()
 
----@param events SceneOpts
+---@param events SceneBuilder
 ---@return Scene
 function Scene.new(events)
   local empty = function() end

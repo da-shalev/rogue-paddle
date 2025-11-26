@@ -116,25 +116,13 @@ end
 ---@param ... UiStyles
 ---@return ComputedUiStyle
 function UiStyle.new(...)
-  ---@param base table
-  ---@param add table
-  local function merge(base, add)
-    for k, v in pairs(add) do
-      if type(v) == 'table' and type(base[k]) == 'table' then
-        merge(base[k], v)
-      else
-        base[k] = v
-      end
-    end
-  end
-
   ---@type UiStyle
   local style = {}
 
   for i = 1, select('#', ...) do
     local s = select(i, ...)
     if s then
-      merge(style, s)
+      Help.merge(style, s)
     end
   end
 

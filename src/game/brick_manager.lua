@@ -54,26 +54,26 @@ end
 
 ---@class BrickManager
 ---@field _data BrickGridData
----@field opts BrickManagerOpts
+---@field state BrickManagerState
 local BrickManager = {}
 BrickManager.__index = BrickManager
 
----@class BrickManagerOpts : BrickEvents
+---@class BrickManagerState : BrickEvents
 ---@field layout BrickLayout
 ---@field viewTransitionSpeed? number
 ---@field variants? BrickVariants
 ---@field colors? Color[]
 
----@param opts BrickManagerOpts
+---@param state BrickManagerState
 ---@return BrickManager
-function BrickManager.new(opts)
+function BrickManager.new(state)
   return setmetatable({
-    _data = BrickManager.generate(opts),
-    opts = opts,
+    _data = BrickManager.generate(state),
+    state = state,
   }, BrickManager)
 end
 
----@param opts BrickManagerOpts
+---@param opts BrickManagerState
 ---@return BrickGridData
 function BrickManager.generate(opts)
   local grid = {}
@@ -249,8 +249,8 @@ function BrickManager:remove(brick)
     return
   else
     local ev = BrickEvent:new(self)
-    if self.opts.onRemove then
-      self.opts.onRemove(ev, brick)
+    if self.state.onRemove then
+      self.state.onRemove(ev, brick)
     end
 
     if ev.cancel then
@@ -280,20 +280,20 @@ end
 function BrickManager:reset()
   local ev = BrickEvent:new(self)
 
-  if self.opts.onReset then
-    self.opts.onReset(ev)
+  if self.state.onReset then
+    self.state.onReset(ev)
   end
 
   if ev.cancel then
     return
   end
 
-  self._data = self.generate(self.opts)
+  self._data = self.generate(self.state)
 end
 
 ---@param layout BrickLayout
 function BrickManager:setLayout(layout)
-  self.opts.layout = layout
+  self.state.layout = layout
 end
 
 return BrickManager

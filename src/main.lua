@@ -2,8 +2,15 @@ local tlfres = require 'lib.tlfres'
 local state = require 'state'
 local canvas, canvas_w, canvas_h
 
+---@type table<love.KeyConstant, boolean>
 local keys_pressed = {}
+---@type table<love.KeyConstant, boolean>
 local keys_released = {}
+
+---@type table<number, boolean>
+local mouse_pressed = {}
+---@type table<number, boolean>
+local mouse_released = {}
 
 local t = 0.0
 local FIXED_DT = 1. / 64.
@@ -41,7 +48,7 @@ function love.update(dt)
   if current_scene then
     current_scene:update(dt)
 
-    for i = #Help.timers, 1, -1 do
+    for i = #Timer.delayed, 1, -1 do
       local delay = Help.timers[i]
       delay.time = delay.time - dt
       if delay.time <= 0 then
@@ -68,7 +75,7 @@ function love.update(dt)
     local scene = next_scene()
 
     if current_scene then
-      Help.timers = {}
+      Timer.delayed = {}
       current_scene:exit()
     end
 
@@ -79,6 +86,8 @@ function love.update(dt)
 
   keys_pressed = {}
   keys_released = {}
+  mouse_pressed = {}
+  mouse_released = {}
 end
 
 function love.draw()
@@ -91,6 +100,8 @@ function love.draw()
 
   if current_scene then
     current_scene:draw()
+  else
+    --- loading.... ?
   end
 
   love.graphics.pop()
@@ -116,6 +127,8 @@ function love.resize()
   canvas = love.graphics.newCanvas(canvas_w, canvas_h)
 end
 
+-- keyboard
+
 ---@return boolean
 function love.keyboard.isAnyPressed()
   return next(keys_pressed) ~= nil
@@ -126,31 +139,18 @@ function love.keyboard.isAnyReleased()
   return next(keys_released) ~= nil
 end
 
----@param map table<string, boolean>
----@param ... love.KeyConstant
----@return boolean
-local function anyKey(map, ...)
-  for i = 1, select('#', ...) do
-    if map[select(i, ...)] then
-      return true
-    end
-  end
-
-  return false
-end
-
 ---@param key love.KeyConstant
 ---@param ... love.KeyConstant
 ---@return boolean
 function love.keyboard.isPressed(key, ...)
-  return anyKey(keys_pressed, key, ...) or false
+  return Help.any(keys_pressed, key, ...) or false
 end
 
 ---@param key love.KeyConstant
 ---@param ... love.KeyConstant
 ---@return boolean
 function love.keyboard.isReleased(key, ...)
-  return anyKey(keys_released, key, ...) or false
+  return Help.any(keys_released, key, ...) or false
 end
 
 ---@param key love.KeyConstant
@@ -163,7 +163,31 @@ function love.keyreleased(key)
   keys_released[key] = true
 end
 
+-- mouse
+
 ---@diagnostic disable-next-line: duplicate-set-field
 love.mouse.getPosition = function()
   return tlfres.getMousePosition(S.camera.box.w, S.camera.box.h)
+end
+
+---@param button number
+function love.mousepressed(_, _, button)
+  mouse_pressed[button] = true
+end
+
+---@param button number
+function love.mousereleased(_, _, button)
+  mouse_released[button] = true
+end
+
+---@param button number
+---@return boolean
+function love.mouse.isPressed(button)
+  return mouse_pressed[button]
+end
+
+---@param button number
+---@return boolean
+function love.mouse.isReleased(button)
+  return mouse_released[button]
 end

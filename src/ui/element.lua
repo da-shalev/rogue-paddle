@@ -17,69 +17,71 @@ UiElement.__index = UiElement
 
 ---@class UiElementBuilder
 ---@field style? UiStyles
----@field name? string
+---@field state? UiState
 ---@field events? UiElementEvents
 
----@param opts UiElementBuilder
+---@param build UiElementBuilder
 ---@return RegIdx
-UiElement.new = function(opts)
-  opts.events = opts.events or {}
+UiElement.new = function(build)
+  build.events = build.events or {}
 
   ---@type UiChildren
   local children = {}
-  for i = 1, table.maxn(opts) do
-    if opts[i] then
-      children[#children + 1] = opts[i]
+  for i = 1, table.maxn(build) do
+    local v = build[i]
+    if v then
+      assert(Ui.RegIdx.valid(v), 'passed invalid idx to a UiElement child')
+      children[#children + 1] = v
     end
   end
 
   ---@type UiElement
   local e = {
     hover = nil,
-    name = opts.name or 'unnamed',
-    style = UiStyle.new(unpack(UiStyle.normalize(opts.style))),
-    events = opts.events,
+    style = UiStyle.new(unpack(UiStyle.normalize(build.style))),
+    events = build.events,
     _children = children,
   }
 
   local e = setmetatable(e, UiElement)
   return Ui.add(e, {
-    update = function(state, dt)
-      UiElement.update(e, state, dt)
-    end,
+    state = build.state,
+    events = {
+      update = function(state, dt)
+        UiElement.update(e, state, dt)
+      end,
 
-    draw = function(state)
-      UiElement.draw(e, state)
-    end,
+      draw = function(state)
+        UiElement.draw(e, state)
+      end,
 
-    remove = function(_)
-      for _, child_idx in ipairs(e._children) do
-        Ui.remove(child_idx)
-      end
-    end,
+      remove = function(_)
+        for _, child_idx in ipairs(e._children) do
+          Ui.remove(child_idx)
+        end
+      end,
 
-    layout = function(state, parent, propagate)
-      for _, child_idx in ipairs(e._children) do
-        local child = Ui.get(child_idx)
-        assert(child, 'passed nil child to element')
-        Ui.layout(child, state.node)
-      end
-    end,
+      layout = function(state, _parent, _propagate)
+        for _, child_idx in ipairs(e._children) do
+          local child = Ui.get(child_idx)
+          assert(child, 'passed nil child to element')
+          Ui.layout(child, state.node)
+        end
+      end,
 
-    size = function(state)
-      UiElement.size(e, state)
-      -- return true
-    end,
+      size = function(state, _parent, _propagate)
+        UiElement.size(e, state)
+      end,
 
-    position = function(state)
-      UiElement.position(e, state)
-      -- return true
-    end,
+      position = function(state, _parent, _propagate)
+        UiElement.position(e, state)
+      end,
+    },
   })
 end
 
 ---@param self UiElement
----@param ctx UiState
+---@param ctx ComputedUiState
 ---@param dt number
 function UiElement.update(self, ctx, dt)
   local x, y = S.cursor:within(ctx.box)
@@ -105,7 +107,7 @@ function UiElement.update(self, ctx, dt)
     self.hover = hover
   end
 
-  if love.mouse.isDown(1) and self.hover and self.events.onClick then
+  if love.mouse.isReleased(1) and self.hover and self.events.onClick then
     self.events.onClick()
   end
 
@@ -117,7 +119,7 @@ function UiElement.update(self, ctx, dt)
 end
 
 ---@param self UiElement
----@param state UiState
+---@param state ComputedUiState
 function UiElement.draw(self, state)
   local style = self.style.current
 
@@ -191,7 +193,7 @@ function UiElement:clearChildren()
 end
 
 ---@param self UiElement
----@param state UiState
+---@param state ComputedUiState
 --  TODO: return boolean to know whether a mutation happened to avoid recalculation
 function UiElement.size(self, state)
   local style = self.style.current
@@ -206,6 +208,10 @@ function UiElement.size(self, state)
     local child = Ui.get(child_idx)
     assert(child, 'flex layout child is nil')
 
+    if child.state.hidden then
+      goto continue
+    end
+
     if child.events.size then
       child.events.size(child.state, self.node)
     end
@@ -217,6 +223,8 @@ function UiElement.size(self, state)
       cross_axis_size = math.max(cross_axis_size, child.state.box.w)
       current_axis_size = current_axis_size + child.state.box.h + style.gap
     end
+
+    ::continue::
   end
 
   current_axis_size = current_axis_size - style.gap
@@ -233,7 +241,7 @@ function UiElement.size(self, state)
 end
 
 ---@param self UiElement
----@param state UiState
+---@param state ComputedUiState
 function UiElement.position(self, state)
   local style = self.style.current
 
@@ -269,6 +277,10 @@ function UiElement.position(self, state)
     local child = Ui.get(self._children[child_idx])
     assert(child, 'flex layout child is nil')
 
+    if child.state.hidden then
+      goto continue
+    end
+
     local box = child.state.box
 
     box.x = cr_x
@@ -301,6 +313,8 @@ function UiElement.position(self, state)
     if child.events.position then
       child.events.position(child.state, self.node)
     end
+
+    ::continue::
   end
 end
 

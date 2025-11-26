@@ -1,12 +1,18 @@
 local Element = require 'ui.element'
 local Fragment = require 'ui.fragment'
 
+---@type UiState
+local settings = {
+  hidden = true,
+}
+
 local ui = Ui.get(Element.new {
   style = {
     width = '100vw',
     height = '100vh',
     align_items = 'center',
     justify_content = 'center',
+    gap = 4,
   },
   Element.new {
     style = Res.styles.OVERLAY,
@@ -23,7 +29,9 @@ local ui = Ui.get(Element.new {
     Element.new {
       style = Res.styles.BUTTON,
       events = {
-        onClick = function() end,
+        onClick = function()
+          settings.hidden = not settings.hidden
+        end,
       },
       Fragment.new('Settings', Res.fonts.BASE),
     },
@@ -44,9 +52,8 @@ local ui = Ui.get(Element.new {
       Fragment.new('Quit', Res.fonts.BASE),
     },
   },
+  require 'game.overlays.settings'(settings),
 })
-
-assert(ui)
 
 return Status.new {
   update = function(_, dt)

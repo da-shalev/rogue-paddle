@@ -14,8 +14,9 @@ end
 
 ---@param val? TextVal
 ---@param font? love.Font
+---@param state? UiState
 ---@return RegIdx
-Fragment.new = function(val, font)
+Fragment.new = function(val, font, state)
   ---@type Fragment
   local self = {
     val = val,
@@ -23,18 +24,21 @@ Fragment.new = function(val, font)
   }
 
   return Ui.add(self, {
-    draw = function(ctx)
-      if self.val then
-        love.graphics.printf(self.val, self.font, ctx.box.pos.x, ctx.box.pos.y, ctx.box.size.x)
-      end
-    end,
-    size = function(ctx)
-      if self.val then
-        local w, h = getSize(self.font, self.val)
-        ctx.box.w = w
-        ctx.box.h = h
-      end
-    end,
+    state = state,
+    events = {
+      draw = function(ctx)
+        if self.val then
+          love.graphics.printf(self.val, self.font, ctx.box.pos.x, ctx.box.pos.y, ctx.box.size.x)
+        end
+      end,
+      size = function(ctx)
+        if self.val then
+          local w, h = getSize(self.font, self.val)
+          ctx.box.w = w
+          ctx.box.h = h
+        end
+      end,
+    },
   })
 end
 
