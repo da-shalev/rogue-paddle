@@ -1,1 +1,1 @@
-return 'dev'
+return 'android'
