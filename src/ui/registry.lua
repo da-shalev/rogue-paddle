@@ -19,22 +19,23 @@
 ---@field remove? UiRemoveEvent
 ---@field draw UiDrawEvent
 
----@class ComputedUiState : _UiStateBuilder
+---@class ComputedUiState
 ---@field root? RegIdx
 ---@field parent? RegIdx
 ---@field node RegIdx
 ---@field box Box
 ---@field current_axis_size number -- cached layout calculations
+---@field status UiStatus
 
----@class _UiStateBuilder
+---@class _UiStatus
 ---@field hidden? boolean
 ---@field name? string
 
----@alias UiState Reactive<_UiStateBuilder>
+---@alias UiStatus Reactive<_UiStatus>
 
 ---@class UiBuilder
 ---@field events UiEvents
----@field state? UiState
+---@field status? UiStatus
 
 ---@class UiCtx
 ---@field state ComputedUiState
@@ -57,8 +58,6 @@ end
 -- weak key map, cleans up nodes when the RegIdx is garbage collected
 ---@type table<RegIdx, UiNode<any>>
 local nodes = setmetatable({}, { __mode = 'k' })
-
----@class UiBuilder
 
 ---@generic T: UiType
 ---@class Data<T>: {
@@ -137,6 +136,9 @@ function Ui.add(data, build)
         node = idx,
         box = Box.zero(),
         current_axis_size = 0,
+        status = build.status or Reactive.new {
+          hidden = false,
+        },
       },
       events = {
         update = build.events.update,
@@ -149,10 +151,8 @@ function Ui.add(data, build)
     },
   }
 
-  if build.state then
-    Builtin.merge(node.ctx.state, build.state)
-
-    build.state.subscribe(function()
+  if build.status then
+    build.status.subscribe(function()
       layout(node.ctx.state, node.ctx.state.parent, true)
     end)
   end
@@ -215,7 +215,7 @@ end
 ---@param dt number
 function Ui.update(node, dt)
   assert(node, 'nil node passed to update')
-  if not node.state.hidden and node.events.update then
+  if not node.state.status.get().hidden and node.events.update then
     node.events.update(node.state, dt)
   end
 end
@@ -223,7 +223,7 @@ end
 ---@param node UiCtx?
 function Ui.draw(node)
   assert(node, 'nil node passed to draw')
-  if not node.state.hidden then
+  if not node.state.status.get().hidden then
     node.events.draw(node.state)
   end
 end

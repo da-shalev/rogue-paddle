@@ -24,7 +24,7 @@ end
 ---@class FragmentBuilder
 ---@field val TextVal
 ---@field font? TextFont
----@field state? UiState
+---@field status? UiStatus
 
 ---@param build FragmentBuilder
 ---@return RegIdx
@@ -59,7 +59,7 @@ Fragment.new = function(build)
   end
 
   return Ui.add(self, {
-    state = build.state,
+    status = build.status,
     events = {
       draw = function(ctx)
         if val then

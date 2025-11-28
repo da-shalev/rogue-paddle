@@ -18,7 +18,7 @@ UiElement.__index = UiElement
 
 ---@class UiElementBuilder
 ---@field style? UiStyles
----@field state? UiState
+---@field status? UiStatus
 ---@field events? UiElementEvents
 
 ---@param build UiElementBuilder
@@ -46,7 +46,7 @@ UiElement.new = function(build)
 
   local e = setmetatable(e, UiElement)
   return Ui.add(e, {
-    state = build.state,
+    status = build.status,
     events = {
       update = function(state, dt)
         UiElement.update(e, state, dt)
@@ -209,7 +209,7 @@ function UiElement.size(self, state)
     local child = Ui.get(child_idx)
     assert(child, 'flex layout child is nil')
 
-    if child.state.hidden then
+    if child.state.status.get().hidden then
       goto continue
     end
 
@@ -278,7 +278,7 @@ function UiElement.position(self, state)
     local child = Ui.get(self._children[child_idx])
     assert(child, 'flex layout child is nil')
 
-    if child.state.hidden then
+    if child.state.status.get().hidden then
       goto continue
     end
 
