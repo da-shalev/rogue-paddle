@@ -27,11 +27,9 @@
 ---@field current_axis_size number -- cached layout calculations
 ---@field status UiStatus
 
----@class _UiStatus
+---@class UiStatus
 ---@field hidden? boolean
 ---@field name? string
-
----@alias UiStatus Reactive<_UiStatus>
 
 ---@class UiBuilder
 ---@field events UiEvents
@@ -70,6 +68,12 @@ function Ui.add(data, build)
   local idx = {
     [_ui_marker] = true,
   }
+
+  if not build.status then
+    build.status = {
+      hidden = false,
+    }
+  end
 
   ---@type UiLayoutEvent
   local size = function(state, parent, propagate)
@@ -136,9 +140,7 @@ function Ui.add(data, build)
         node = idx,
         box = Box.zero(),
         current_axis_size = 0,
-        status = build.status or Reactive.new {
-          hidden = false,
-        },
+        status = build.status,
       },
       events = {
         update = build.events.update,
@@ -151,8 +153,9 @@ function Ui.add(data, build)
     },
   }
 
-  if build.status then
-    build.status.subscribe(function()
+  local status = Reactive.fromState(build.status)
+  if status then
+    status.subscribe(function()
       layout(node.ctx.state, node.ctx.state.parent, true)
     end)
   end
@@ -215,7 +218,7 @@ end
 ---@param dt number
 function Ui.update(node, dt)
   assert(node, 'nil node passed to update')
-  if not node.state.status.get().hidden and node.events.update then
+  if not node.state.status.hidden and node.events.update then
     node.events.update(node.state, dt)
   end
 end
@@ -223,7 +226,7 @@ end
 ---@param node UiCtx?
 function Ui.draw(node)
   assert(node, 'nil node passed to draw')
-  if not node.state.status.get().hidden then
+  if not node.state.status.hidden then
     node.events.draw(node.state)
   end
 end

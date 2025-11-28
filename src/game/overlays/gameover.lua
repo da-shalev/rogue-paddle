@@ -13,7 +13,7 @@ return function()
         style = {
           Res.styles.OVERLAY,
         },
-        Fragment.new { val = 'GAME OVER', font = Res.fonts.IBM },
+        Fragment.new { val = Cell.new 'GAME OVER', font = Res.fonts.IBM },
         Element.new {
           style = Res.styles.BUTTON,
           events = {
@@ -21,7 +21,7 @@ return function()
               S.scene_queue.setNext(require 'game.scenes.brickin')
             end,
           },
-          Fragment.new { val = 'Restart', font = Res.fonts.BASE },
+          Fragment.new { val = Cell.new 'Restart', font = Res.fonts.BASE },
         },
         Element.new {
           style = Res.styles.BUTTON,
@@ -30,7 +30,7 @@ return function()
               love.event.quit(0)
             end,
           },
-          Fragment.new { val = 'Quit', font = Res.fonts.BASE },
+          Fragment.new { val = Cell.new 'Quit', font = Res.fonts.BASE },
         },
       },
     },

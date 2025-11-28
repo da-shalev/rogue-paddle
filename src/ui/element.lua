@@ -31,7 +31,7 @@ UiElement.new = function(build)
   for i = 1, table.maxn(build) do
     local v = build[i]
     if v then
-      assert(Ui.is(v), 'passed invalid idx to a UiElement child')
+      assert(Ui.is(v), 'passed an invalid idx, to become a UiElements child')
       children[#children + 1] = v
     end
   end
@@ -166,7 +166,7 @@ function UiElement:addChildren(children)
   for _, child_idx in ipairs(children) do
     local child = Ui.get(child_idx)
     table.insert(self._children, child_idx)
-    assert(child, string.format('tried to add nil child to %s', self.name))
+    assert(child, string.format('tried to add nil child to: %s', self.name))
     Ui.layout(child, self.node)
   end
 
@@ -209,7 +209,7 @@ function UiElement.size(self, state)
     local child = Ui.get(child_idx)
     assert(child, 'flex layout child is nil')
 
-    if child.state.status.get().hidden then
+    if child.state.status.hidden then
       goto continue
     end
 
@@ -278,7 +278,7 @@ function UiElement.position(self, state)
     local child = Ui.get(self._children[child_idx])
     assert(child, 'flex layout child is nil')
 
-    if child.state.status.get().hidden then
+    if child.state.status.hidden then
       goto continue
     end
 

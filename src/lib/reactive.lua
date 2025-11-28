@@ -1,77 +1,87 @@
----@alias Observer fun()
----@type Observer[]
 local _reactive_marker = {}
 local _proxy_marker = {}
 
+local _reactive_registry = setmetatable({}, { __mode = 'k' })
+
+---@alias Observer fun()
+---@alias Set<T> fun(v: T)
+
 ---@class Reactive<T>: {
 ---  __subscriptions: Observer[],
----  subscribe: fun(o: Observer),
----  set: fun(v: T),
----  get: fun(): T
+---  set: Set<T>,
+---  get: T,
+---  subscribe: fun(o: Observer): fun() -- returns a unsubscriber
 ---}
 local Reactive = {}
 
----@generic T
+---@generic T: table
+---@param t T
+---@return T, Set<T>
+function Reactive.useState(t)
+  local r = Reactive.raw(t)
+
+  if Cell.is(t) then
+    Reactive._proxy(t, function(_, v, _)
+      r.set(v)
+    end)
+  end
+
+  _reactive_registry[r.get] = r
+  return r.get, r.set
+end
+
+---@generic T: table
+---@param get T
+---@return Reactive<T>?
+function Reactive.fromState(get)
+  return _reactive_registry[get]
+end
+
+---@generic T: table
 ---@param t T
 ---@return Reactive<T>
-function Reactive.new(t)
-  ---@type Observer[]
+function Reactive.raw(t)
+  -- proxied accessor reactive
+
+  ---@type table<Observer, true>
   local subscriptions = {}
 
   local function doObservation()
-    for _, observer in ipairs(subscriptions) do
+    for observer, _ in pairs(subscriptions) do
       observer()
     end
   end
 
-  if type(t) == 'table' then
-    -- proxied accessor reactive
-
-    ---@param t table
-    local function proxy(t)
-      Reactive._proxy(t, function(_, v, _)
-        doObservation()
-      end)
-    end
-
-    proxy(t)
-
-    return {
-      [_reactive_marker] = true,
-      get = function()
-        return t
-      end,
-      set = function(val)
-        assert(type(val) == 'table', 'PROXY reactive requires a table, got ' .. type(val))
-        proxy(val)
-        t = val
-        doObservation()
-      end,
-      subscribe = function(o)
-        subscriptions[#subscriptions + 1] = o
-      end,
-      __subscriptions = subscriptions,
-    }
-  else
-    -- accessor reactive
-    local v = { val = t }
-
-    return {
-      [_reactive_marker] = true,
-      get = function()
-        return v.val
-      end,
-      set = function(val)
-        assert(type(val) ~= 'table', 'ACCESSOR reactive requires a non-table, got table')
-        v.val = val
-        doObservation()
-      end,
-      subscribe = function(o)
-        subscriptions[#subscriptions + 1] = o
-      end,
-      __subscriptions = subscriptions,
-    }
+  ---@param t table
+  local function observeTable(t)
+    Reactive._proxy(t, function(_, v, _)
+      doObservation()
+    end)
   end
+
+  observeTable(t)
+
+  return {
+    [_reactive_marker] = true,
+    get = t,
+    set = function(val)
+      if type(val) ~= 'table' then
+        val = { val }
+      end
+
+      observeTable(val)
+      t = val
+      doObservation()
+    end,
+    subscribe = function(o)
+      subscriptions[o] = true
+
+      return function()
+        subscriptions[o] = nil
+      end
+    end,
+    __subscriptions = subscriptions,
+  }
 end
 
 ---@param t any
@@ -83,9 +93,9 @@ end
 ---@generic T
 ---@param t T|Reactive<T>
 ---@return T
-function Reactive.get(t)
+function Reactive.unwrap(t)
   if Reactive.is(t) then
-    return t.get()
+    return t.get
   else
     return t
   end

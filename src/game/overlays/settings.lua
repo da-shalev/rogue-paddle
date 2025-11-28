@@ -6,7 +6,7 @@ return function(status)
   return Element.new {
     style = Res.styles.OVERLAY,
     status = status,
-    Fragment.new { val = 'SETTINGS', font = Res.fonts.IBM },
-    Fragment.new { val = 'Todo', font = Res.fonts.BASE },
+    Fragment.new { val = Cell.new('SETTINGS'), font = Res.fonts.IBM },
+    Fragment.new { val = Cell.new('Todo'), font = Res.fonts.BASE },
   }
 end

@@ -2,13 +2,13 @@ local Element = require 'ui.element'
 local Fragment = require 'ui.fragment'
 
 return function()
-  ---@type UiState
-  local settings = Reactive.new {
+  ---@type UiStatus
+  local settings = Reactive.useState {
     hidden = true,
   }
 
-  ---@type UiState
-  local scores = Reactive.new {
+  ---@type UiStatus
+  local scores = Reactive.useState {
     hidden = true,
   }
 
@@ -23,7 +23,7 @@ return function()
       },
       Element.new {
         style = Res.styles.OVERLAY,
-        Fragment.new { val = 'PAUSE', font = Res.fonts.IBM },
+        Fragment.new { val = Cell.new('PAUSE'), font = Res.fonts.IBM },
         Element.new {
           style = Res.styles.BUTTON,
           events = {
@@ -31,27 +31,27 @@ return function()
               S.scene_queue.setNext(require 'game.scenes.brickin')
             end,
           },
-          Fragment.new { val = 'Restart', font = Res.fonts.BASE },
+          Fragment.new { val = Cell.new('Restart'), font = Res.fonts.BASE },
         },
         Element.new {
           style = Res.styles.BUTTON,
           events = {
             onClick = function()
-              settings.get().hidden = not settings.get().hidden
-              scores.get().hidden = true
+              settings.hidden = not settings.hidden
+              scores.hidden = true
             end,
           },
-          Fragment.new { val = 'Settings', font = Res.fonts.BASE },
+          Fragment.new { val = Cell.new('Settings'), font = Res.fonts.BASE },
         },
         Element.new {
           style = Res.styles.BUTTON,
           events = {
             onClick = function()
-              scores.get().hidden = not scores.get().hidden
-              settings.get().hidden = true
+              scores.hidden = not scores.hidden
+              settings.hidden = true
             end,
           },
-          Fragment.new { val = 'Scores', font = Res.fonts.BASE },
+          Fragment.new { val = Cell.new('Scores'), font = Res.fonts.BASE },
         },
         Element.new {
           style = Res.styles.BUTTON,
@@ -60,7 +60,7 @@ return function()
               love.event.quit(0)
             end,
           },
-          Fragment.new { val = 'Quit', font = Res.fonts.BASE },
+          Fragment.new { val = Cell.new('Quit'), font = Res.fonts.BASE },
         },
       },
       require 'game.overlays.settings'(settings),
