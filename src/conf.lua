@@ -2,6 +2,7 @@
 require 'lib.math'
 BUILD = require 'build_info'
 Builtin = require 'lib.builtin'
+Color = require 'colors'
 Timer = require 'lib.timer'
 Vec2 = require 'lib.vec2'
 Box = require 'lib.box'
@@ -9,8 +10,7 @@ Origin = require 'lib.origin'
 Sprite = require 'lib.sprite'
 Scene = require 'lib.scene'
 Status = require 'lib.status'
-Ui = require 'ui.registry'
-Color = require 'colors'
+Reactive = require 'lib.reactive'
 S = require 'state'
 
 -- define current scene

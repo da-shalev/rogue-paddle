@@ -1,12 +1,7 @@
 ---@class RegIdx
 ---@field uid integer -- the registries uid
+
 ---@alias UiChildren RegIdx[]
-
-local RegIdx = {}
-
-function RegIdx.valid(v)
-  return type(v) == 'table' and type(v.uid) == 'number'
-end
 
 ---@alias UiLayoutEvent fun(state: ComputedUiState, parent?: RegIdx, propagate?: boolean)
 ---@alias UiUpdateEvent fun(state: ComputedUiState, dt: number)
@@ -24,16 +19,18 @@ end
 ---@field remove? UiRemoveEvent
 ---@field draw UiDrawEvent
 
----@class ComputedUiState : UiState
+---@class ComputedUiState : _UiStateBuilder
 ---@field root? RegIdx
 ---@field parent? RegIdx
 ---@field node RegIdx
 ---@field box Box
 ---@field current_axis_size number -- cached layout calculations
 
----@class UiState
+---@class _UiStateBuilder
 ---@field hidden? boolean
 ---@field name? string
+
+---@alias UiState Reactive<_UiStateBuilder>
 
 ---@class UiBuilder
 ---@field events UiEvents
@@ -49,8 +46,13 @@ end
 ---}
 
 local Ui = {}
-Ui.UID = 0 -- this registries uid
-Ui.RegIdx = RegIdx
+local _ui_marker = {}
+
+---@param v any
+---@return boolean
+function Ui.is(v)
+  return type(v) == 'table' and v[_ui_marker]
+end
 
 -- weak key map, cleans up nodes when the RegIdx is garbage collected
 ---@type table<RegIdx, UiNode<any>>
@@ -66,8 +68,8 @@ local nodes = setmetatable({}, { __mode = 'k' })
 ---@param build UiBuilder
 ---@return RegIdx
 function Ui.add(data, build)
-  local reg_idx = {
-    uid = Ui.UID,
+  local idx = {
+    [_ui_marker] = true,
   }
 
   ---@type UiLayoutEvent
@@ -132,7 +134,7 @@ function Ui.add(data, build)
       state = {
         root = nil,
         parent = nil,
-        node = reg_idx,
+        node = idx,
         box = Box.zero(),
         current_axis_size = 0,
       },
@@ -149,22 +151,22 @@ function Ui.add(data, build)
 
   if build.state then
     Builtin.merge(node.ctx.state, build.state)
-    Builtin.proxy(build.state, function(key, value, _)
-      node.ctx.state[key] = value
+
+    build.state.subscribe(function()
       layout(node.ctx.state, node.ctx.state.parent, true)
     end)
   end
 
-  data.node = reg_idx
-  nodes[reg_idx] = node
+  data.node = idx
+  nodes[idx] = node
   layout(node.ctx.state)
 
-  return reg_idx
+  return idx
 end
 
 ---@param reg RegIdx
 function Ui.assert(reg)
-  assert(Ui.RegIdx.valid(reg), 'passed an invalid idx to the UI registry')
+  assert(Ui.is(reg), 'passed an invalid idx to the UI registry')
   assert(
     Ui.UID == reg.uid,
     string.format("tried using a idx within a UI registry it wasn't created for id: %s", reg.uid)
@@ -207,6 +209,31 @@ end
 function Ui.exists(reg)
   Ui.assert(reg)
   return nodes[reg] ~= nil
+end
+
+---@param node UiCtx?
+---@param dt number
+function Ui.update(node, dt)
+  assert(node, 'nil node passed to update')
+  if not node.state.hidden and node.events.update then
+    node.events.update(node.state, dt)
+  end
+end
+
+---@param node UiCtx?
+function Ui.draw(node)
+  assert(node, 'nil node passed to draw')
+  if not node.state.hidden then
+    node.events.draw(node.state)
+  end
+end
+
+---@param node UiCtx?
+---@param parent? RegIdx
+---@param propagate? boolean
+function Ui.layout(node, parent, propagate)
+  assert(node, 'nil node passed to layout')
+  node.events.layout(node.state, parent, propagate)
 end
 
 return Ui

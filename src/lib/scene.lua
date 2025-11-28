@@ -1,5 +1,3 @@
-local UiManager = require 'ui.manager'
-
 ---@class StatusCtx
 ---@field _status Status
 ---@field _overlay? Status
@@ -35,12 +33,12 @@ function StatusCtx:popOverlay()
   self._overlay = nil
 end
 
----@param status Status
+---@param status fun(): Status
 function StatusCtx:setOverlay(status)
-  self._overlay = status
+  self._overlay = status()
 
-  if status.init then
-    status.init(self)
+  if self._overlay.init then
+    self._overlay.init(self)
   end
 end
 
@@ -66,22 +64,16 @@ Scene.__index = Scene
 ---@class SceneBuilder : Status
 ---@field status Status
 ---@field overlay? Status
----@field ui? RegIdx
 ---@field exit? fun()
 
 ---@param events SceneBuilder
 ---@return Scene
 function Scene.new(events)
   local empty = function() end
-  local ui_ctx = events.ui and Ui.get(events.ui)
 
   ---@type Scene
   local scene = {
     update = function(self, dt)
-      if ui_ctx then
-        UiManager.update(ui_ctx, dt)
-      end
-
       (self.ctx._status.update or empty)(self.ctx, dt);
       (events.update or empty)(self.ctx, dt)
 
@@ -104,16 +96,8 @@ function Scene.new(events)
       if self.ctx._overlay then
         (self.ctx._overlay.draw or empty)(self.ctx)
       end
-
-      if ui_ctx then
-        UiManager.draw(ui_ctx)
-      end
     end,
     exit = function()
-      if events.ui then
-        Ui.remove(events.ui)
-      end
-
       if events.exit then
         events.exit()
       end

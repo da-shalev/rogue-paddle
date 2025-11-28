@@ -1,3 +1,5 @@
+local Ui = require 'ui.registry'
+
 ---@class ComputedSpriteState
 ---@field box Box
 ---@field data Sprite

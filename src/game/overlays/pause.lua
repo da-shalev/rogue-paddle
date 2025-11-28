@@ -3,7 +3,12 @@ local Fragment = require 'ui.fragment'
 
 return function()
   ---@type UiState
-  local settings = {
+  local settings = Reactive.new {
+    hidden = true,
+  }
+
+  ---@type UiState
+  local scores = Reactive.new {
     hidden = true,
   }
 
@@ -18,7 +23,7 @@ return function()
       },
       Element.new {
         style = Res.styles.OVERLAY,
-        Fragment.new('PAUSE', Res.fonts.IBM),
+        Fragment.new { val = 'PAUSE', font = Res.fonts.IBM },
         Element.new {
           style = Res.styles.BUTTON,
           events = {
@@ -26,23 +31,27 @@ return function()
               S.scene_queue.setNext(require 'game.scenes.brickin')
             end,
           },
-          Fragment.new('Restart', Res.fonts.BASE),
+          Fragment.new { val = 'Restart', font = Res.fonts.BASE },
         },
         Element.new {
           style = Res.styles.BUTTON,
           events = {
             onClick = function()
-              settings.hidden = not settings.hidden
+              settings.get().hidden = not settings.get().hidden
+              scores.get().hidden = true
             end,
           },
-          Fragment.new('Settings', Res.fonts.BASE),
+          Fragment.new { val = 'Settings', font = Res.fonts.BASE },
         },
         Element.new {
           style = Res.styles.BUTTON,
           events = {
-            onClick = function() end,
+            onClick = function()
+              scores.get().hidden = not scores.get().hidden
+              settings.get().hidden = true
+            end,
           },
-          Fragment.new('Scores', Res.fonts.BASE),
+          Fragment.new { val = 'Scores', font = Res.fonts.BASE },
         },
         Element.new {
           style = Res.styles.BUTTON,
@@ -51,10 +60,11 @@ return function()
               love.event.quit(0)
             end,
           },
-          Fragment.new('Quit', Res.fonts.BASE),
+          Fragment.new { val = 'Quit', font = Res.fonts.BASE },
         },
       },
       require 'game.overlays.settings'(settings),
+      require 'game.overlays.scores'(scores),
     },
   }
 end

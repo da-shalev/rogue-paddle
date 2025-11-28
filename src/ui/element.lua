@@ -1,5 +1,5 @@
 local UiStyle = require 'ui.style'
-local UiManager = require 'ui.manager'
+local Ui = require 'ui.registry'
 
 ---@class UiElementEvents
 ---@field draw? fun(e: UiElement)
@@ -31,7 +31,7 @@ UiElement.new = function(build)
   for i = 1, table.maxn(build) do
     local v = build[i]
     if v then
-      assert(Ui.RegIdx.valid(v), 'passed invalid idx to a UiElement child')
+      assert(Ui.is(v), 'passed invalid idx to a UiElement child')
       children[#children + 1] = v
     end
   end
@@ -66,7 +66,7 @@ UiElement.new = function(build)
         for _, child_idx in ipairs(e._children) do
           local child = Ui.get(child_idx)
           assert(child, 'passed nil child to element')
-          UiManager.layout(child, state.node)
+          Ui.layout(child, state.node)
         end
       end,
 
@@ -114,7 +114,7 @@ function UiElement.update(self, ctx, dt)
 
   if hover then
     for _, child_idx in ipairs(self._children) do
-      UiManager.update(Ui.get(child_idx), dt)
+      Ui.update(Ui.get(child_idx), dt)
     end
   end
 end
@@ -154,7 +154,7 @@ function UiElement.draw(self, state)
   love.graphics.setColor(style.content_color or Color.RESET)
 
   for _, child_idx in ipairs(self._children) do
-    UiManager.draw(Ui.get(child_idx))
+    Ui.draw(Ui.get(child_idx))
   end
 end
 
@@ -167,10 +167,10 @@ function UiElement:addChildren(children)
     local child = Ui.get(child_idx)
     table.insert(self._children, child_idx)
     assert(child, string.format('tried to add nil child to %s', self.name))
-    UiManager.layout(child, self.node)
+    Ui.layout(child, self.node)
   end
 
-  UiManager.layout(node, node.state.parent, true)
+  Ui.layout(node, node.state.parent, true)
 end
 
 ---@param child RegIdx
@@ -182,7 +182,7 @@ function UiElement:addChildAt(child, pos)
   assert(node, 'tried to add child to nil parent')
 
   table.insert(self._children, pos, child)
-  UiManager.layout(child, node.state.parent, true)
+  Ui.layout(child, node.state.parent, true)
 end
 
 function UiElement:clearChildren()

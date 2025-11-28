@@ -1,4 +1,4 @@
-local UiManager = require 'ui.manager'
+local Ui = require 'ui.registry'
 
 ---@class Status
 ---@field init? fun(ctx: StatusCtx)
@@ -10,39 +10,46 @@ local UiManager = require 'ui.manager'
 local Status = {}
 Status.__index = Status
 
----@param opts Status
-Status.new = function(opts)
-  local ui_ctx = opts.ui and Ui.get(opts.ui)
+---@param status Status
+Status.new = function(status)
+  local ui_ctx = status.ui and Ui.get(status.ui)
+  local update
+  print(ui_ctx)
+
+  if ui_ctx and status.update then
+    update = function(ctx, dt)
+      Ui.update(ui_ctx, dt)
+      status.update(ctx, dt)
+    end
+  elseif ui_ctx then
+    update = function(_, dt)
+      Ui.update(ui_ctx, dt)
+    end
+  else
+    update = status.update
+  end
+
+  local draw
+
+  if status.draw and ui_ctx then
+    draw = function(ctx)
+      status.draw(ctx)
+      Ui.draw(ui_ctx)
+    end
+  elseif ui_ctx then
+    draw = function(_)
+      Ui.draw(ui_ctx)
+    end
+  else
+    draw = status.draw
+  end
 
   return {
-    init = opts.init,
-    update = function(ctx, dt)
-      if ui_ctx then
-        UiManager.update(ui_ctx, dt)
-      end
-
-      if opts.update then
-        opts.update(ctx, dt)
-      end
-    end,
-    fixed = opts.fixed,
-    draw = function(ctx)
-      if opts.draw then
-        opts.draw(ctx)
-      end
-
-      if ui_ctx then
-        UiManager.draw(ui_ctx)
-      end
-    end,
-    exit = function(ctx)
-      if opts.ui then
-        Ui.remove(opts.ui)
-      end
-      if opts.exit then
-        opts.exit(ctx)
-      end
-    end,
+    update = update,
+    draw = draw,
+    init = status.init,
+    fixed = status.fixed,
+    exit = status.exit,
   }
 end
 
