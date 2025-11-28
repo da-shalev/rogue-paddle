@@ -6,6 +6,11 @@ local settings = {
   hidden = true,
 }
 
+---@type UiState
+local score = {
+  hidden = true,
+}
+
 local ui = Ui.get(Element.new {
   style = {
     width = '100vw',
@@ -13,6 +18,10 @@ local ui = Ui.get(Element.new {
     align_items = 'center',
     justify_content = 'center',
     gap = 4,
+  },
+  events = {
+    onClick = function()
+    end,
   },
   Element.new {
     style = Res.styles.OVERLAY,
@@ -31,6 +40,7 @@ local ui = Ui.get(Element.new {
       events = {
         onClick = function()
           settings.hidden = not settings.hidden
+          score.hidden = true
         end,
       },
       Fragment.new('Settings', Res.fonts.BASE),
@@ -38,7 +48,10 @@ local ui = Ui.get(Element.new {
     Element.new {
       style = Res.styles.BUTTON,
       events = {
-        onClick = function() end,
+        onClick = function()
+          score.hidden = not score.hidden
+          settings.hidden = true
+        end,
       },
       Fragment.new('Scores', Res.fonts.BASE),
     },
@@ -53,6 +66,7 @@ local ui = Ui.get(Element.new {
     },
   },
   require 'game.overlays.settings'(settings),
+  require 'game.overlays.scores'(score),
 })
 
 return Status.new {
@@ -64,5 +78,6 @@ return Status.new {
   end,
   exit = function()
     settings.hidden = true
+    score.hidden = true
   end,
 }

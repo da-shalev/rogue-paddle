@@ -115,8 +115,6 @@ end
 
 function love.resize()
   local width, height = love.graphics.getDimensions()
-  
-  print("love.resize called:", width, height, "aspect:", state.camera.aspect_ratio)
 
   if width / height > state.camera.aspect_ratio then
     canvas_w = height * state.camera.aspect_ratio
@@ -125,8 +123,6 @@ function love.resize()
     canvas_w = width
     canvas_h = width / state.camera.aspect_ratio
   end
-  
-  print("canvas size:", canvas_w, canvas_h)
 
   canvas = love.graphics.newCanvas(canvas_w, canvas_h)
 end
@@ -194,4 +190,14 @@ end
 ---@return boolean
 function love.mouse.isReleased(button)
   return mouse_released[button]
+end
+
+function love.touchpressed(id, x, y)
+  S.cursor.x = x
+  S.cursor.y = y
+end
+
+function love.touchreleased(id, x, y)
+  S.cursor.x = x
+  S.cursor.y = y
 end

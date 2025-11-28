@@ -97,13 +97,17 @@ function Scene.new(events)
         (self.ctx._overlay.draw or empty)(self.ctx)
       end
     end,
-    exit = events.exit or empty,
+    exit = function()
+      S.ctx = nil
+      (events.exit or empty)()
+    end,
     ctx = StatusCtx.new {
       _status = events.status,
       _overlay = events.overlay,
     },
   }
 
+  S.ctx = scene.ctx
   events.status.init(scene.ctx)
   return setmetatable(scene, Scene)
 end

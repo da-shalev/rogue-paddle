@@ -9,6 +9,7 @@ local Fragment = require 'ui.fragment'
 ---@field draw fun()
 local Stats = {}
 local hud = {}
+Stats.hud = hud
 
 ---@type UiStyle
 local indent = {
@@ -101,6 +102,36 @@ hud.lives = Ui.get(Element.new {
       gap = 2,
       justify_content = 'start',
       width = '100vw',
+    },
+  },
+})
+
+hud.pause = Ui.get(Element.new {
+  style = {
+    {
+      width = '100vw',
+      height = '100vh',
+      align_items = 'start',
+      justify_content = 'end',
+    },
+    indent,
+    Res.styles.BUTTON,
+  },
+  Element.new {
+    events = {
+      onClick = function()
+        if S.ctx ~= nil then
+          if S.ctx:hasOverlay() then
+            S.ctx:popOverlay()
+          else
+            S.ctx:setOverlay(require 'game.overlays.pause')
+          end
+        end
+      end,
+    },
+    Res.sprites.ICONS:ui {
+      frame_idx = 89,
+      color = Color.RESET,
     },
   },
 })

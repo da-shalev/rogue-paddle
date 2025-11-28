@@ -2,7 +2,7 @@ return function()
   local state = {}
   local stat = require 'game.stats'
   stat.lives.set(3)
-  stat.msg.set('Press ' .. Res.keybinds.CONFIRM .. ' to begin')
+  stat.msg.set(Res.continue .. ' to begin')
   stat.score.set(0)
 
   local paddle = require 'game.entities.paddle' {
@@ -39,17 +39,20 @@ return function()
       )
 
       ball.prev_box:copy(ball.sprite.box)
-      stat.msg.set('Press ' .. Res.keybinds.CONFIRM .. ' to continue')
     end,
 
     update = function(ctx, dt)
-      if love.keyboard.isPressed(Res.keybinds.CONFIRM) and not ctx:hasOverlay() then
+      if love.mouse.isPressed(1) and not ctx:hasOverlay() then
         ctx:setStatus(state.PLAYING)
       end
     end,
 
     draw = function(ctx)
       state.drawLevel()
+    end,
+
+    exit = function()
+      stat.msg.set(Res.continue .. ' to continue')
     end,
   }
 
@@ -66,17 +69,25 @@ return function()
 
       paddle.input_x = 0
 
-      if love.keyboard.isDown(unpack(Res.keybinds.MOVE_RIGHT)) then
+      if
+        love.keyboard.isDown(unpack(Res.keybinds.MOVE_RIGHT))
+        or love.mouse.isDown(1) and S.cursor:within(S.right_touch_box)
+      then
         paddle.input_x = paddle.input_x + 1
       end
 
-      if love.keyboard.isDown(unpack(Res.keybinds.MOVE_LEFT)) then
+      if
+        love.keyboard.isDown(unpack(Res.keybinds.MOVE_LEFT))
+        or love.mouse.isDown(1) and S.cursor:within(S.left_touch_box)
+      then
         paddle.input_x = paddle.input_x - 1
       end
 
       if Res.cheats then
         state.updateCheats()
       end
+
+      Ui.update(stat.hud.pause, dt)
     end,
 
     fixed = function(ctx, dt)
@@ -117,6 +128,7 @@ return function()
 
     draw = function()
       state.drawLevel()
+      Ui.draw(stat.hud.pause)
     end,
   }
 

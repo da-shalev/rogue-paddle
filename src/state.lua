@@ -39,6 +39,17 @@ local S = {
   },
 }
 
+-- status ctx
+S.ctx = nil
+
+S.left_touch_box =
+  Box.new(S.camera.box.pos:clone(), Vec2.new(S.camera.box.size.x / 2, S.camera.box.size.y))
+
+S.right_touch_box = Box.new(
+  S.camera.box.pos + Vec2.new(S.camera.box.size.x / 2, 0),
+  Vec2.new(S.camera.box.size.x / 2, S.camera.box.size.y)
+)
+
 math.randomseed(S.seed)
 
 return S

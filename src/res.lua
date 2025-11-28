@@ -18,12 +18,13 @@ local Res = {
     IBM = love.graphics.newFont('res/fonts/Px437_IBM_BIOS-2y.ttf', 16),
   },
 
+  continue = BUILD == 'mobile' and 'Tap' or 'Click',
+
   keybinds = {
     MOVE_RIGHT = { 'd', 'right', 'l' },
     MOVE_LEFT = { 'a', 'left', 'h' },
     MOVE_UP = { 'w', 'k', 'up' },
     MOVE_DOWN = { 's', 'j', 'down' },
-    CONFIRM = 'space',
     PAUSE = 'escape',
   },
 
