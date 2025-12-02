@@ -20,6 +20,7 @@ function Reactive.useState(t)
   local r = Reactive.raw(t)
 
   -- override cell set to mutate the underlying reactive
+  -- TODO: these shouldn't stack, and I'm not a fan of the idea of a subscriber attached to a cell
   if Cell.is(t) then
     ---@cast t Cell<any>
     local set = t.set
@@ -91,17 +92,6 @@ end
 ---@return boolean
 function Reactive.is(t)
   return type(t) == 'table' and t[_reactive_marker]
-end
-
----@generic T
----@param t T|Reactive<T>
----@return T
-function Reactive.unwrap(t)
-  if Reactive.is(t) then
-    return t.get
-  else
-    return t
-  end
 end
 
 ---@generic T: table

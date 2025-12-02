@@ -48,12 +48,12 @@ UiElement.new = function(build)
   return Ui.add(e, {
     state = build.state,
     events = {
-      update = function(state, dt)
-        UiElement.update(e, state, dt)
+      update = function(view, dt)
+        UiElement.update(e, view, dt)
       end,
 
-      draw = function(state)
-        UiElement.draw(e, state)
+      draw = function(view)
+        UiElement.draw(e, view)
       end,
 
       remove = function(_)
@@ -62,27 +62,27 @@ UiElement.new = function(build)
         end
       end,
 
-      layout = function(state, _parent, _propagate)
+      layout = function(view, _parent, _propagate)
         for _, child_idx in ipairs(e._children) do
           local child = Ui.get(child_idx)
           assert(child, 'passed nil child to element')
-          Ui.layout(child, state.node)
+          Ui.layout(child, view.node)
         end
       end,
 
-      size = function(state, _parent, _propagate)
-        UiElement.size(e, state)
+      size = function(view, _parent, _propagate)
+        UiElement.size(e, view)
       end,
 
-      position = function(state, _parent, _propagate)
-        UiElement.position(e, state)
+      position = function(view, _parent, _propagate)
+        UiElement.position(e, view)
       end,
     },
   })
 end
 
 ---@param self UiElement
----@param ctx ComputedUiState
+---@param ctx UiView
 ---@param dt number
 function UiElement.update(self, ctx, dt)
   local x, y = S.cursor:within(ctx.box)
@@ -120,18 +120,18 @@ function UiElement.update(self, ctx, dt)
 end
 
 ---@param self UiElement
----@param state ComputedUiState
-function UiElement.draw(self, state)
+---@param view UiView
+function UiElement.draw(self, view)
   local style = self.style.current
 
   if style.background_color then
     love.graphics.setColor(style.background_color)
     love.graphics.rectangle(
       'fill',
-      state.box.pos.x + style.border / 2,
-      state.box.pos.y + style.border / 2,
-      state.box.size.x - style.border,
-      state.box.size.y - style.border,
+      view.box.pos.x + style.border / 2,
+      view.box.pos.y + style.border / 2,
+      view.box.size.x - style.border,
+      view.box.size.y - style.border,
       style.border_radius,
       style.border_radius
     )
@@ -142,10 +142,10 @@ function UiElement.draw(self, state)
     love.graphics.setLineWidth(style.border)
     love.graphics.rectangle(
       'line',
-      state.box.pos.x + style.border / 2,
-      state.box.pos.y + style.border / 2,
-      state.box.size.x - style.border,
-      state.box.size.y - style.border,
+      view.box.pos.x + style.border / 2,
+      view.box.pos.y + style.border / 2,
+      view.box.size.x - style.border,
+      view.box.size.y - style.border,
       style.border_radius,
       style.border_radius
     )
@@ -170,7 +170,7 @@ function UiElement:addChildren(children)
     Ui.layout(child, self.node)
   end
 
-  Ui.layout(node, node.state.parent, true)
+  Ui.layout(node, node.view.parent, true)
 end
 
 ---@param child RegIdx
@@ -182,7 +182,7 @@ function UiElement:addChildAt(child, pos)
   assert(node, 'tried to add child to nil parent')
 
   table.insert(self._children, pos, child)
-  Ui.layout(child, node.state.parent, true)
+  Ui.layout(child, node.view.parent, true)
 end
 
 function UiElement:clearChildren()
@@ -194,9 +194,9 @@ function UiElement:clearChildren()
 end
 
 ---@param self UiElement
----@param state ComputedUiState
+---@param view UiView
 --  TODO: return boolean to know whether a mutation happened to avoid recalculation
-function UiElement.size(self, state)
+function UiElement.size(self, view)
   local style = self.style.current
 
   local current_axis_size = 0
@@ -209,20 +209,20 @@ function UiElement.size(self, state)
     local child = Ui.get(child_idx)
     assert(child, 'flex layout child is nil')
 
-    if child.state.state.hidden then
+    if child.view.state.hidden then
       goto continue
     end
 
     if child.events.size then
-      child.events.size(child.state, self.node)
+      child.events.size(child.view, self.node)
     end
 
     if style.is_row then
-      cross_axis_size = math.max(cross_axis_size, child.state.box.h)
-      current_axis_size = current_axis_size + child.state.box.w + style.gap
+      cross_axis_size = math.max(cross_axis_size, child.view.box.h)
+      current_axis_size = current_axis_size + child.view.box.w + style.gap
     elseif style.is_col then
-      cross_axis_size = math.max(cross_axis_size, child.state.box.w)
-      current_axis_size = current_axis_size + child.state.box.h + style.gap
+      cross_axis_size = math.max(cross_axis_size, child.view.box.w)
+      current_axis_size = current_axis_size + child.view.box.h + style.gap
     end
 
     ::continue::
@@ -231,23 +231,23 @@ function UiElement.size(self, state)
   current_axis_size = current_axis_size - style.gap
 
   if style.is_row then
-    state.box.w = w or current_axis_size + style.extend.left + style.extend.right
-    state.box.h = h or cross_axis_size + style.extend.top + style.extend.bottom
+    view.box.w = w or current_axis_size + style.extend.left + style.extend.right
+    view.box.h = h or cross_axis_size + style.extend.top + style.extend.bottom
   elseif style.is_col then
-    state.box.w = w or cross_axis_size + style.extend.left + style.extend.right
-    state.box.h = h or current_axis_size + style.extend.top + style.extend.bottom
+    view.box.w = w or cross_axis_size + style.extend.left + style.extend.right
+    view.box.h = h or current_axis_size + style.extend.top + style.extend.bottom
   end
 
-  state.current_axis_size = current_axis_size
+  view.current_axis_size = current_axis_size
 end
 
 ---@param self UiElement
----@param state ComputedUiState
-function UiElement.position(self, state)
+---@param view UiView
+function UiElement.position(self, view)
   local style = self.style.current
 
-  local cr_x = state.box.x + style.extend.left
-  local cr_y = state.box.y + style.extend.top
+  local cr_x = view.box.x + style.extend.left
+  local cr_y = view.box.y + style.extend.top
 
   local start_i, end_i, step
   if style.is_reverse then
@@ -263,9 +263,9 @@ function UiElement.position(self, state)
   local justify_offset = 0
   local justify_space
   if style.is_row then
-    justify_space = (state.box.w - style.extend.left - style.extend.right) - state.current_axis_size
+    justify_space = (view.box.w - style.extend.left - style.extend.right) - view.current_axis_size
   elseif style.is_col then
-    justify_space = (state.box.h - style.extend.top - style.extend.bottom) - state.current_axis_size
+    justify_space = (view.box.h - style.extend.top - style.extend.bottom) - view.current_axis_size
   end
 
   if style.justify_content == 'center' then
@@ -278,17 +278,17 @@ function UiElement.position(self, state)
     local child = Ui.get(self._children[child_idx])
     assert(child, 'flex layout child is nil')
 
-    if child.state.state.hidden then
+    if child.view.state.hidden then
       goto continue
     end
 
-    local box = child.state.box
+    local box = child.view.box
 
     box.x = cr_x
     box.y = cr_y
 
     if style.is_row then
-      local inner_h = state.box.h - style.extend.top - style.extend.bottom
+      local inner_h = view.box.h - style.extend.top - style.extend.bottom
 
       if style.align_items == 'center' then
         box.y = box.y + (inner_h - box.h) / 2
@@ -299,7 +299,7 @@ function UiElement.position(self, state)
       box.x = box.x + justify_offset
       cr_x = cr_x + box.w + style.gap
     elseif style.is_col then
-      local inner_w = state.box.w - style.extend.left - style.extend.right
+      local inner_w = view.box.w - style.extend.left - style.extend.right
 
       if style.align_items == 'center' then
         box.x = box.x + (inner_w - box.w) / 2
@@ -312,7 +312,7 @@ function UiElement.position(self, state)
     end
 
     if child.events.position then
-      child.events.position(child.state, self.node)
+      child.events.position(child.view, self.node)
     end
 
     ::continue::

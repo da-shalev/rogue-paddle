@@ -3,10 +3,10 @@
 
 ---@alias UiChildren RegIdx[]
 
----@alias UiLayoutEvent fun(state: ComputedUiState, parent?: RegIdx, propagate?: boolean)
----@alias UiUpdateEvent fun(state: ComputedUiState, dt: number)
----@alias UiRemoveEvent fun(state: ComputedUiState)
----@alias UiDrawEvent fun(state: ComputedUiState)
+---@alias UiLayoutEvent fun(view: UiView, parent?: RegIdx, propagate?: boolean)
+---@alias UiUpdateEvent fun(view: UiView, dt: number)
+---@alias UiRemoveEvent fun(view: UiView)
+---@alias UiDrawEvent fun(view: UiView)
 
 ---@class UiType
 ---@field node? RegIdx
@@ -19,7 +19,7 @@
 ---@field remove? UiRemoveEvent
 ---@field draw UiDrawEvent
 
----@class ComputedUiState
+---@class UiView
 ---@field root? RegIdx
 ---@field parent? RegIdx
 ---@field node RegIdx
@@ -36,7 +36,7 @@
 ---@field state? UiState
 
 ---@class UiCtx
----@field state ComputedUiState
+---@field view UiView
 ---@field events UiEvents
 
 ---@alias UiNode<T> {
@@ -83,7 +83,7 @@ function Ui.add(data, build)
         local parent_node = Ui.get(parent)
         assert(parent_node, 'child has no parent - missing parent in size or stale child')
 
-        parent_node.events.size(parent_node.state, parent_node.state.parent, propagate)
+        parent_node.events.size(parent_node.view, parent_node.view.parent, propagate)
       end
 
       build.events.size(state, parent, propagate)
@@ -98,7 +98,7 @@ function Ui.add(data, build)
         local parent_node = Ui.get(parent)
         assert(parent_node, 'child has no parent - missing parent in position or stale child')
 
-        parent_node.events.position(parent_node.state, parent_node.state.parent, propagate)
+        parent_node.events.position(parent_node.view, parent_node.view.parent, propagate)
       end
 
       build.events.position(state, parent, propagate)
@@ -112,10 +112,10 @@ function Ui.add(data, build)
       local parent_node = Ui.get(parent)
       assert(parent_node, 'child has no parent - missing parent in layout or stale child')
       state.parent = parent
-      state.root = parent_node.state.root
+      state.root = parent_node.view.root
 
       if propagate then
-        parent_node.events.layout(parent_node.state, parent_node.state.parent, propagate)
+        parent_node.events.layout(parent_node.view, parent_node.view.parent, propagate)
       end
     else
       state.root = state.node
@@ -134,7 +134,7 @@ function Ui.add(data, build)
   local node = {
     data = data,
     ctx = {
-      state = {
+      view = {
         root = nil,
         parent = nil,
         node = idx,
@@ -156,13 +156,13 @@ function Ui.add(data, build)
   local state = Reactive.fromState(build.state)
   if state then
     state.subscribe(function()
-      layout(node.ctx.state, node.ctx.state.parent, true)
+      layout(node.ctx.view, node.ctx.view.parent, true)
     end)
   end
 
   data.node = idx
   nodes[idx] = node
-  layout(node.ctx.state)
+  layout(node.ctx.view)
 
   return idx
 end
@@ -170,14 +170,10 @@ end
 ---@param reg RegIdx
 function Ui.assert(reg)
   assert(Ui.is(reg), 'passed an invalid idx to the UI registry')
-  assert(
-    Ui.UID == reg.uid,
-    string.format("tried using a idx within a UI registry it wasn't created for id: %s", reg.uid)
-  )
 end
 
 ---@param reg RegIdx
-function Ui.getData(reg)
+function Ui.data(reg)
   Ui.assert(reg)
   local node = nodes[reg]
   return node and node.data
@@ -201,7 +197,7 @@ function Ui.remove(reg)
   end
 
   if node.ctx.events.remove then
-    node.ctx.events.remove(node.ctx.state)
+    node.ctx.events.remove(node.ctx.view)
   end
 
   nodes[reg] = nil
@@ -218,16 +214,16 @@ end
 ---@param dt number
 function Ui.update(node, dt)
   assert(node, 'nil node passed to update')
-  if not node.state.state.hidden and node.events.update then
-    node.events.update(node.state, dt)
+  if not node.view.state.hidden and node.events.update then
+    node.events.update(node.view, dt)
   end
 end
 
 ---@param node UiCtx?
 function Ui.draw(node)
   assert(node, 'nil node passed to draw')
-  if not node.state.state.hidden then
-    node.events.draw(node.state)
+  if not node.view.state.hidden then
+    node.events.draw(node.view)
   end
 end
 
@@ -236,7 +232,7 @@ end
 ---@param propagate? boolean
 function Ui.layout(node, parent, propagate)
   assert(node, 'nil node passed to layout')
-  node.events.layout(node.state, parent, propagate)
+  node.events.layout(node.view, parent, propagate)
 end
 
 return Ui

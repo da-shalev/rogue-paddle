@@ -1,8 +1,8 @@
 return function()
   local state = {}
   local stat = require 'game.stats'
-  -- stat.lives.set(3)
-  -- stat.msg.set('Press ' .. Res.keybinds.CONFIRM .. ' to begin')
+  stat.lives.set(3)
+  stat.msg.set('Press ' .. Res.keybinds.CONFIRM .. ' to begin')
   stat.score.set(0)
 
   local paddle = require 'game.entities.paddle' {
@@ -32,7 +32,7 @@ return function()
   }
 
   state.ATTACHED = Status.new {
-    ui = stat.ui,
+    ui = stat.hud,
 
     init = function()
       ball.sprite.box:setPos(
@@ -55,10 +55,10 @@ return function()
   }
 
   state.PLAYING = Status.new {
-    ui = stat.ui,
+    ui = stat.hud,
 
     init = function()
-      -- stat.msg.set(nil)
+      stat.msg.set(nil)
       ball.velocity:set((math.random() < 0.5 and 1.0 or -1.0), -1.0):normalize()
     end,
 
@@ -131,14 +131,14 @@ return function()
 
   ---@param ctx StatusCtx
   state.removeLife = function(ctx)
-    -- stat.lives.set(stat.lives.get() - 1)
+    stat.lives.set(stat.lives.get() - 1)
 
-    -- if stat.lives.get() == 0 then
-    ctx:setOverlay(require 'game.overlays.gameover')
-    -- else
-    --   stat.msg.set('Press ' .. Res.keybinds.CONFIRM .. ' to continue')
-    --   ctx:setStatus(state.ATTACHED)
-    -- end
+    if stat.lives.get() == 0 then
+      ctx:setOverlay(require 'game.overlays.gameover')
+    else
+      stat.msg.set('Press ' .. Res.keybinds.CONFIRM .. ' to continue')
+      ctx:setStatus(state.ATTACHED)
+    end
   end
 
   state.updateCheats = function()
@@ -154,8 +154,7 @@ return function()
   return Scene.new {
     status = state.ATTACHED,
     update = function(ctx)
-      -- and stat.lives.get() > 0
-      if love.keyboard.isPressed(Res.keybinds.PAUSE) then
+      if love.keyboard.isPressed(Res.keybinds.PAUSE) and stat.lives.get() > 0 then
         if ctx:hasOverlay() then
           ctx:popOverlay()
         else

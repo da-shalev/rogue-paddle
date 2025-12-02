@@ -2,9 +2,10 @@ local Element = require 'ui.element'
 local Fragment = require 'ui.fragment'
 
 ---@class Stats
----@field score Cell<number>
 local Stats = {
   score = Reactive.useState(Cell.new(0)),
+  lives = Reactive.useState(Cell.new(0)),
+  msg = Reactive.useState(Cell.new ''),
 }
 
 ---@type UiStyle
@@ -30,7 +31,7 @@ local indent = {
 
 -- Stats.lives = Builtin.accessor(0, function(val)
 --   ---@type UiElement
---   local lives = Ui.getData(lives_wrapper)
+--   local lives = Ui.data(lives_wrapper)
 --   lives:clearChildren()
 --
 --   ---@type UiChildren
@@ -46,7 +47,7 @@ local indent = {
 --   lives:addChildren(children)
 -- end)
 --
-local score_ui = Element.new {
+local score_hud = Element.new {
   style = {
     {
       width = '100vw',
@@ -69,6 +70,6 @@ local score_ui = Element.new {
 --   Fragment.new(info_text),
 -- }
 
-Stats.ui = score_ui
+Stats.hud = score_hud
 
 return Stats

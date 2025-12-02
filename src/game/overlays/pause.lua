@@ -23,7 +23,7 @@ return function()
       },
       Element.new {
         style = Res.styles.OVERLAY,
-        Fragment.new { val = Cell.new 'PAUSE', font = Res.fonts.IBM },
+        Fragment.new { val = 'PAUSE', font = Res.fonts.IBM },
         Element.new {
           style = Res.styles.BUTTON,
           events = {
@@ -31,7 +31,7 @@ return function()
               S.scene_queue.setNext(require 'game.scenes.brickin')
             end,
           },
-          Fragment.new { val = Cell.new 'Restart', font = Res.fonts.BASE },
+          Fragment.new { val = 'Restart', font = Res.fonts.BASE },
         },
         Element.new {
           style = Res.styles.BUTTON,
@@ -41,7 +41,7 @@ return function()
               scores.hidden = true
             end,
           },
-          Fragment.new { val = Cell.new 'Settings', font = Res.fonts.BASE },
+          Fragment.new { val = 'Settings', font = Res.fonts.BASE },
         },
         Element.new {
           style = Res.styles.BUTTON,
@@ -51,7 +51,7 @@ return function()
               settings.hidden = true
             end,
           },
-          Fragment.new { val = Cell.new 'Scores', font = Res.fonts.BASE },
+          Fragment.new { val = 'Scores', font = Res.fonts.BASE },
         },
         Element.new {
           style = Res.styles.BUTTON,
@@ -60,7 +60,7 @@ return function()
               love.event.quit(0)
             end,
           },
-          Fragment.new { val = Cell.new 'Quit', font = Res.fonts.BASE },
+          Fragment.new { val = 'Quit', font = Res.fonts.BASE },
         },
       },
       require 'game.overlays.settings'(settings),

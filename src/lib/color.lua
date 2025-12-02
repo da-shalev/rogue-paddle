@@ -1,1 +1,5 @@
----@alias Color {number, number, number, number?}
+---@class Color
+---@field [0] number
+---@field [1] number
+---@field [2] number
+---@field [3] number|nil

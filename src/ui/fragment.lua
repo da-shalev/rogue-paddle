@@ -21,7 +21,7 @@ local function getSize(val, font)
 end
 
 ---@class FragmentBuilder
----@field val Cell<TextAccepted>
+---@field val Cell<TextAccepted>|TextAccepted
 ---@field font? TextFont
 ---@field state? UiState
 
@@ -31,37 +31,32 @@ Fragment.new = function(build)
   ---@type Fragment
   local self = {
     font = build.font or love.graphics.getFont(),
-    val = build.val,
+    val = Cell.optional(build.val) --[[@as Cell<TextAccepted>]],
   }
 
-  local function layout()
-    local node = Ui.get(self.node)
-    if node then
-      Ui.layout(node, node.state.parent, true)
-    end
-  end
-
-  local r = Reactive.fromState(self.val)
-  if r then
-    r.subscribe(layout)
+  local reactiveVal = Reactive.fromState(self.val)
+  if reactiveVal then
+    reactiveVal.subscribe(function()
+      local node = Ui.get(self.node)
+      if node then
+        Ui.layout(node, node.view.parent, true)
+      end
+    end)
   end
 
   return Ui.add(self, {
     status = build.state,
     events = {
-      draw = function(ctx)
+      draw = function(view)
         local val = self.val.get()
         if val then
-          love.graphics.printf(val, self.font, ctx.box.pos.x, ctx.box.pos.y, ctx.box.size.x)
+          love.graphics.printf(val, self.font, view.box.pos.x, view.box.pos.y, view.box.size.x)
         end
       end,
-      size = function(ctx)
-        local val = self.val.get()
-        if val then
-          local w, h = getSize(val, self.font)
-          ctx.box.w = w
-          ctx.box.h = h
-        end
+      size = function(view)
+        local w, h = getSize(self.val.get(), self.font)
+        view.box.w = w
+        view.box.h = h
       end,
     },
   })

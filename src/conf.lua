@@ -13,6 +13,7 @@ Scene = require 'lib.scene'
 Status = require 'lib.status'
 Reactive = require 'lib.reactive'
 S = require 'state'
+OS = love._os
 
 -- define current scene
 S.scene_queue.setNext(require 'game.scenes.brickin')
@@ -30,12 +31,12 @@ function love.conf(t)
   t.audio.mic = false -- Request and use microphone capabilities in Android (boolean)
   t.audio.mixwithsystem = true -- Keep background music playing when opening LOVE (boolean, iOS and Android only)
 
-  t.window.title = 'Rouge Paddle' -- The window title (string)
+  t.window.title = 'Rogue Paddle' -- The window title (string)
   t.window.icon = nil -- Filepath to an image to use as the window's icon (string)
   t.window.width = 1280 -- The window width (number)
   t.window.height = 720 -- The window height (number)
   t.window.borderless = false -- Remove all border visuals from the window (boolean)
-  t.window.resizable = BUILD ~= 'mobile' -- Let the window be user-resizable (boolean)
+  t.window.resizable = OS ~= 'Android' and OS ~= 'iOS' -- Let the window be user-resizable (boolean)
   t.window.minwidth = 120 -- Minimum window width if the window is resizable (number)
   t.window.minheight = 120 -- Minimum window height if the window is resizable (number)
   t.window.fullscreen = false -- Enable fullscreen (boolean)
@@ -46,7 +47,7 @@ function love.conf(t)
   t.window.stencil = nil -- The number of bits per sample in the stencil buffer
   t.window.display = 1 -- Index of the monitor to show the window in (number)
   t.window.highdpi = true -- Enable high-dpi mode for the window on a Retina display (boolean)
-  t.window.usedpiscale = false -- Enable automatic DPI scaling when highdpi is set to true as well (boolean)
+  t.window.usedpiscale = OS ~= 'Android' -- Enable automatic DPI scaling when highdpi is set to true as well (boolean)
   t.window.x = nil -- The x-coordinate of the window's position in the specified display (number)
   t.window.y = nil -- The y-coordinate of the window's position in the specified display (number)
 
@@ -60,7 +61,7 @@ function love.conf(t)
   t.modules.keyboard = true -- Enable the keyboard module (boolean)
   t.modules.math = true -- Enable the math module (boolean)
   t.modules.mouse = true -- Enable the mouse module (boolean)
-  t.modules.physics = true -- Enable the physics module (boolean)
+  t.modules.physics = false -- Enable the physics module (boolean)
   t.modules.sound = true -- Enable the sound module (boolean)
   t.modules.system = true -- Enable the system module (boolean)
   t.modules.thread = true -- Enable the thread module (boolean)
