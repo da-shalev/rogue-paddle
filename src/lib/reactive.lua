@@ -3,8 +3,11 @@ local _proxy_marker = {}
 local _registry = setmetatable({}, { __mode = 'k' })
 
 ---@alias Observer fun()
----@alias Set<T> fun(v: T)
 
+---@generic T: table
+---@alias Set fun(v: T)
+
+---@generic T: table
 ---@class Reactive<T>: {
 ---  __subscriptions: Observer[],
 ---  set: Set<T>,
@@ -17,24 +20,27 @@ local Reactive = {}
 ---@param t T
 ---@return T, Set<T>
 function Reactive.useState(t)
-  local r = Reactive.raw(t)
-
-  -- override cell set to mutate the underlying reactive
-  -- TODO: these shouldn't stack, and I'm not a fan of the idea of a subscriber attached to a cell
-  if Cell.is(t) then
-    ---@cast t Cell<any>
-    local set = t.set
-    t.set = function(v)
-      set(v)
-      r.set(v)
-    end
-  end
-
+  local r = Reactive._mk(t)
   _registry[r.get] = r
   return r.get, r.set
 end
 
----@generic T: table
+---@generic T: NotTable
+---@param t T
+---@return Cell<T>, Set<T>
+function Reactive.useCell(t)
+  local r
+  local cell = Cell.new(t, function(v)
+    -- guaranteed to exist :)
+    r.set(v)
+  end)
+
+  r = Reactive._mk(cell)
+  _registry[r.get] = r
+  return r.get, r.set
+end
+
+---@generic T
 ---@param get T
 ---@return Reactive<T>?
 function Reactive.fromState(get)
@@ -44,7 +50,7 @@ end
 ---@generic T: table
 ---@param t T
 ---@return Reactive<T>
-function Reactive.raw(t)
+function Reactive._mk(t)
   -- proxied accessor reactive
 
   ---@type table<Observer, true>

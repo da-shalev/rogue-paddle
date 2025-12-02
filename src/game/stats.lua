@@ -1,11 +1,12 @@
 local Element = require 'ui.element'
 local Fragment = require 'ui.fragment'
+local Ui = require 'ui.registry'
 
 ---@class Stats
 local Stats = {
-  score = Reactive.useState(Cell.new(0)),
-  lives = Reactive.useState(Cell.new(0)),
-  msg = Reactive.useState(Cell.new ''),
+  score = Reactive.useCell(0),
+  lives = Reactive.useCell(0),
+  msg = Reactive.useCell '',
 }
 
 ---@type UiStyle
@@ -13,50 +14,35 @@ local indent = {
   extend = { 3 },
 }
 
+local r = Reactive.fromState(Stats.lives)
+if r then
+  r.subscribe(function()
+    ---@type UiElement
+    local lives = Ui.data(Stats.lives_ui)
+    lives:clearChildren()
+
+    ---@type UiChildren
+    local children = {}
+
+    for _ = 1, Stats.lives.get() do
+      children[#children + 1] = Res.sprites.HEART:ui {
+        frame_idx = 1,
+        color = Color.RESET,
+      }
+    end
+
+    lives:addChildren(children)
+  end)
+end
+
 -- local info_text = Reactive.new { val = nil, font = Res.fonts.BASE }
--- local lives_wrapper = Element.new {
---   style = {
---     indent,
---     {
---       gap = 2,
---       justify_content = 'start',
---       width = '100vw',
---     },
---   },
--- }
 
 -- Stats.msg = Builtin.accessor(nil, function(val)
 --   info_text.val = val
 -- end)
 
 -- Stats.lives = Builtin.accessor(0, function(val)
---   ---@type UiElement
---   local lives = Ui.data(lives_wrapper)
---   lives:clearChildren()
---
---   ---@type UiChildren
---   local children = {}
---
---   for _ = 1, val do
---     children[#children + 1] = Res.sprites.HEART:ui {
---       frame_idx = 1,
---       color = Color.RESET,
---     }
---   end
---
---   lives:addChildren(children)
 -- end)
---
-local score_hud = Element.new {
-  style = {
-    {
-      width = '100vw',
-      justify_content = 'center',
-    },
-    indent,
-  },
-  Fragment.new { val = Stats.score, font = Res.fonts.BASE },
-}
 --
 -- local info_ui = Element.new {
 --   style = {
@@ -70,6 +56,25 @@ local score_hud = Element.new {
 --   Fragment.new(info_text),
 -- }
 
-Stats.hud = score_hud
+Stats.lives_ui = Element.new {
+  style = {
+    {
+      gap = 2,
+      width = '33.33333333vw',
+    },
+  },
+}
+
+Stats.hud = Element.new {
+  style = indent,
+  Stats.lives_ui,
+  Element.new {
+    style = {
+      width = '33.3333333vw',
+      justify_content = 'center',
+    },
+    Fragment.new { val = Stats.score, font = Res.fonts.BASE },
+  },
+}
 
 return Stats

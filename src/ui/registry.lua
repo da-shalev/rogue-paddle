@@ -1,15 +1,15 @@
----@class RegIdx
----@field uid integer -- the registries uid
+---@class UiId
+---@field [table] boolean
 
----@alias UiChildren RegIdx[]
+---@alias UiChildren UiId[]
 
----@alias UiLayoutEvent fun(view: UiView, parent?: RegIdx, propagate?: boolean)
+---@alias UiLayoutEvent fun(view: UiView, parent?: UiId, propagate?: boolean)
 ---@alias UiUpdateEvent fun(view: UiView, dt: number)
 ---@alias UiRemoveEvent fun(view: UiView)
 ---@alias UiDrawEvent fun(view: UiView)
 
 ---@class UiType
----@field node? RegIdx
+---@field node? UiId
 
 ---@class UiEvents
 ---@field layout? UiLayoutEvent
@@ -20,9 +20,9 @@
 ---@field draw UiDrawEvent
 
 ---@class UiView
----@field root? RegIdx
----@field parent? RegIdx
----@field node RegIdx
+---@field root? UiId
+---@field parent? UiId
+---@field node UiId
 ---@field box Box
 ---@field current_axis_size number -- cached layout calculations
 ---@field state UiState
@@ -54,7 +54,7 @@ function Ui.is(v)
 end
 
 -- weak key map, cleans up nodes when the RegIdx is garbage collected
----@type table<RegIdx, UiNode<any>>
+---@type table<UiId, UiNode<any>>
 local nodes = setmetatable({}, { __mode = 'k' })
 
 ---@generic T: UiType
@@ -63,7 +63,7 @@ local nodes = setmetatable({}, { __mode = 'k' })
 --- }
 ---@field data Data
 ---@param build UiBuilder
----@return RegIdx
+---@return UiId
 function Ui.add(data, build)
   local idx = {
     [_ui_marker] = true,
@@ -167,19 +167,19 @@ function Ui.add(data, build)
   return idx
 end
 
----@param reg RegIdx
+---@param reg UiId
 function Ui.assert(reg)
   assert(Ui.is(reg), 'passed an invalid idx to the UI registry')
 end
 
----@param reg RegIdx
-function Ui.data(reg)
-  Ui.assert(reg)
-  local node = nodes[reg]
+---@param id UiId
+function Ui.data(id)
+  Ui.assert(id)
+  local node = nodes[id]
   return node and node.data
 end
 
----@param reg RegIdx
+---@param reg UiId
 ---@return UiCtx?
 function Ui.get(reg)
   Ui.assert(reg)
@@ -187,7 +187,7 @@ function Ui.get(reg)
   return node and node.ctx
 end
 
----@param reg RegIdx
+---@param reg UiId
 function Ui.remove(reg)
   Ui.assert(reg)
 
@@ -203,7 +203,7 @@ function Ui.remove(reg)
   nodes[reg] = nil
 end
 
----@param reg RegIdx
+---@param reg UiId
 ---@return boolean
 function Ui.exists(reg)
   Ui.assert(reg)
@@ -228,7 +228,7 @@ function Ui.draw(node)
 end
 
 ---@param node UiCtx?
----@param parent? RegIdx
+---@param parent? UiId
 ---@param propagate? boolean
 function Ui.layout(node, parent, propagate)
   assert(node, 'nil node passed to layout')

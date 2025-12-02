@@ -22,7 +22,7 @@ UiElement.__index = UiElement
 ---@field events? UiElementEvents
 
 ---@param build UiElementBuilder
----@return RegIdx
+---@return UiId
 UiElement.new = function(build)
   build.events = build.events or {}
 
@@ -173,7 +173,7 @@ function UiElement:addChildren(children)
   Ui.layout(node, node.view.parent, true)
 end
 
----@param child RegIdx
+---@param child UiId
 ---@param pos integer
 function UiElement:addChildAt(child, pos)
   local child = Ui.get(child)

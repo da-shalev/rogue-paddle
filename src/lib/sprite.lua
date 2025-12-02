@@ -72,7 +72,7 @@ end
 
 ---@param opts? SpriteRenderState
 ---@param state? UiState
----@return RegIdx
+---@return UiId
 function Sprite:ui(opts, state)
   opts = opts or {}
   opts.frame_idx = opts.frame_idx or 1

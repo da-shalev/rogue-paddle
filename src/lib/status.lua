@@ -6,7 +6,7 @@ local Ui = require 'ui.registry'
 ---@field fixed? fun(ctx: StatusCtx, dt: number)
 ---@field draw? fun(ctx: StatusCtx)
 ---@field exit? fun(ctx: StatusCtx)
----@field ui? RegIdx
+---@field ui? UiId
 local Status = {}
 Status.__index = Status
 

@@ -13,7 +13,7 @@ Fragment.__index = Fragment
 ---@param val TextAccepted
 ---@return number, number
 local function getSize(val, font)
-  if val == nil then
+  if not val then
     return 0, 0
   end
 
@@ -26,7 +26,7 @@ end
 ---@field state? UiState
 
 ---@param build FragmentBuilder
----@return RegIdx
+---@return UiId
 Fragment.new = function(build)
   ---@type Fragment
   local self = {

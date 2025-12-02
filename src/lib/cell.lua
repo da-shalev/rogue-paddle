@@ -1,15 +1,18 @@
 local _cell_marker = {}
 
+---@alias NotTable boolean | number | string | function | thread | userdata
+
 ---@class Cell<T>: {
----  set: fun(val: T),
+---  set: Set<T>,
 ---  get: fun(): T
 ---}
 local Cell = {}
 
----@generic T
+---@generic T: NotTable
 ---@param val T
+---@param onMutate? Set<T>
 ---@return Cell<T>
-function Cell.new(val)
+function Cell.new(val, onMutate)
   local val = { val }
 
   return {
@@ -22,6 +25,9 @@ function Cell.new(val)
     ---@param v T
     set = function(v)
       val[1] = v
+      if onMutate then
+        onMutate(v)
+      end
     end,
   }
 end
