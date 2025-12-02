@@ -1,5 +1,8 @@
----@class UiId
----@field [table] boolean
+---@generic T
+---@class UiId<T>: {
+---  [table]: boolean,
+---  getData: fun(): T,
+---}
 
 ---@alias UiChildren UiId[]
 
@@ -39,7 +42,7 @@
 ---@field view UiView
 ---@field events UiEvents
 
----@alias UiNode<T> {
+---@class UiNode<T>: {
 ---  data: T,
 ---  ctx: UiCtx,
 ---}
@@ -53,20 +56,21 @@ function Ui.is(v)
   return type(v) == 'table' and v[_ui_marker]
 end
 
--- weak key map, cleans up nodes when the RegIdx is garbage collected
+-- weak key map, cleans up nodes when the id is garbage collected
 ---@type table<UiId, UiNode<any>>
 local nodes = setmetatable({}, { __mode = 'k' })
 
 ---@generic T: UiType
----@class Data<T>: {
----   data: T,
---- }
----@field data Data
+---@param data T
 ---@param build UiBuilder
----@return UiId
+---@return UiId<T>
 function Ui.add(data, build)
+  ---@type UiId
   local idx = {
     [_ui_marker] = true,
+    getData = function()
+      return data
+    end,
   }
 
   if not build.state then
@@ -167,31 +171,41 @@ function Ui.add(data, build)
   return idx
 end
 
----@param reg UiId
-function Ui.assert(reg)
-  assert(Ui.is(reg), 'passed an invalid idx to the UI registry')
+---@param id UiId
+function Ui.assert(id)
+  assert(Ui.is(id), 'passed an invalid idx to the UI registry')
+end
+
+---@generic T
+---@param id UiId<T>
+---@return UiNode<T>
+local function getNode(id)
+  return nodes[id]
+end
+
+---@generic T
+---@param id UiId<T>
+---@return T
+function Ui.data(id)
+  Ui.assert(id)
+  local node = getNode(id)
+  assert(node, 'invalid id used to access node, memory leak?')
+  return node.data
 end
 
 ---@param id UiId
-function Ui.data(id)
+---@return UiCtx?
+function Ui.get(id)
   Ui.assert(id)
   local node = nodes[id]
-  return node and node.data
-end
-
----@param reg UiId
----@return UiCtx?
-function Ui.get(reg)
-  Ui.assert(reg)
-  local node = nodes[reg]
   return node and node.ctx
 end
 
----@param reg UiId
-function Ui.remove(reg)
-  Ui.assert(reg)
+---@param id UiId
+function Ui.remove(id)
+  Ui.assert(id)
 
-  local node = nodes[reg]
+  local node = nodes[id]
   if not node then
     return
   end
@@ -200,14 +214,14 @@ function Ui.remove(reg)
     node.ctx.events.remove(node.ctx.view)
   end
 
-  nodes[reg] = nil
+  nodes[id] = nil
 end
 
----@param reg UiId
+---@param id UiId
 ---@return boolean
-function Ui.exists(reg)
-  Ui.assert(reg)
-  return nodes[reg] ~= nil
+function Ui.exists(id)
+  Ui.assert(id)
+  return nodes[id] ~= nil
 end
 
 ---@param node UiCtx?

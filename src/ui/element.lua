@@ -11,7 +11,6 @@ local Ui = require 'ui.registry'
 ---@field hover? boolean
 ---@field events UiElementEvents
 ---@field style ComputedUiStyle
----@field name? string
 ---@field _children UiChildren
 local UiElement = {}
 UiElement.__index = UiElement
@@ -22,7 +21,7 @@ UiElement.__index = UiElement
 ---@field events? UiElementEvents
 
 ---@param build UiElementBuilder
----@return UiId
+---@return UiId<UiElement>
 UiElement.new = function(build)
   build.events = build.events or {}
 
@@ -166,8 +165,7 @@ function UiElement:addChildren(children)
   for _, child_idx in ipairs(children) do
     local child = Ui.get(child_idx)
     table.insert(self._children, child_idx)
-    assert(child, string.format('tried to add nil child to: %s', self.name))
-    Ui.layout(child, self.node)
+    assert(child, string.format('tried to add nil child to: %s', node.view.state.name))
   end
 
   Ui.layout(node, node.view.parent, true)
@@ -178,8 +176,8 @@ end
 function UiElement:addChildAt(child, pos)
   local child = Ui.get(child)
   local node = Ui.get(self.node)
-  assert(child, 'tried to add nil child')
   assert(node, 'tried to add child to nil parent')
+  assert(child, string.format('tried to add nil child to: %s', node.view.state.name))
 
   table.insert(self._children, pos, child)
   Ui.layout(child, node.view.parent, true)

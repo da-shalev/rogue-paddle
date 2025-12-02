@@ -26,7 +26,7 @@ end
 ---@field state? UiState
 
 ---@param build FragmentBuilder
----@return UiId
+---@return UiId<Fragment>
 Fragment.new = function(build)
   ---@type Fragment
   local self = {

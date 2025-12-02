@@ -1,30 +1,29 @@
 local Element = require 'ui.element'
 local Fragment = require 'ui.fragment'
-local Ui = require 'ui.registry'
+
+local lives_ui = Element.new {
+  style = {
+    gap = 2,
+    width = '33.3333333333vw',
+  },
+  state = {
+    name = 'Lives HUD',
+  },
+}
 
 ---@class Stats
 local Stats = {
   score = Reactive.useCell(0),
-  lives = Reactive.useCell(0),
   msg = Reactive.useCell '',
-}
 
----@type UiStyle
-local indent = {
-  extend = { 3 },
-}
-
-local r = Reactive.fromState(Stats.lives)
-if r then
-  r.subscribe(function()
-    ---@type UiElement
-    local lives = Ui.data(Stats.lives_ui)
+  lives = Cell.new(0, function(v)
+    local lives = lives_ui.getData()
     lives:clearChildren()
 
     ---@type UiChildren
     local children = {}
 
-    for _ = 1, Stats.lives.get() do
+    for _ = 1, v do
       children[#children + 1] = Res.sprites.HEART:ui {
         frame_idx = 1,
         color = Color.RESET,
@@ -32,8 +31,13 @@ if r then
     end
 
     lives:addChildren(children)
-  end)
-end
+  end),
+}
+
+---@type UiStyle
+local indent = {
+  extend = { 3 },
+}
 
 -- local info_text = Reactive.new { val = nil, font = Res.fonts.BASE }
 
@@ -56,24 +60,21 @@ end
 --   Fragment.new(info_text),
 -- }
 
-Stats.lives_ui = Element.new {
-  style = {
-    {
-      gap = 2,
-      width = '33.33333333vw',
-    },
-  },
-}
-
 Stats.hud = Element.new {
   style = indent,
-  Stats.lives_ui,
+  lives_ui,
   Element.new {
     style = {
-      width = '33.3333333vw',
+      width = '33.3333333333vw',
       justify_content = 'center',
     },
     Fragment.new { val = Stats.score, font = Res.fonts.BASE },
+    state = {
+      name = 'Score HUD',
+    },
+  },
+  state = {
+    name = 'HUD Wrapper',
   },
 }
 

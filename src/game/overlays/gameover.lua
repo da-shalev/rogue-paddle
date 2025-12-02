@@ -33,6 +33,9 @@ return function()
           Fragment.new { val = 'Quit', font = Res.fonts.BASE },
         },
       },
+      state = {
+        name = 'Gameover Menu',
+      },
     },
   }
 end

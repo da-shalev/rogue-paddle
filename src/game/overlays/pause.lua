@@ -65,6 +65,9 @@ return function()
       },
       require 'game.overlays.settings'(settings),
       require 'game.overlays.scores'(scores),
+      state = {
+        name = 'Pause Menu',
+      },
     },
   }
 end
