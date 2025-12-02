@@ -1,12 +1,12 @@
 local Element = require 'ui.element'
 local Fragment = require 'ui.fragment'
 
----@param status _UiStatus
-return function(status)
+---@param state UiState
+return function(state)
   return Element.new {
     style = Res.styles.OVERLAY,
-    status = status,
-    Fragment.new { val = 'SCORES', font = Res.fonts.IBM },
-    Fragment.new { val = 'Todo', font = Res.fonts.BASE },
+    state = state,
+    Fragment.new { val = Cell.new 'SCORES', font = Res.fonts.IBM },
+    Fragment.new { val = Cell.new 'Todo', font = Res.fonts.BASE },
   }
 end

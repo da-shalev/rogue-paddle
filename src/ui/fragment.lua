@@ -1,19 +1,18 @@
 local Ui = require 'ui.registry'
 
----@alias AcceptedVals string | number | nil
----@alias TextVal AcceptedVals | Reactive<AcceptedVals>
----@alias TextFont love.Font | Reactive<love.Font>
+---@alias TextAccepted string | number | nil
+---@alias TextFont love.Font
 
 ---@class Fragment : UiType
----@field val TextVal
+---@field val Cell<TextAccepted>
 ---@field font TextFont
 local Fragment = {}
 Fragment.__index = Fragment
 
 ---@param font love.Font
----@param val AcceptedVals
+---@param val TextAccepted
 ---@return number, number
-local function getSize(font, val)
+local function getSize(val, font)
   if val == nil then
     return 0, 0
   end
@@ -22,9 +21,9 @@ local function getSize(font, val)
 end
 
 ---@class FragmentBuilder
----@field val TextVal
+---@field val Cell<TextAccepted>
 ---@field font? TextFont
----@field status? UiStatus
+---@field state? UiState
 
 ---@param build FragmentBuilder
 ---@return RegIdx
@@ -35,40 +34,31 @@ Fragment.new = function(build)
     val = build.val,
   }
 
-  local val = Reactive.get(self.val)
-  ---@cast val AcceptedVals
-  local font = Reactive.get(self.font)
-  ---@cast font love.Font
-
   local function layout()
-    val = Reactive.get(self.val)
-    font = Reactive.get(self.font)
-
     local node = Ui.get(self.node)
     if node then
       Ui.layout(node, node.state.parent, true)
     end
   end
 
-  if Reactive.is(self.val) then
-    self.val.subscribe(layout)
-  end
-
-  if Reactive.is(self.font) then
-    self.font.subscribe(layout)
+  local r = Reactive.fromState(self.val)
+  if r then
+    r.subscribe(layout)
   end
 
   return Ui.add(self, {
-    status = build.status,
+    status = build.state,
     events = {
       draw = function(ctx)
+        local val = self.val.get()
         if val then
-          love.graphics.printf(val, font, ctx.box.pos.x, ctx.box.pos.y, ctx.box.size.x)
+          love.graphics.printf(val, self.font, ctx.box.pos.x, ctx.box.pos.y, ctx.box.size.x)
         end
       end,
       size = function(ctx)
+        local val = self.val.get()
         if val then
-          local w, h = getSize(font, val)
+          local w, h = getSize(val, self.font)
           ctx.box.w = w
           ctx.box.h = h
         end

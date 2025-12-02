@@ -2,9 +2,9 @@ local Element = require 'ui.element'
 local Fragment = require 'ui.fragment'
 
 ---@class Stats
----@field score Reactive<number>
+---@field score Cell<number>
 local Stats = {
-  score = Reactive.new(0),
+  score = Reactive.useState(Cell.new(0)),
 }
 
 ---@type UiStyle

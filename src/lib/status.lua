@@ -14,7 +14,6 @@ Status.__index = Status
 Status.new = function(status)
   local ui_ctx = status.ui and Ui.get(status.ui)
   local update
-  print(ui_ctx)
 
   if ui_ctx and status.update then
     update = function(ctx, dt)
